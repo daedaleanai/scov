@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 var (
@@ -33,12 +34,12 @@ body { max-width:70em; margin:auto; }
 .sparkbar .fill { display: inline-block; height: 1em; background-color:lightgreen; }
 .sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
 .source { font-family: monospace; width:100%; margin:3em 0; }
-.source th { padding: .1em .5em; }
+.source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }
 .source td { padding: .1em .5em; white-space: pre; }
 .source .hit { background:lightblue; }
 .source .miss { background:LightCoral; }
 .source .ln { background:PaleGoldenrod; text-align:right; }
-.source .ld { text-align:right; }
+.source .ld { background:#f6f3d4; text-align:right; }
 </style>
 </head>
 `,
@@ -47,11 +48,11 @@ body { max-width:70em; margin:auto; }
 		`<div class="pure-g"><h1 class="pure-u">{{.Title}}</h1></div>`,
 	))
 	tmplCoverage = template.Must(tmpl1.New("coverage").Parse(
-		`<table class="pure-table pure-table-bordered">
-	<thead><tr><td></td><th>Coverage</th><th>Hit</th><th>Total</th><tr></thead>
+		`<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
+	<thead><tr><td></td><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 	<tbody>
-	<tr><td>Lines:</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td><td>{{.LCoverage.Hit}}</td><td>{{.LCoverage.Total}}</td></tr>
-	<tr><td>Functions:</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td><td>{{.FCoverage.Hit}}</td><td>{{.FCoverage.Total}}</td></tr>
+	<tr><td>Lines:</td><td>{{.LCoverage.Hit}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td></tr>
+	<tr><td>Functions:</td><td>{{.FCoverage.Hit}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
 	</tbody>
 	</table>`,
 	))
@@ -62,15 +63,19 @@ body { max-width:70em; margin:auto; }
 {{template "h1" .}}
 <div class="pure-g"><div class="pure-u">
 <h2>Overall</h2>
+</div></div>
+<div class="pure-g"><div class="pure-u-1 pure-u-md-1-2">
+<p>Coverage generated on: {{.Date}}</p>
+</div><div class="pure-u-1 pure-u-md-1-2">
 {{template "coverage" .}}
-</div>
+</div></div>
 <div class="pure-g"><div class="pure-u">
 <h2>By File</h2>
 <table class="pure-table pure-table-bordered">
 <thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="2">Function Coverage</th></tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
-<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td><td>{{.LCoverage.Hit}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td><td>{{.FCoverage.Hit}}/{{.FCoverage.Total}}</td></tr>
+<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hit}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td><td>{{.FCoverage.Hit}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
 {{end}}
 </tbody>
 </table>
@@ -109,6 +114,11 @@ type FileStatistics struct {
 }
 
 func buildHtml(outdir string) error {
+	err := os.MkdirAll(outdir, 0700)
+	if err != nil {
+		return err
+	}
+
 	filename := filepath.Join(outdir, "index.html")
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
@@ -140,10 +150,11 @@ func buildHtml(outdir string) error {
 	})
 
 	params := map[string]interface{}{
-		"Title":     "LCovGo",
+		"Title":     *title,
 		"LCoverage": lineCoverage,
 		"FCoverage": funcCoverage,
 		"Files":     files,
+		"Date":      time.Now().UTC().Format(time.UnixDate),
 	}
 
 	return tmpl.Execute(file, params)
@@ -162,25 +173,23 @@ func buildHtmlForSource(outdir, sourcename string) error {
 	tmpa, tmpb = funcCoverageForFile(funcCountData[sourcename])
 	fcoverage := Coverage{tmpa, tmpb}
 
-	file.WriteString("<html>\n")
-	tmplHead.Execute(file, map[string]interface{}{
-		"Title": "Coverage - " + sourcename,
-	})
-	file.WriteString("<body>\n")
-	tmplH1.Execute(file, map[string]interface{}{
-		"Title": "Coverage - " + sourcename,
-	})
-	file.WriteString(`<div class="pure-g"><div class="pure-u">`)
-	file.WriteString(`<h2>Overall</h2>`)
-	tmplCoverage.Execute(file, map[string]interface{}{
-		"Title":     "Coverage - " + sourcename,
+	params := map[string]interface{}{
+		"Title":     *title + " > " + sourcename,
 		"LCoverage": lcoverage,
 		"FCoverage": fcoverage,
-	})
+	}
+
+	file.WriteString("<html>\n")
+	tmplHead.Execute(file, params)
+	file.WriteString("<body>\n")
+	tmplH1.Execute(file, params)
+	file.WriteString(`<div class="pure-g"><div class="pure-u">`)
+	file.WriteString(`<h2>Overall</h2>`)
+	tmplCoverage.Execute(file, params)
 	file.WriteString(`</div></div>`)
 	file.WriteString(`<div class="pure-g"><div class="pure-u">`)
 	file.WriteString(`<table class="source"><thead>`)
-	file.WriteString(`<tr><th>Line #</th><th>Line data</th><th>Source code</th></tr>`)
+	file.WriteString(`<tr><th class="ln">Line #</th><th class="ld">Hit count</th><th>Source code</th></tr>`)
 	file.WriteString(`</thead><tbody>`)
 	buildSourceListing(file, sourcename)
 	file.WriteString(`</tbody></table>`)
@@ -193,13 +202,11 @@ func buildSourceListing(out *os.File, sourcename string) error {
 	filename := filepath.Join(*srcdir, sourcename)
 	file, err := os.Open(filename)
 	if err != nil {
-		panic(err.Error())
 		return err
 	}
 	defer file.Close()
 
 	lineNo := 1
-	println("--")
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		if lc, ok := lineCountData[sourcename][lineNo]; ok {
@@ -212,7 +219,7 @@ func buildSourceListing(out *os.File, sourcename string) error {
 				template.HTMLEscapeString(scanner.Text()),
 			)
 		} else {
-			fmt.Fprintf(out, "<tr><td class=\"ln\">%d</td><td></td><td>%s</td></tr>\n",
+			fmt.Fprintf(out, "<tr><td class=\"ln\">%d</td><td class=\"ld\"></td><td>%s</td></tr>\n",
 				lineNo, template.HTMLEscapeString(scanner.Text()),
 			)
 		}

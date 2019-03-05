@@ -15,6 +15,8 @@ var (
 	external      = flag.Bool("external", false, "Set whether external files to be included")
 	help          = flag.Bool("h", false, "Request help")
 	srcdir        = flag.String("srcdir", ".", "Path for the source directory")
+	outdir        = flag.String("outdir", ".", "Path for the output")
+	title         = flag.String("title", "LCovHTML", "Title for the HTML pages")
 )
 
 func main() {
@@ -39,7 +41,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = buildHtml(".")
+	err = buildHtml(*outdir)
 	if err != nil {
 		panic(err)
 	}
@@ -74,10 +76,18 @@ func loadFile(name string) error {
 			currentFile = value
 
 		case "function":
-			processFunction(currentFile, value)
+			funcName, hitCount, err := parseFunctionRecord(value)
+			if err != nil {
+				return err
+			}
+			applyFunctionRecord(currentFile, funcName, hitCount)
 
 		case "lcount":
-			processLCount(currentFile, value)
+			lineNo, hitCount, err := parseLCountRecord(value)
+			if err != nil {
+				return err
+			}
+			applyLCountRecord(currentFile, lineNo, hitCount)
 
 		default:
 			panic("unknown record")
@@ -90,30 +100,68 @@ func loadFile(name string) error {
 	return nil
 }
 
-func processFunction(file string, value string) {
+func parseFunctionRecord(value string) (funcName string, hitCount uint64, err error) {
 	values := strings.Split(value, ",")
-	lineCount, _ := strconv.ParseUint(values[2], 10, 64)
-	funcName := values[3]
+	if len(values) == 3 {
+		// The first field is the line number for the function.
+		// We are not using that information.
 
+		hitCount, err = strconv.ParseUint(values[1], 10, 64)
+		if err != nil {
+			return "", 0, fmt.Errorf("can't parse function record: %s", err)
+		}
+		funcName = values[2]
+		return funcName, hitCount, nil
+	} else if len(values) == 4 {
+		// The first two fields are the line number range for the function.
+		// We are not using that information.
+
+		hitCount, err = strconv.ParseUint(values[2], 10, 64)
+		if err != nil {
+			return "", 0, fmt.Errorf("can't parse function record: %s", err)
+		}
+		funcName = values[3]
+		return funcName, hitCount, nil
+	}
+
+	return "", 0, fmt.Errorf("can't parse function record")
+}
+
+func applyFunctionRecord(file string, funcName string, hitCount uint64) {
 	if m, ok := funcCountData[file]; ok {
-		m[funcName] += lineCount
+		m[funcName] += hitCount
 	} else {
 		m := make(map[string]uint64)
-		m[funcName] += lineCount
+		m[funcName] += hitCount
 		funcCountData[file] = m
 	}
 }
 
-func processLCount(file string, value string) {
+func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
 	values := strings.Split(value, ",")
-	lineNo, _ := strconv.ParseInt(values[0], 10, 64)
-	lineCount, _ := strconv.ParseUint(values[1], 10, 64)
+	if len(values) != 2 {
+		return 0, 0, fmt.Errorf("can't parse lcount record")
+	}
 
+	lineNoTmp, err := strconv.ParseInt(values[0], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("can't parse lcount record: %s", err)
+	}
+	lineNo = int(lineNoTmp)
+	hitCount, err = strconv.ParseUint(values[1], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("can't parse lcount record: %s", err)
+	}
+
+	return lineNo, hitCount, nil
+}
+
+func applyLCountRecord(file string, lineNo int, hitCount uint64) {
 	if m, ok := lineCountData[file]; ok {
-		m[int(lineNo)] += lineCount
+		m[lineNo] += hitCount
 	} else {
 		m := make(map[int]uint64)
-		m[int(lineNo)] += lineCount
+		m[lineNo] += hitCount
 		lineCountData[file] = m
 	}
 }
