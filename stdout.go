@@ -2,27 +2,28 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"strings"
 )
 
-func buildText(out *os.File) error {
+func buildText(out io.Writer, data map[string]FileData) error {
 	LCov := Coverage{}
 	FCov := Coverage{}
 
-	for name, data := range lineCountData {
+	for name, data := range data {
 		if *external || !strings.HasPrefix(name, "/") {
-			a, b := lineCoverageForFile(data)
-			lcov := Coverage{a, b}
-			LCov.Update(a, b)
-			a, b = funcCoverageForFile(funcCountData[name])
-			fcov := Coverage{a, b}
-			FCov.Update(a, b)
+			lcov := data.LineCoverage()
+			LCov.Update(lcov)
+			fcov := data.FuncCoverage()
+			FCov.Update(fcov)
 
-			fmt.Fprintf(out, "%.1f\t%.1f\t%s\n", lcov.Percentage(), fcov.Percentage(), name)
+			_, err := fmt.Fprintf(out, "%5.1f%%\t%5.1f%%\t%s\n", lcov.Percentage(), fcov.Percentage(), name)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	fmt.Fprintf(out, "-----\t-----\t\n")
-	fmt.Fprintf(out, "%.1f\t%.1f\tOverall\n", LCov.Percentage(), FCov.Percentage())
+	fmt.Fprintf(out, "------\t------\t\n")
+	fmt.Fprintf(out, "%5.1f%%\t%5.1f%%\tOverall\n", LCov.Percentage(), FCov.Percentage())
 	return nil
 }

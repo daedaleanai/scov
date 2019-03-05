@@ -51,8 +51,8 @@ body { max-width:70em; margin:auto; }
 		`<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
 	<thead><tr><td></td><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 	<tbody>
-	<tr><td>Lines:</td><td>{{.LCoverage.Hit}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td></tr>
-	<tr><td>Functions:</td><td>{{.FCoverage.Hit}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
+	<tr><td>Lines:</td><td>{{.LCoverage.Hits}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td></tr>
+	<tr><td>Functions:</td><td>{{.FCoverage.Hits}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
 	</tbody>
 	</table>`,
 	))
@@ -75,7 +75,7 @@ body { max-width:70em; margin:auto; }
 <thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="2">Function Coverage</th></tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
-<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hit}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td><td>{{.FCoverage.Hit}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
+<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
 {{end}}
 </tbody>
 </table>
@@ -85,35 +85,13 @@ body { max-width:70em; margin:auto; }
 	))
 )
 
-type Coverage struct {
-	Hit   int
-	Total int
-}
-
-func (c Coverage) Percentage() float32 {
-	return float32(c.Hit) * 100 / float32(c.Total)
-}
-
-func (c Coverage) P() float32 {
-	return float32(c.Hit) * 100 / float32(c.Total)
-}
-
-func (c Coverage) Q() float32 {
-	return 100 - float32(c.Hit)*100/float32(c.Total)
-}
-
-func (c *Coverage) Update(a, b int) {
-	c.Hit += a
-	c.Total += b
-}
-
 type FileStatistics struct {
 	Name      string
 	LCoverage Coverage
 	FCoverage Coverage
 }
 
-func buildHtml(outdir string) error {
+func buildHtml(outdir string, data map[string]FileData) error {
 	err := os.MkdirAll(outdir, 0700)
 	if err != nil {
 		return err
@@ -126,23 +104,21 @@ func buildHtml(outdir string) error {
 	}
 	defer file.Close()
 
-	lineCoverage := Coverage{}
-	funcCoverage := Coverage{}
+	LCov := Coverage{}
+	FCov := Coverage{}
 	files := []FileStatistics{}
-	for name, data := range lineCountData {
+	for name, data := range data {
 		if *external || !strings.HasPrefix(name, "/") {
 			stats := FileStatistics{Name: name}
-			tmpa, tmpb := lineCoverageForFile(data)
-			stats.LCoverage = Coverage{tmpa, tmpb}
-			lineCoverage.Update(tmpa, tmpb)
 
-			tmpa, tmpb = funcCoverageForFile(funcCountData[name])
-			stats.FCoverage = Coverage{tmpa, tmpb}
-			funcCoverage.Update(tmpa, tmpb)
+			stats.LCoverage = data.LineCoverage()
+			LCov.Update(stats.LCoverage)
+			stats.FCoverage = data.FuncCoverage()
+			FCov.Update(stats.FCoverage)
 
 			files = append(files, stats)
 
-			buildHtmlForSource(outdir, name)
+			buildHtmlForSource(outdir, name, data)
 		}
 	}
 	sort.Slice(files, func(i, j int) bool {
@@ -151,8 +127,8 @@ func buildHtml(outdir string) error {
 
 	params := map[string]interface{}{
 		"Title":     *title,
-		"LCoverage": lineCoverage,
-		"FCoverage": funcCoverage,
+		"LCoverage": LCov,
+		"FCoverage": FCov,
 		"Files":     files,
 		"Date":      time.Now().UTC().Format(time.UnixDate),
 	}
@@ -160,7 +136,7 @@ func buildHtml(outdir string) error {
 	return tmpl.Execute(file, params)
 }
 
-func buildHtmlForSource(outdir, sourcename string) error {
+func buildHtmlForSource(outdir, sourcename string, data FileData) error {
 	filename := filepath.Join(outdir, sourcename+".html")
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
@@ -168,15 +144,13 @@ func buildHtmlForSource(outdir, sourcename string) error {
 	}
 	defer file.Close()
 
-	tmpa, tmpb := lineCoverageForFile(lineCountData[sourcename])
-	lcoverage := Coverage{tmpa, tmpb}
-	tmpa, tmpb = funcCoverageForFile(funcCountData[sourcename])
-	fcoverage := Coverage{tmpa, tmpb}
+	lcov := data.LineCoverage()
+	fcov := data.FuncCoverage()
 
 	params := map[string]interface{}{
 		"Title":     *title + " > " + sourcename,
-		"LCoverage": lcoverage,
-		"FCoverage": fcoverage,
+		"LCoverage": lcov,
+		"FCoverage": fcov,
 	}
 
 	file.WriteString("<html>\n")
@@ -191,14 +165,14 @@ func buildHtmlForSource(outdir, sourcename string) error {
 	file.WriteString(`<table class="source"><thead>`)
 	file.WriteString(`<tr><th class="ln">Line #</th><th class="ld">Hit count</th><th>Source code</th></tr>`)
 	file.WriteString(`</thead><tbody>`)
-	buildSourceListing(file, sourcename)
+	buildSourceListing(file, sourcename, data.LineData)
 	file.WriteString(`</tbody></table>`)
 	file.WriteString(`</div></div>`)
 	file.WriteString("</body>\n</html>\n")
 	return nil
 }
 
-func buildSourceListing(out *os.File, sourcename string) error {
+func buildSourceListing(out *os.File, sourcename string, lineCountData map[int]uint64) error {
 	filename := filepath.Join(*srcdir, sourcename)
 	file, err := os.Open(filename)
 	if err != nil {
@@ -209,7 +183,7 @@ func buildSourceListing(out *os.File, sourcename string) error {
 	lineNo := 1
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if lc, ok := lineCountData[sourcename][lineNo]; ok {
+		if lc, ok := lineCountData[lineNo]; ok {
 			cl := "miss"
 			if lc > 0 {
 				cl = "hit"

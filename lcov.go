@@ -10,38 +10,31 @@ import (
 )
 
 var (
-	lineCountData map[string]map[int]uint64
-	funcCountData map[string]map[string]uint64
-	external      = flag.Bool("external", false, "Set whether external files to be included")
-	help          = flag.Bool("h", false, "Request help")
-	srcdir        = flag.String("srcdir", ".", "Path for the source directory")
-	outdir        = flag.String("outdir", ".", "Path for the output")
-	title         = flag.String("title", "LCovHTML", "Title for the HTML pages")
+	external = flag.Bool("external", false, "Set whether external files to be included")
+	help     = flag.Bool("h", false, "Request help")
+	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
+	outdir   = flag.String("outdir", ".", "Path for the output")
+	title    = flag.String("title", "LCovHTML", "Title for the HTML pages")
 )
 
 func main() {
 	// Initialize global maps used to track line and function coverage
-	lineCountData = make(map[string]map[int]uint64)
-	funcCountData = make(map[string]map[string]uint64)
+	fileData := make(map[string]FileData)
 
 	flag.Parse()
 	if *help {
 		flag.PrintDefaults()
 		os.Exit(0)
 	}
-	if *external {
-		fmt.Println("including external files")
-	}
-
 	for _, name := range flag.Args() {
-		loadFile(name)
+		loadFile(fileData, name)
 	}
 
-	err := buildText(os.Stdout)
+	err := buildText(os.Stdout, fileData)
 	if err != nil {
 		panic(err)
 	}
-	err = buildHtml(*outdir)
+	err = buildHtml(*outdir, fileData)
 	if err != nil {
 		panic(err)
 	}
@@ -56,14 +49,14 @@ func recordType(line string) (string, string) {
 	return line[:ndx], line[ndx+1:]
 }
 
-func loadFile(name string) error {
+func loadFile(data map[string]FileData, name string) error {
 	file, err := os.Open(name)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	currentFile := ""
+	currentData := FileData{}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -73,21 +66,25 @@ func loadFile(name string) error {
 			//fmt.Println("version", value)
 
 		case "file":
-			currentFile = value
+			if _, ok := data[value]; ok {
+				return fmt.Errorf("can't parse file: repeated filename")
+			}
+			currentData = NewFileData(value)
+			data[value] = currentData
 
 		case "function":
 			funcName, hitCount, err := parseFunctionRecord(value)
 			if err != nil {
 				return err
 			}
-			applyFunctionRecord(currentFile, funcName, hitCount)
+			applyFunctionRecord(&currentData, funcName, hitCount)
 
 		case "lcount":
 			lineNo, hitCount, err := parseLCountRecord(value)
 			if err != nil {
 				return err
 			}
-			applyLCountRecord(currentFile, lineNo, hitCount)
+			applyLCountRecord(&currentData, lineNo, hitCount)
 
 		default:
 			panic("unknown record")
@@ -127,14 +124,8 @@ func parseFunctionRecord(value string) (funcName string, hitCount uint64, err er
 	return "", 0, fmt.Errorf("can't parse function record")
 }
 
-func applyFunctionRecord(file string, funcName string, hitCount uint64) {
-	if m, ok := funcCountData[file]; ok {
-		m[funcName] += hitCount
-	} else {
-		m := make(map[string]uint64)
-		m[funcName] += hitCount
-		funcCountData[file] = m
-	}
+func applyFunctionRecord(data *FileData, funcName string, hitCount uint64) {
+	data.FuncData[funcName] += hitCount
 }
 
 func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
@@ -156,36 +147,6 @@ func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
 	return lineNo, hitCount, nil
 }
 
-func applyLCountRecord(file string, lineNo int, hitCount uint64) {
-	if m, ok := lineCountData[file]; ok {
-		m[lineNo] += hitCount
-	} else {
-		m := make(map[int]uint64)
-		m[lineNo] += hitCount
-		lineCountData[file] = m
-	}
-}
-
-func lineCoverageForFile(data map[int]uint64) (int, int) {
-	a, b := 0, 0
-
-	for _, v := range data {
-		if v != 0 {
-			a++
-		}
-		b++
-	}
-	return a, b
-}
-
-func funcCoverageForFile(data map[string]uint64) (int, int) {
-	a, b := 0, 0
-
-	for _, v := range data {
-		if v != 0 {
-			a++
-		}
-		b++
-	}
-	return a, b
+func applyLCountRecord(data *FileData, lineNo int, hitCount uint64) {
+	data.LineData[lineNo] += hitCount
 }
