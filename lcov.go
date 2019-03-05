@@ -14,6 +14,7 @@ var (
 	funcCountData map[string]map[string]uint64
 	external      = flag.Bool("external", false, "Set whether external files to be included")
 	help          = flag.Bool("h", false, "Request help")
+	srcdir        = flag.String("srcdir", ".", "Path for the source directory")
 )
 
 func main() {
