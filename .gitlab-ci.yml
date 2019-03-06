@@ -1,0 +1,13 @@
+image: golang
+
+golang-1.11:
+  image: golang:1.11
+  script:
+    - go build
+    - go test
+
+golang-1.10:
+  image: golang:1.10
+  script:
+    - go build
+    - go test
