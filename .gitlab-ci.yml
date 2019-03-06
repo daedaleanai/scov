@@ -1,13 +1,66 @@
 image: golang
 
+golang-1.12:
+  image: golang:1.12
+  stage: build
+  script:
+    - go version
+    - go build
+    - go test 
+
 golang-1.11:
   image: golang:1.11
+  stage: build
   script:
+    - go version
     - go build
     - go test
+    - mkdir dist
+    - GOOS=windows GOARCH=amd64 go build
+    - mv gcovhtml.exe ./dist/gcovhtml-windows-amd64.exe
+    - GOOS=linux GOARCH=amd64 go build
+    - mv gcovhtml ./dist/gcovhtml-linux-amd64
+    - GOOS=darwin GOARCH=amd64 go build
+    - mv gcovhtml ./dist/gcovhtml-darwin-amd64
+    - GOOS=freebsd GOARCH=amd64 go build
+    - mv gcovhtml ./dist/gcovhtml-freebsd-amd64
+    - GOOS=openbsd GOARCH=amd64 go build
+    - mv gcovhtml ./dist/gcovhtml-openbsd-amd64
+  artifacts:
+    paths:
+      - dist/
 
 golang-1.10:
   image: golang:1.10
+  stage: build
   script:
+    - go version
     - go build
     - go test
+
+test:
+  image: golang:1.11
+  stage: test
+  script:
+    - go test -coverprofile=cover.out
+    - go tool cover -html=cover.out -o=cover.html
+    - mkdir public
+    - mv cover.html ./public
+  only:
+    - master
+  artifacts:
+    paths:
+      - public/
+
+pages:
+  stage: deploy
+  dependencies:
+    - test
+  script:
+    - ls ./public
+  artifacts:
+    paths:
+      - public/
+    expire_in: 30 days
+  only:
+    - master
