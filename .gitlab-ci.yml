@@ -42,6 +42,13 @@ golang-1.10:
     - go build
     - go test
 
+golang-1.9:
+  image: golang:1.9
+  stage: build
+  script:
+    - go version
+    - go build
+
 test:
   image: golang:1.11
   stage: test

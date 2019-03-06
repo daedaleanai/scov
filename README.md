@@ -30,7 +30,7 @@ This will create a folder, and insert the HTML files into that folder.  Open `in
 
 ### From Source
 
-To build a copy of `gcovhtml`, you will need a copy of [Go](https://golang.org/).  For instructions on how to install Go, please refer to the language's website.  No dependencies beyond the standard library are required, although `gcovhtml` does require version 1.10 or higher.
+To build a copy of `gcovhtml`, you will need a copy of [Go](https://golang.org/).  For instructions on how to install Go, please refer to the language's website.  No dependencies beyond the standard library are required, although `gcovhtml` does require version 1.10 or higher to run the  automated testing.
 
 Once Go is installed, you can clone the repository and build the application.
 
