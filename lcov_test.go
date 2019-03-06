@@ -78,6 +78,7 @@ func TestLoadFile(t *testing.T) {
 		fcov1    Coverage
 	}{
 		{"binc-7.3.0.cpp.gcov", Coverage{90, 151}, Coverage{12, 12}},
+		{"binc-8.2.0.cpp.gcov", Coverage{58, 119}, Coverage{10, 10}},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {

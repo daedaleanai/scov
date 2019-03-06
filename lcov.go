@@ -130,7 +130,7 @@ func applyFunctionRecord(data *FileData, funcName string, hitCount uint64) {
 
 func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
 	values := strings.Split(value, ",")
-	if len(values) != 2 {
+	if l := len(values); l != 2 && l != 3 {
 		return 0, 0, fmt.Errorf("can't parse lcount record")
 	}
 
