@@ -28,7 +28,11 @@ golang-1.11:
     - mv gcovhtml ./dist/gcovhtml-openbsd-amd64
   artifacts:
     paths:
-      - dist/
+      - dist/gcovhtml-windows-amd64.exe
+      - dist/gcovhtml-linux-amd64
+      - dist/gcovhtml-darwin-amd64
+      - dist/gcovhtml-freebsd-amd64
+      - dist/gcovhtml-openbsd-amd64
 
 golang-1.10:
   image: golang:1.10
