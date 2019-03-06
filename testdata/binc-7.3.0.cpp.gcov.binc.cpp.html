@@ -1,0 +1,336 @@
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCovHTML &gt; binc.cpp</title>
+<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+<!--[if lte IE 8]>
+	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-old-ie-min.css">
+<![endif]-->
+<!--[if gt IE 8]><!-->
+	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
+<!--<![endif]-->
+<style>
+body { max-width:70em; margin:auto; }
+.sparkbar { border: 1px solid black; border-radius:1px; }
+.sparkbar .fill { display: inline-block; height: 1em; background-color:lightgreen; }
+.sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
+.source { font-family: monospace; width:100%; margin:3em 0; }
+.source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }
+.source td { padding: .1em .5em; white-space: pre; }
+.source .hit { background:lightblue; }
+.source .miss { background:LightCoral; }
+.source .ln { background:PaleGoldenrod; text-align:right; }
+.source .ld { background:#f6f3d4; text-align:right; }
+</style>
+</head>
+<body>
+<div class="pure-g"><h1 class="pure-u">LCovHTML &gt; binc.cpp</h1></div>
+<div class="pure-g"><div class="pure-u">
+<h2>Overall</h2>
+<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
+<thead><tr><td></td><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
+<tbody>
+<tr><td>Lines:</td><td>90</td><td>151</td><td>59.6%</td></tr>
+<tr><td>Functions:</td><td>12</td><td>12</td><td>100.0%</td></tr>
+</tbody>
+</table>
+</div></div>
+<div class="pure-g"><div class="pure-u">
+<table class="source"><thead>
+<tr><th class="ln">Line #</th><th class="ld">Hit count</th><th>Source code</th></tr>
+</thead><tbody>
+<tr><td class="ln">1</td><td class="ld"></td><td>#include &lt;algorithm&gt;</td></tr>
+<tr><td class="ln">2</td><td class="ld"></td><td>#include &lt;cassert&gt;</td></tr>
+<tr><td class="ln">3</td><td class="ld"></td><td>#include &lt;cstdio&gt;</td></tr>
+<tr><td class="ln">4</td><td class="ld"></td><td>#include &lt;string&gt;</td></tr>
+<tr><td class="ln">5</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">6</td><td class="ld"></td><td>#include &lt;llvm/IR/LLVMContext.h&gt;</td></tr>
+<tr><td class="ln">7</td><td class="ld"></td><td>#include &lt;llvm/IR/Module.h&gt;</td></tr>
+<tr><td class="ln">8</td><td class="ld"></td><td>#include &lt;llvm/MC/SubtargetFeature.h&gt;</td></tr>
+<tr><td class="ln">9</td><td class="ld"></td><td>#include &lt;llvm/Support/CommandLine.h&gt;</td></tr>
+<tr><td class="ln">10</td><td class="ld"></td><td>#include &lt;llvm/Support/FileSystem.h&gt;</td></tr>
+<tr><td class="ln">11</td><td class="ld"></td><td>#if LLVM_CONFIG &gt;= 700</td></tr>
+<tr><td class="ln">12</td><td class="ld"></td><td>#include &lt;llvm/Support/InitLLVM.h&gt;</td></tr>
+<tr><td class="ln">13</td><td class="ld"></td><td>#endif</td></tr>
+<tr><td class="ln">14</td><td class="ld"></td><td>#include &lt;llvm/Support/Path.h&gt;</td></tr>
+<tr><td class="ln">15</td><td class="ld"></td><td>#include &lt;llvm/Support/TargetRegistry.h&gt;</td></tr>
+<tr><td class="ln">16</td><td class="ld"></td><td>#include &lt;llvm/Support/TargetSelect.h&gt;</td></tr>
+<tr><td class="ln">17</td><td class="ld"></td><td>#include &lt;llvm/Target/TargetMachine.h&gt;</td></tr>
+<tr><td class="ln">18</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">19</td><td class="ld"></td><td>#include &#34;binc.h&#34;</td></tr>
+<tr><td class="ln">20</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">21</td><td class="ld"></td><td>namespace cl = llvm::cl;</td></tr>
+<tr><td class="ln">22</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">23</td><td class="ld"></td><td>using std::string;</td></tr>
+<tr><td class="ln">24</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">25</td><td class="ld"></td><td>enum CodeGenFileType {</td></tr>
+<tr><td class="ln">26</td><td class="ld"></td><td>	CGFT_AssemblyFile = llvm::TargetMachine::CGFT_AssemblyFile,</td></tr>
+<tr><td class="ln">27</td><td class="ld"></td><td>	CGFT_ObjectFile = llvm::TargetMachine::CGFT_ObjectFile,</td></tr>
+<tr><td class="ln">28</td><td class="ld"></td><td>	CGFT_Null = llvm::TargetMachine::CGFT_Null,</td></tr>
+<tr><td class="ln">29</td><td class="ld"></td><td>	CGFT_IR</td></tr>
+<tr><td class="ln">30</td><td class="ld"></td><td>};</td></tr>
+<tr><td class="ln">31</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">32</td><td class="ld">18</td><td>cl::OptionCategory category( &#34;binc&#34; );</td></tr>
+<tr class="hit"><td class="ln">33</td><td class="ld">24</td><td>cl::opt&lt;string&gt; OutputFilename( &#34;o&#34;, cl::desc( &#34;Specify the output filename.  If -, use stdout.&#34; ),</td></tr>
+<tr class="hit"><td class="ln">34</td><td class="ld">24</td><td>								cl::value_desc( &#34;filename&#34; ), cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">35</td><td class="ld">24</td><td>cl::opt&lt;string&gt; InputFilename( &#34;c&#34;, cl::desc( &#34;Specify the input filename.  If -, use stdin.&#34; ),</td></tr>
+<tr class="hit"><td class="ln">36</td><td class="ld">24</td><td>							   cl::value_desc( &#34;filename&#34; ), cl::Required, cl::init( &#34;-&#34; ), cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">37</td><td class="ld">36</td><td>cl::opt&lt;string&gt; VariableName( &#34;n&#34;, cl::desc( &#34;Specify linkage name for binary asset.&#34; ), cl::value_desc( &#34;identifier&#34; ),</td></tr>
+<tr class="hit"><td class="ln">38</td><td class="ld">24</td><td>							  cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">39</td><td class="ld">12</td><td>cl::opt&lt;bool&gt; NullTerminate( &#34;z&#34;, cl::desc( &#34;Add a null terminator to the binary asset.&#34; ), cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">40</td><td class="ld">12</td><td>cl::opt&lt;bool&gt; DebugInfo( &#34;g&#34;, cl::desc( &#34;Turn on debugging information&#34; ), cl::init( false ), cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">41</td><td class="ld">24</td><td>cl::opt&lt;std::string&gt; MArch( &#34;march&#34;, cl::desc( &#34;Architecture to generate code for (see --version)&#34; ),</td></tr>
+<tr class="hit"><td class="ln">42</td><td class="ld">18</td><td>							cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">43</td><td class="ld">30</td><td>cl::opt&lt;bool&gt; DataSections( &#34;data-sections&#34;, cl::desc( &#34;Emit data into separate sections&#34; ), cl::init( false ),</td></tr>
+<tr class="hit"><td class="ln">44</td><td class="ld">24</td><td>							cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">45</td><td class="ld">24</td><td>cl::opt&lt;std::string&gt; MCPU( &#34;mcpu&#34;, cl::desc( &#34;Target a specific cpu type (-mcpu=help for details)&#34; ),</td></tr>
+<tr class="hit"><td class="ln">46</td><td class="ld">24</td><td>						   cl::value_desc( &#34;cpu-name&#34; ), cl::init( &#34;&#34; ), cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">47</td><td class="ld">6</td><td>cl::list&lt;std::string&gt; MAttrs( &#34;mattr&#34;, cl::CommaSeparated,</td></tr>
+<tr class="hit"><td class="ln">48</td><td class="ld">18</td><td>							  cl::desc( &#34;Target specific attributes (-mattr=help for details)&#34; ),</td></tr>
+<tr class="hit"><td class="ln">49</td><td class="ld">24</td><td>							  cl::value_desc( &#34;a1,+a2,-a3,...&#34; ), cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">50</td><td class="ld">12</td><td>cl::opt&lt;std::string&gt; TargetTriple( &#34;mtriple&#34;, cl::desc( &#34;Override target triple for module&#34; ), cl::cat( category ) );</td></tr>
+<tr><td class="ln">51</td><td class="ld"></td><td>cl::opt&lt;llvm::CodeModel::Model&gt;</td></tr>
+<tr class="hit"><td class="ln">52</td><td class="ld">24</td><td>	CMModel( &#34;code-model&#34;, cl::desc( &#34;Choose code model&#34; ),</td></tr>
+<tr class="hit"><td class="ln">53</td><td class="ld">36</td><td>			 cl::values( clEnumValN( llvm::CodeModel::Small, &#34;small&#34;, &#34;Small code model&#34; ),</td></tr>
+<tr><td class="ln">54</td><td class="ld"></td><td>						 clEnumValN( llvm::CodeModel::Kernel, &#34;kernel&#34;, &#34;Kernel code model&#34; ),</td></tr>
+<tr><td class="ln">55</td><td class="ld"></td><td>						 clEnumValN( llvm::CodeModel::Medium, &#34;medium&#34;, &#34;Medium code model&#34; ),</td></tr>
+<tr><td class="ln">56</td><td class="ld"></td><td>						 clEnumValN( llvm::CodeModel::Large, &#34;large&#34;, &#34;Large code model&#34; ) ),</td></tr>
+<tr class="hit"><td class="ln">57</td><td class="ld">24</td><td>			 cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">58</td><td class="ld">6</td><td>cl::opt&lt;llvm::Reloc::Model&gt; RelocModel(</td></tr>
+<tr class="hit"><td class="ln">59</td><td class="ld">18</td><td>	&#34;relocation-model&#34;, cl::desc( &#34;Choose relocation model&#34; ),</td></tr>
+<tr class="hit"><td class="ln">60</td><td class="ld">48</td><td>	cl::values( clEnumValN( llvm::Reloc::Static, &#34;static&#34;, &#34;Non-relocatable code&#34; ),</td></tr>
+<tr><td class="ln">61</td><td class="ld"></td><td>				clEnumValN( llvm::Reloc::PIC_, &#34;pic&#34;, &#34;Fully relocatable, position independent code&#34; ),</td></tr>
+<tr><td class="ln">62</td><td class="ld"></td><td>				clEnumValN( llvm::Reloc::DynamicNoPIC, &#34;dynamic-no-pic&#34;,</td></tr>
+<tr><td class="ln">63</td><td class="ld"></td><td>							&#34;Relocatable external references, non-relocatable code&#34; ),</td></tr>
+<tr><td class="ln">64</td><td class="ld"></td><td>				clEnumValN( llvm::Reloc::ROPI, &#34;ropi&#34;, &#34;Code and read-only data relocatable, accessed PC-relative&#34; ),</td></tr>
+<tr><td class="ln">65</td><td class="ld"></td><td>				clEnumValN( llvm::Reloc::RWPI, &#34;rwpi&#34;,</td></tr>
+<tr><td class="ln">66</td><td class="ld"></td><td>							&#34;Read-write data relocatable, accessed relative to static base&#34; ),</td></tr>
+<tr><td class="ln">67</td><td class="ld"></td><td>				clEnumValN( llvm::Reloc::ROPI_RWPI, &#34;ropi-rwpi&#34;, &#34;Combination of ropi and rwpi&#34; ) ),</td></tr>
+<tr class="hit"><td class="ln">68</td><td class="ld">24</td><td>	cl::cat( category ) );</td></tr>
+<tr class="hit"><td class="ln">69</td><td class="ld">6</td><td>cl::opt&lt;CodeGenFileType&gt; FileType( &#34;filetype&#34;,</td></tr>
+<tr class="hit"><td class="ln">70</td><td class="ld">18</td><td>								   cl::desc( &#34;Choose a file type (not all types are supported by all targets):&#34; ),</td></tr>
+<tr class="hit"><td class="ln">71</td><td class="ld">12</td><td>								   cl::init( CGFT_ObjectFile ),</td></tr>
+<tr class="hit"><td class="ln">72</td><td class="ld">36</td><td>								   cl::values( clEnumValN( CGFT_AssemblyFile, &#34;asm&#34;, &#34;Emit an assembly (&#39;.s&#39;) file&#34; ),</td></tr>
+<tr><td class="ln">73</td><td class="ld"></td><td>											   clEnumValN( CGFT_ObjectFile, &#34;obj&#34;, &#34;Emit a native object (&#39;.o&#39;) file&#34; ),</td></tr>
+<tr><td class="ln">74</td><td class="ld"></td><td>											   clEnumValN( CGFT_Null, &#34;null&#34;, &#34;Emit nothing, for performance testing&#34; ),</td></tr>
+<tr><td class="ln">75</td><td class="ld"></td><td>											   clEnumValN( CGFT_IR, &#34;ir&#34;, &#34;Emit LLVM IR (&#39;.ll&#39;) file&#34; ) ),</td></tr>
+<tr class="hit"><td class="ln">76</td><td class="ld">30</td><td>								   cl::cat( category ) );</td></tr>
+<tr><td class="ln">77</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">78</td><td class="ld">6</td><td>static llvm::TargetOptions InitTargetOptionsFromCodeGenFlags() {</td></tr>
+<tr class="hit"><td class="ln">79</td><td class="ld">6</td><td>	llvm::TargetOptions Options;</td></tr>
+<tr><td class="ln">80</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">81</td><td class="ld">6</td><td>	Options.DataSections = DataSections;</td></tr>
+<tr><td class="ln">82</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">83</td><td class="ld"></td><td>	// Options.MCOptions = InitMCTargetOptionsFromFlags();</td></tr>
+<tr><td class="ln">84</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">85</td><td class="ld">6</td><td>	return Options;</td></tr>
+<tr><td class="ln">86</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">87</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">88</td><td class="ld">6</td><td>static llvm::StringRef getOutputFilename( char const* targetName, llvm::Triple const&amp; triple ) {</td></tr>
+<tr class="hit"><td class="ln">89</td><td class="ld">6</td><td>	if ( !OutputFilename.empty() ) {</td></tr>
+<tr class="hit"><td class="ln">90</td><td class="ld">12</td><td>		return OutputFilename;</td></tr>
+<tr><td class="ln">91</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">92</td><td class="ld"></td><td></td></tr>
+<tr class="miss"><td class="ln">93</td><td class="ld">0</td><td>	if ( InputFilename == &#34;-&#34; ) {</td></tr>
+<tr class="miss"><td class="ln">94</td><td class="ld">0</td><td>		OutputFilename = &#34;-&#34;;</td></tr>
+<tr class="miss"><td class="ln">95</td><td class="ld">0</td><td>		return OutputFilename;</td></tr>
+<tr><td class="ln">96</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">97</td><td class="ld"></td><td></td></tr>
+<tr class="miss"><td class="ln">98</td><td class="ld">0</td><td>	OutputFilename = llvm::StringRef( InputFilename );</td></tr>
+<tr class="miss"><td class="ln">99</td><td class="ld">0</td><td>	switch ( FileType ) {</td></tr>
+<tr class="miss"><td class="ln">100</td><td class="ld">0</td><td>	default:</td></tr>
+<tr><td class="ln">101</td><td class="ld"></td><td>	case CGFT_AssemblyFile:</td></tr>
+<tr class="miss"><td class="ln">102</td><td class="ld">0</td><td>		assert( targetName );</td></tr>
+<tr class="miss"><td class="ln">103</td><td class="ld">0</td><td>		if ( targetName[0] == &#39;c&#39; ) {</td></tr>
+<tr class="miss"><td class="ln">104</td><td class="ld">0</td><td>			if ( targetName[1] == 0 ) {</td></tr>
+<tr class="miss"><td class="ln">105</td><td class="ld">0</td><td>				OutputFilename += &#34;.cbe.c&#34;;</td></tr>
+<tr class="miss"><td class="ln">106</td><td class="ld">0</td><td>			} else if ( targetName[1] == &#39;p&#39; &amp;&amp; targetName[2] == &#39;p&#39; ) {</td></tr>
+<tr class="miss"><td class="ln">107</td><td class="ld">0</td><td>				OutputFilename += &#34;.cpp&#34;;</td></tr>
+<tr><td class="ln">108</td><td class="ld"></td><td>			} else {</td></tr>
+<tr class="miss"><td class="ln">109</td><td class="ld">0</td><td>				OutputFilename += &#34;.s&#34;;</td></tr>
+<tr><td class="ln">110</td><td class="ld"></td><td>			}</td></tr>
+<tr><td class="ln">111</td><td class="ld"></td><td>		} else {</td></tr>
+<tr class="miss"><td class="ln">112</td><td class="ld">0</td><td>			OutputFilename += &#34;.s&#34;;</td></tr>
+<tr><td class="ln">113</td><td class="ld"></td><td>		}</td></tr>
+<tr class="miss"><td class="ln">114</td><td class="ld">0</td><td>		break;</td></tr>
+<tr><td class="ln">115</td><td class="ld"></td><td></td></tr>
+<tr class="miss"><td class="ln">116</td><td class="ld">0</td><td>	case CGFT_ObjectFile:</td></tr>
+<tr class="miss"><td class="ln">117</td><td class="ld">0</td><td>		if ( triple.getOS() == llvm::Triple::Win32 ) {</td></tr>
+<tr class="miss"><td class="ln">118</td><td class="ld">0</td><td>			OutputFilename += &#34;.obj&#34;;</td></tr>
+<tr><td class="ln">119</td><td class="ld"></td><td>		} else {</td></tr>
+<tr class="miss"><td class="ln">120</td><td class="ld">0</td><td>			OutputFilename += &#34;.o&#34;;</td></tr>
+<tr><td class="ln">121</td><td class="ld"></td><td>		}</td></tr>
+<tr class="miss"><td class="ln">122</td><td class="ld">0</td><td>		break;</td></tr>
+<tr><td class="ln">123</td><td class="ld"></td><td></td></tr>
+<tr class="miss"><td class="ln">124</td><td class="ld">0</td><td>	case CGFT_Null:</td></tr>
+<tr class="miss"><td class="ln">125</td><td class="ld">0</td><td>		OutputFilename += &#34;.null&#34;;</td></tr>
+<tr class="miss"><td class="ln">126</td><td class="ld">0</td><td>		break;</td></tr>
+<tr><td class="ln">127</td><td class="ld"></td><td></td></tr>
+<tr class="miss"><td class="ln">128</td><td class="ld">0</td><td>	case CGFT_IR:</td></tr>
+<tr class="miss"><td class="ln">129</td><td class="ld">0</td><td>		OutputFilename += &#34;.ll&#34;;</td></tr>
+<tr class="miss"><td class="ln">130</td><td class="ld">0</td><td>		break;</td></tr>
+<tr><td class="ln">131</td><td class="ld"></td><td>	}</td></tr>
+<tr class="miss"><td class="ln">132</td><td class="ld">0</td><td>	return OutputFilename;</td></tr>
+<tr><td class="ln">133</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">134</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">135</td><td class="ld">6</td><td>static llvm::StringRef getVariableName() {</td></tr>
+<tr class="hit"><td class="ln">136</td><td class="ld">6</td><td>	if ( !VariableName.empty() ) {</td></tr>
+<tr class="hit"><td class="ln">137</td><td class="ld">12</td><td>		return VariableName;</td></tr>
+<tr><td class="ln">138</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">139</td><td class="ld"></td><td></td></tr>
+<tr class="miss"><td class="ln">140</td><td class="ld">0</td><td>	if ( InputFilename == &#34;-&#34; ) {</td></tr>
+<tr class="miss"><td class="ln">141</td><td class="ld">0</td><td>		fprintf( stderr, &#34;warn: variable name not specified, and could not be guessed\n&#34; );</td></tr>
+<tr class="miss"><td class="ln">142</td><td class="ld">0</td><td>		return &#34;stdin&#34;;</td></tr>
+<tr><td class="ln">143</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">144</td><td class="ld"></td><td></td></tr>
+<tr class="miss"><td class="ln">145</td><td class="ld">0</td><td>	VariableName = llvm::sys::path::filename( InputFilename );</td></tr>
+<tr class="miss"><td class="ln">146</td><td class="ld">0</td><td>	std::replace( VariableName.begin(), VariableName.end(), &#39;.&#39;, &#39;_&#39; );</td></tr>
+<tr class="miss"><td class="ln">147</td><td class="ld">0</td><td>	return VariableName;</td></tr>
+<tr><td class="ln">148</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">149</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">150</td><td class="ld">6</td><td>static std::string getTargetTriple() {</td></tr>
+<tr class="hit"><td class="ln">151</td><td class="ld">6</td><td>	if ( !TargetTriple.empty() ) {</td></tr>
+<tr class="miss"><td class="ln">152</td><td class="ld">0</td><td>		return llvm::Triple::normalize( TargetTriple );</td></tr>
+<tr><td class="ln">153</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">154</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">155</td><td class="ld">6</td><td>	return llvm::sys::getDefaultTargetTriple();</td></tr>
+<tr><td class="ln">156</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">157</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">158</td><td class="ld">6</td><td>static llvm::StringRef getCPUStr() {</td></tr>
+<tr><td class="ln">159</td><td class="ld"></td><td>	// If user asked for the &#39;native&#39; CPU, autodetect here. If autodection fails,</td></tr>
+<tr><td class="ln">160</td><td class="ld"></td><td>	// this will set the CPU to an empty string which tells the target to</td></tr>
+<tr><td class="ln">161</td><td class="ld"></td><td>	// pick a basic default.</td></tr>
+<tr class="hit"><td class="ln">162</td><td class="ld">6</td><td>	if ( MCPU == &#34;native&#34; ) {</td></tr>
+<tr class="miss"><td class="ln">163</td><td class="ld">0</td><td>		return llvm::sys::getHostCPUName();</td></tr>
+<tr><td class="ln">164</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">165</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">166</td><td class="ld">12</td><td>	return MCPU.getValue();</td></tr>
+<tr><td class="ln">167</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">168</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">169</td><td class="ld">6</td><td>static std::string getFeaturesStr() {</td></tr>
+<tr class="hit"><td class="ln">170</td><td class="ld">18</td><td>	llvm::SubtargetFeatures Features;</td></tr>
+<tr><td class="ln">171</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">172</td><td class="ld"></td><td>	// If user asked for the &#39;native&#39; CPU, we need to autodetect features.</td></tr>
+<tr><td class="ln">173</td><td class="ld"></td><td>	// This is necessary for x86 where the CPU might not support all the</td></tr>
+<tr><td class="ln">174</td><td class="ld"></td><td>	// features the autodetected CPU name lists in the target. For example,</td></tr>
+<tr><td class="ln">175</td><td class="ld"></td><td>	// not all Sandybridge processors support AVX.</td></tr>
+<tr class="hit"><td class="ln">176</td><td class="ld">6</td><td>	if ( MCPU == &#34;native&#34; ) {</td></tr>
+<tr class="miss"><td class="ln">177</td><td class="ld">0</td><td>		llvm::StringMap&lt;bool&gt; HostFeatures;</td></tr>
+<tr class="miss"><td class="ln">178</td><td class="ld">0</td><td>		if ( llvm::sys::getHostCPUFeatures( HostFeatures ) ) {</td></tr>
+<tr class="miss"><td class="ln">179</td><td class="ld">0</td><td>			for ( auto&amp; F : HostFeatures ) {</td></tr>
+<tr class="miss"><td class="ln">180</td><td class="ld">0</td><td>				Features.AddFeature( F.first(), F.second );</td></tr>
+<tr><td class="ln">181</td><td class="ld"></td><td>			}</td></tr>
+<tr><td class="ln">182</td><td class="ld"></td><td>		}</td></tr>
+<tr><td class="ln">183</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">184</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">185</td><td class="ld">6</td><td>	for ( unsigned i = 0; i != MAttrs.size(); ++i ) {</td></tr>
+<tr class="miss"><td class="ln">186</td><td class="ld">0</td><td>		Features.AddFeature( MAttrs[i] );</td></tr>
+<tr><td class="ln">187</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">188</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">189</td><td class="ld">12</td><td>	return Features.getString();</td></tr>
+<tr><td class="ln">190</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">191</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">192</td><td class="ld"></td><td>#if LLVM_VERSION &gt;= 600</td></tr>
+<tr class="hit"><td class="ln">193</td><td class="ld">6</td><td>static llvm::Optional&lt;llvm::CodeModel::Model&gt; getCodeModel() {</td></tr>
+<tr class="hit"><td class="ln">194</td><td class="ld">6</td><td>	if ( CMModel.getNumOccurrences() ) {</td></tr>
+<tr class="miss"><td class="ln">195</td><td class="ld">0</td><td>		llvm::CodeModel::Model M = CMModel;</td></tr>
+<tr class="miss"><td class="ln">196</td><td class="ld">0</td><td>		return M;</td></tr>
+<tr><td class="ln">197</td><td class="ld"></td><td>	}</td></tr>
+<tr class="hit"><td class="ln">198</td><td class="ld">6</td><td>	return llvm::None;</td></tr>
+<tr><td class="ln">199</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">200</td><td class="ld"></td><td>#else</td></tr>
+<tr><td class="ln">201</td><td class="ld"></td><td>static llvm::CodeModel::Model getCodeModel() {</td></tr>
+<tr><td class="ln">202</td><td class="ld"></td><td>	if ( CMModel.getNumOccurrences() ) {</td></tr>
+<tr><td class="ln">203</td><td class="ld"></td><td>		return CMModel;</td></tr>
+<tr><td class="ln">204</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">205</td><td class="ld"></td><td>	return llvm::CodeModel::Default;</td></tr>
+<tr><td class="ln">206</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">207</td><td class="ld"></td><td>#endif</td></tr>
+<tr><td class="ln">208</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">209</td><td class="ld">6</td><td>static llvm::Optional&lt;llvm::Reloc::Model&gt; getRelocModel() {</td></tr>
+<tr class="hit"><td class="ln">210</td><td class="ld">6</td><td>	if ( RelocModel.getNumOccurrences() ) {</td></tr>
+<tr class="miss"><td class="ln">211</td><td class="ld">0</td><td>		llvm::Reloc::Model R = RelocModel;</td></tr>
+<tr class="miss"><td class="ln">212</td><td class="ld">0</td><td>		return R;</td></tr>
+<tr><td class="ln">213</td><td class="ld"></td><td>	}</td></tr>
+<tr class="hit"><td class="ln">214</td><td class="ld">6</td><td>	return llvm::None;</td></tr>
+<tr><td class="ln">215</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">216</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">217</td><td class="ld">6</td><td>static llvm::TargetMachine::CodeGenFileType asTargetMachineCodeGenFileType( CodeGenFileType filetype ) {</td></tr>
+<tr class="hit"><td class="ln">218</td><td class="ld">6</td><td>	assert( filetype != CGFT_IR );</td></tr>
+<tr class="hit"><td class="ln">219</td><td class="ld">6</td><td>	return static_cast&lt;llvm::TargetMachine::CodeGenFileType&gt;( filetype );</td></tr>
+<tr><td class="ln">220</td><td class="ld"></td><td>}</td></tr>
+<tr><td class="ln">221</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">222</td><td class="ld">6</td><td>int main( int argc, char const* argv[] ) {</td></tr>
+<tr><td class="ln">223</td><td class="ld"></td><td>// Initialize LLVM.</td></tr>
+<tr><td class="ln">224</td><td class="ld"></td><td>#if LLVM_CONFIG &gt;= 700</td></tr>
+<tr><td class="ln">225</td><td class="ld"></td><td>	llvm::InitLLVM X( argc, argv );</td></tr>
+<tr><td class="ln">226</td><td class="ld"></td><td>#endif</td></tr>
+<tr><td class="ln">227</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">228</td><td class="ld"></td><td>	// Initialize targets first, so that --version shows registered targets.</td></tr>
+<tr class="hit"><td class="ln">229</td><td class="ld">6</td><td>	llvm::InitializeAllTargets();</td></tr>
+<tr class="hit"><td class="ln">230</td><td class="ld">6</td><td>	llvm::InitializeAllTargetMCs();</td></tr>
+<tr class="hit"><td class="ln">231</td><td class="ld">6</td><td>	llvm::InitializeAllAsmPrinters();</td></tr>
+<tr class="hit"><td class="ln">232</td><td class="ld">6</td><td>	llvm::InitializeAllAsmParsers();</td></tr>
+<tr><td class="ln">233</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">234</td><td class="ld"></td><td>	// Process the command line.</td></tr>
+<tr class="hit"><td class="ln">235</td><td class="ld">6</td><td>	cl::HideUnrelatedOptions( category );</td></tr>
+<tr class="hit"><td class="ln">236</td><td class="ld">12</td><td>	if ( !cl::ParseCommandLineOptions( argc, argv ) ) {</td></tr>
+<tr class="miss"><td class="ln">237</td><td class="ld">0</td><td>		return EXIT_FAILURE;</td></tr>
+<tr><td class="ln">238</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">239</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">240</td><td class="ld"></td><td>	// Initalize the module.</td></tr>
+<tr class="hit"><td class="ln">241</td><td class="ld">12</td><td>	llvm::LLVMContext context;</td></tr>
+<tr class="hit"><td class="ln">242</td><td class="ld">18</td><td>	llvm::Module module( &#34;binc&#34;, context );</td></tr>
+<tr class="hit"><td class="ln">243</td><td class="ld">12</td><td>	module.setSourceFileName( InputFilename );</td></tr>
+<tr class="hit"><td class="ln">244</td><td class="ld">12</td><td>	module.setTargetTriple( getTargetTriple() );</td></tr>
+<tr class="hit"><td class="ln">245</td><td class="ld">6</td><td>	auto const bufferSize = buildModule( module, getVariableName(), NullTerminate );</td></tr>
+<tr class="hit"><td class="ln">246</td><td class="ld">6</td><td>	assert( !module.global_empty() );</td></tr>
+<tr><td class="ln">247</td><td class="ld"></td><td></td></tr>
+<tr><td class="ln">248</td><td class="ld"></td><td>	// Initialize debug information</td></tr>
+<tr class="hit"><td class="ln">249</td><td class="ld">6</td><td>	if ( DebugInfo ) {</td></tr>
+<tr class="miss"><td class="ln">250</td><td class="ld">0</td><td>		buildDebugInfo( module, bufferSize );</td></tr>
+<tr><td class="ln">251</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">252</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">253</td><td class="ld">6</td><td>	if ( FileType == CGFT_IR ) {</td></tr>
+<tr class="miss"><td class="ln">254</td><td class="ld">0</td><td>		std::error_code ec;</td></tr>
+<tr class="miss"><td class="ln">255</td><td class="ld">0</td><td>		auto triple = llvm::Triple( module.getTargetTriple() );</td></tr>
+<tr class="miss"><td class="ln">256</td><td class="ld">0</td><td>		auto filename = getOutputFilename( &#34;&#34;, triple );</td></tr>
+<tr class="miss"><td class="ln">257</td><td class="ld">0</td><td>		llvm::raw_fd_ostream out( filename, ec, llvm::sys::fs::OpenFlags::F_None );</td></tr>
+<tr class="miss"><td class="ln">258</td><td class="ld">0</td><td>		if ( ec ) {</td></tr>
+<tr class="miss"><td class="ln">259</td><td class="ld">0</td><td>			fprintf( stderr, &#34;error: could not open output: %s\n&#34;, ec.message().c_str() );</td></tr>
+<tr class="miss"><td class="ln">260</td><td class="ld">0</td><td>			return EXIT_FAILURE;</td></tr>
+<tr><td class="ln">261</td><td class="ld"></td><td>		}</td></tr>
+<tr class="miss"><td class="ln">262</td><td class="ld">0</td><td>		module.print( out, nullptr );</td></tr>
+<tr class="miss"><td class="ln">263</td><td class="ld">0</td><td>		return EXIT_SUCCESS;</td></tr>
+<tr><td class="ln">264</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">265</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">266</td><td class="ld">12</td><td>	std::string errMessage;</td></tr>
+<tr class="hit"><td class="ln">267</td><td class="ld">12</td><td>	auto triple = llvm::Triple( module.getTargetTriple() );</td></tr>
+<tr class="hit"><td class="ln">268</td><td class="ld">6</td><td>	auto const* target = llvm::TargetRegistry::lookupTarget( MArch, triple, errMessage );</td></tr>
+<tr class="hit"><td class="ln">269</td><td class="ld">6</td><td>	if ( !target ) {</td></tr>
+<tr class="miss"><td class="ln">270</td><td class="ld">0</td><td>		fprintf( stderr, &#34;error: could initialize the target: %s\n&#34;, errMessage.c_str() );</td></tr>
+<tr class="miss"><td class="ln">271</td><td class="ld">0</td><td>		return EXIT_FAILURE;</td></tr>
+<tr><td class="ln">272</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">273</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">274</td><td class="ld">12</td><td>	auto options = InitTargetOptionsFromCodeGenFlags();</td></tr>
+<tr class="hit"><td class="ln">275</td><td class="ld">6</td><td>	std::unique_ptr&lt;llvm::TargetMachine&gt; targetMachine(</td></tr>
+<tr class="hit"><td class="ln">276</td><td class="ld">18</td><td>		target-&gt;createTargetMachine( triple.getTriple(), getCPUStr(), getFeaturesStr(), options, getRelocModel(),</td></tr>
+<tr class="hit"><td class="ln">277</td><td class="ld">36</td><td>									 getCodeModel(), llvm::CodeGenOpt::None ) );</td></tr>
+<tr class="hit"><td class="ln">278</td><td class="ld">6</td><td>	if ( !targetMachine ) {</td></tr>
+<tr class="miss"><td class="ln">279</td><td class="ld">0</td><td>		fprintf( stderr, &#34;error: could not allocate target machine\n&#34; );</td></tr>
+<tr class="miss"><td class="ln">280</td><td class="ld">0</td><td>		return EXIT_FAILURE;</td></tr>
+<tr><td class="ln">281</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">282</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">283</td><td class="ld">6</td><td>	auto ec = writeOutputFile( module, getOutputFilename( target-&gt;getName(), triple ),</td></tr>
+<tr class="hit"><td class="ln">284</td><td class="ld">6</td><td>							   asTargetMachineCodeGenFileType( FileType ), *targetMachine );</td></tr>
+<tr class="hit"><td class="ln">285</td><td class="ld">6</td><td>	if ( ec ) {</td></tr>
+<tr class="miss"><td class="ln">286</td><td class="ld">0</td><td>		fprintf( stderr, &#34;error: could open output: %s\n&#34;, ec.message().c_str() );</td></tr>
+<tr class="miss"><td class="ln">287</td><td class="ld">0</td><td>		return EXIT_FAILURE;</td></tr>
+<tr><td class="ln">288</td><td class="ld"></td><td>	}</td></tr>
+<tr><td class="ln">289</td><td class="ld"></td><td></td></tr>
+<tr class="hit"><td class="ln">290</td><td class="ld">6</td><td>	return EXIT_SUCCESS;</td></tr>
+<tr class="hit"><td class="ln">291</td><td class="ld">18</td><td>}</td></tr>
+</tbody></table>
+</div></div>
+</body></html>

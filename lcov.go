@@ -30,11 +30,11 @@ func main() {
 		loadFile(fileData, name)
 	}
 
-	err := buildText(os.Stdout, fileData)
+	err := writeTextReport(os.Stdout, fileData)
 	if err != nil {
 		panic(err)
 	}
-	err = buildHtml(*outdir, fileData)
+	err = createHTML(*outdir, fileData)
 	if err != nil {
 		panic(err)
 	}

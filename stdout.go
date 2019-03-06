@@ -1,14 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"strings"
 )
 
-func buildText(out io.Writer, data map[string]FileData) error {
+func writeTextReport(writer io.Writer, data map[string]FileData) error {
 	LCov := Coverage{}
 	FCov := Coverage{}
+
+	w := bufio.NewWriter(writer)
 
 	for name, data := range data {
 		if *external || !strings.HasPrefix(name, "/") {
@@ -17,13 +20,10 @@ func buildText(out io.Writer, data map[string]FileData) error {
 			fcov := data.FuncCoverage()
 			FCov.Update(fcov)
 
-			_, err := fmt.Fprintf(out, "%5.1f%%\t%5.1f%%\t%s\n", lcov.Percentage(), fcov.Percentage(), name)
-			if err != nil {
-				return err
-			}
+			fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", lcov.Percentage(), fcov.Percentage(), name)
 		}
 	}
-	fmt.Fprintf(out, "------\t------\t\n")
-	fmt.Fprintf(out, "%5.1f%%\t%5.1f%%\tOverall\n", LCov.Percentage(), FCov.Percentage())
-	return nil
+	fmt.Fprintf(w, "------\t------\t\n")
+	fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\tOverall\n", LCov.Percentage(), FCov.Percentage())
+	return w.Flush()
 }
