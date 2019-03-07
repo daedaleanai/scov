@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -26,8 +27,16 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(0)
 	}
+
 	for _, name := range flag.Args() {
 		loadFile(fileData, name)
+	}
+	if !*external {
+		for key := range fileData {
+			if filepath.IsAbs(key) {
+				delete(fileData, key)
+			}
+		}
 	}
 
 	err := writeTextReport(os.Stdout, fileData)

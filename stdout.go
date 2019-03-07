@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"strings"
 )
 
 func writeTextReport(writer io.Writer, data map[string]FileData) error {
@@ -14,14 +13,12 @@ func writeTextReport(writer io.Writer, data map[string]FileData) error {
 	w := bufio.NewWriter(writer)
 
 	for name, data := range data {
-		if *external || !strings.HasPrefix(name, "/") {
-			lcov := data.LineCoverage()
-			LCov.Update(lcov)
-			fcov := data.FuncCoverage()
-			FCov.Update(fcov)
+		lcov := data.LineCoverage()
+		LCov.Update(lcov)
+		fcov := data.FuncCoverage()
+		FCov.Update(fcov)
 
-			fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", lcov.Percentage(), fcov.Percentage(), name)
-		}
+		fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", lcov.Percentage(), fcov.Percentage(), name)
 	}
 	fmt.Fprintf(w, "------\t------\t\n")
 	fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\tOverall\n", LCov.Percentage(), FCov.Percentage())

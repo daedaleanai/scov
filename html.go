@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 )
 
@@ -149,16 +148,14 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 	FCov := Coverage{}
 	files := []FileStatistics{}
 	for name, data := range data {
-		if *external || !strings.HasPrefix(name, "/") {
-			stats := FileStatistics{Name: name}
+		stats := FileStatistics{Name: name}
 
-			stats.LCoverage = data.LineCoverage()
-			LCov.Update(stats.LCoverage)
-			stats.FCoverage = data.FuncCoverage()
-			FCov.Update(stats.FCoverage)
+		stats.LCoverage = data.LineCoverage()
+		LCov.Update(stats.LCoverage)
+		stats.FCoverage = data.FuncCoverage()
+		FCov.Update(stats.FCoverage)
 
-			files = append(files, stats)
-		}
+		files = append(files, stats)
 	}
 	sort.Slice(files, func(i, j int) bool {
 		return files[i].Name < files[j].Name
@@ -177,6 +174,10 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 
 func createHTMLForSource(outdir, sourcename string, data FileData) error {
 	filename := filepath.Join(outdir, sourcename+".html")
+	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	if err != nil {
+		return err
+	}
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
