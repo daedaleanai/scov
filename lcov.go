@@ -14,8 +14,9 @@ var (
 	external = flag.Bool("external", false, "Set whether external files to be included")
 	help     = flag.Bool("h", false, "Request help")
 	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
-	outdir   = flag.String("outdir", ".", "Path for the output")
 	title    = flag.String("title", "LCovHTML", "Title for the HTML pages")
+	htmldir  = flag.String("htmldir", ".", "Path for the HTML output")
+	text     = flag.String("text", "", "Filename for text report, use - for stdout")
 )
 
 func main() {
@@ -39,15 +40,25 @@ func main() {
 		}
 	}
 
-	err := writeTextReport(os.Stdout, fileData)
-	if err != nil {
-		panic(err)
-	}
-	err = createHTML(*outdir, fileData)
-	if err != nil {
-		panic(err)
+	if *text != "" {
+		err := createTextReport(*text, fileData)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		lcov := Coverage{}
+		for _, data := range fileData {
+			lcov.Update(data.LineCoverage())
+		}
+		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", lcov.Percentage())
 	}
 
+	if *htmldir != "" {
+		err := createHTML(*htmldir, fileData)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func recordType(line string) (string, string) {

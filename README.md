@@ -20,9 +20,11 @@ This will create a folder, and insert the HTML files into that folder.  Open `in
 
 **-h**	Request help
 
-**-outdir [folder]**   	Path for the output (default ".")
+**-htmldir [folder]**  	Path for the HTML output (default ".")
 
 **-srcdir [folder]**  	Path for the source directory (default ".")
+
+**-text [filename]**   	Filename for text report, use - for stdout
 
 **-title string**    	Title for the HTML pages (default "LCovHTML")
 

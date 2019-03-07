@@ -71,7 +71,6 @@ pages:
     - ls ./public
   artifacts:
     paths:
-      - public/
-    expire_in: 30 days
+      - public
   only:
     - master
