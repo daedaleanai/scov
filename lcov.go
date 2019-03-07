@@ -39,6 +39,10 @@ func main() {
 			}
 		}
 	}
+	if len(fileData) == 0 {
+		fmt.Fprintf(os.Stderr, "error: no file data present\n")
+		os.Exit(1)
+	}
 
 	if *text != "" {
 		err := createTextReport(*text, fileData)
