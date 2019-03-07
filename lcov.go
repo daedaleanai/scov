@@ -30,7 +30,11 @@ func main() {
 	}
 
 	for _, name := range flag.Args() {
-		loadFile(fileData, name)
+		err := loadFile(fileData, name)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: could not load data: %s\n", err)
+			os.Exit(1)
+		}
 	}
 	if !*external {
 		for key := range fileData {
@@ -47,7 +51,8 @@ func main() {
 	if *text != "" {
 		err := createTextReport(*text, fileData)
 		if err != nil {
-			panic(err)
+			fmt.Fprintf(os.Stderr, "error: could not create text report: %s\n", err)
+			os.Exit(1)
 		}
 	} else {
 		lcov := Coverage{}
@@ -60,7 +65,8 @@ func main() {
 	if *htmldir != "" {
 		err := createHTML(*htmldir, fileData)
 		if err != nil {
-			panic(err)
+			fmt.Fprintf(os.Stderr, "error: could not create HTML report: %s\n", err)
+			os.Exit(1)
 		}
 	}
 }
@@ -90,11 +96,12 @@ func loadFile(data map[string]FileData, name string) error {
 			//fmt.Println("version", value)
 
 		case "file":
-			if _, ok := data[value]; ok {
-				return fmt.Errorf("can't parse file: repeated filename")
+			if tmp, ok := data[value]; ok {
+				currentData = tmp
+			} else {
+				currentData = NewFileData(value)
+				data[value] = currentData
 			}
-			currentData = NewFileData(value)
-			data[value] = currentData
 
 		case "function":
 			funcName, hitCount, err := parseFunctionRecord(value)
@@ -111,7 +118,7 @@ func loadFile(data map[string]FileData, name string) error {
 			applyLCountRecord(&currentData, lineNo, hitCount)
 
 		default:
-			panic("unknown record")
+			return fmt.Errorf("unrecognized record: %s", t)
 		}
 	}
 	if err := scanner.Err(); err != nil {
