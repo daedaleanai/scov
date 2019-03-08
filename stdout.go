@@ -12,7 +12,7 @@ func createTextReport(filename string, data map[string]FileData) error {
 		return writeTextReport(os.Stdout, data)
 	}
 
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}

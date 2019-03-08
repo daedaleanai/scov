@@ -134,7 +134,7 @@ func createHTML(outdir string, data map[string]FileData) error {
 }
 
 func createHTMLIndex(filename string, data map[string]FileData, date time.Time) error {
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
@@ -173,11 +173,11 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 }
 
 func createHTMLForSource(filename string, sourcename string, data FileData) error {
-	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	err := os.MkdirAll(filepath.Dir(filename), 0700)
 	if err != nil {
 		return err
 	}
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
