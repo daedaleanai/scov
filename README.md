@@ -9,7 +9,7 @@ To generate a report on code coverage, you should already have an instrumented b
 
 ```shell
 gcov -i [source files]
-gcovhtml -title "My Report" -outdir ./html *.gcov
+gcovhtml -title "My Report" -htmldir ./html *.gcov
 ```
 
 This will create a folder, and insert the HTML files into that folder.  Open `index.html` to get an overview of the code coverage, and follow the links for annotated source files.
@@ -54,6 +54,7 @@ If you'd like to contribute, please fork the repository and make changes.  Pull 
 
 - [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html):  `gcov` is a tool you can use in conjunction with GCC to test code coverage in your programs. 
 - [lcov](http://ltp.sourceforge.net/coverage/lcov.php):  LCOV is a graphical front-end for GCC's coverage testing tool gcov.
+- [Gcovr](https://pypi.org/project/gcovr/):  Gcovr provides a utility for managing the use of the GNU gcov utility and generating summarized code coverage results.
 
 ## Licensing
 
