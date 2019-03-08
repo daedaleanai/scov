@@ -18,7 +18,7 @@ func TestCreateHTMLIndex(t *testing.T) {
 		"binc.cpp": data["binc.cpp"],
 	}
 
-	expected, err := ioutil.ReadFile("./testdata/binc-7.3.0.cpp.gcov.index.html")
+	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLIndex.golden")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
@@ -51,7 +51,7 @@ func TestWriteHTMLIndex(t *testing.T) {
 		"binc.cpp": data["binc.cpp"],
 	}
 
-	expected, err := ioutil.ReadFile("./testdata/binc-7.3.0.cpp.gcov.index.html")
+	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLIndex.golden")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
@@ -77,7 +77,7 @@ func TestCreateHTMLForSource(t *testing.T) {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	expected, err := ioutil.ReadFile("./testdata/binc-7.3.0.cpp.gcov.binc.cpp.html")
+	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLForSource.golden")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
@@ -105,7 +105,7 @@ func TestWriteHTMLForSource(t *testing.T) {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	expected, err := ioutil.ReadFile("./testdata/binc-7.3.0.cpp.gcov.binc.cpp.html")
+	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLForSource.golden")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
