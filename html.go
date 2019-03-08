@@ -117,13 +117,14 @@ func createHTML(outdir string, data map[string]FileData) error {
 		return err
 	}
 
-	err = createHTMLIndex(outdir, data)
+	err = createHTMLIndex(filepath.Join(outdir, "index.html"), data, time.Now().UTC())
 	if err != nil {
 		return err
 	}
 
 	for name, data := range data {
-		err = createHTMLForSource(outdir, name, data)
+		filename := filepath.Join(outdir, name+".html")
+		err = createHTMLForSource(filename, name, data)
 		if err != nil {
 			return err
 		}
@@ -132,15 +133,14 @@ func createHTML(outdir string, data map[string]FileData) error {
 	return nil
 }
 
-func createHTMLIndex(outdir string, data map[string]FileData) error {
-	filename := filepath.Join(outdir, "index.html")
+func createHTMLIndex(filename string, data map[string]FileData, date time.Time) error {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return writeHTMLIndex(file, data, time.Now().UTC())
+	return writeHTMLIndex(file, data, date)
 }
 
 func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) error {
@@ -172,8 +172,7 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 	return tmpl.Execute(out, params)
 }
 
-func createHTMLForSource(outdir, sourcename string, data FileData) error {
-	filename := filepath.Join(outdir, sourcename+".html")
+func createHTMLForSource(filename string, sourcename string, data FileData) error {
 	err := os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		return err
