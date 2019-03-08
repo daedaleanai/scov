@@ -51,8 +51,8 @@ body { max-width:70em; margin:auto; }
 		`<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
 <thead><tr><td></td><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 <tbody>
-<tr><td>Lines:</td><td>{{.LCoverage.Hits}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td></tr>
-<tr><td>Functions:</td><td>{{.FCoverage.Hits}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
+<tr><td>Lines:</td><td>{{.LCoverage.Hits}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td></tr>
+<tr><td>Functions:</td><td>{{.FCoverage.Hits}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td></tr>
 </tbody>
 </table>`,
 	))
@@ -75,7 +75,7 @@ body { max-width:70em; margin:auto; }
 <thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="2">Function Coverage</th></tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
-<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.Percentage}}%</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.Percentage}}%</td></tr>
+<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td></tr>
 {{end -}}
 </tbody>
 </table>
@@ -151,9 +151,9 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 		stats := FileStatistics{Name: name}
 
 		stats.LCoverage = data.LineCoverage()
-		LCov.Update(stats.LCoverage)
+		LCov.Accumulate(stats.LCoverage)
 		stats.FCoverage = data.FuncCoverage()
-		FCov.Update(stats.FCoverage)
+		FCov.Accumulate(stats.FCoverage)
 
 		files = append(files, stats)
 	}

@@ -29,13 +29,13 @@ func writeTextReport(writer io.Writer, data map[string]FileData) error {
 
 	for name, data := range data {
 		lcov := data.LineCoverage()
-		LCov.Update(lcov)
+		LCov.Accumulate(lcov)
 		fcov := data.FuncCoverage()
-		FCov.Update(fcov)
+		FCov.Accumulate(fcov)
 
-		fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", lcov.Percentage(), fcov.Percentage(), name)
+		fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", lcov.P(), fcov.P(), name)
 	}
 	fmt.Fprintf(w, "------\t------\t\n")
-	fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\tOverall\n", LCov.Percentage(), FCov.Percentage())
+	fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\tOverall\n", LCov.P(), FCov.P())
 	return w.Flush()
 }

@@ -57,9 +57,9 @@ func main() {
 	} else {
 		lcov := Coverage{}
 		for _, data := range fileData {
-			lcov.Update(data.LineCoverage())
+			lcov.Accumulate(data.LineCoverage())
 		}
-		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", lcov.Percentage())
+		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", lcov.P())
 	}
 
 	if *htmldir != "" {
