@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 )
@@ -95,6 +96,38 @@ func TestLoadFile(t *testing.T) {
 			}
 			if fcov := fileData.FuncCoverage(); fcov != v.fcov1 {
 				LogNE(t, "function coverage", v.fcov1, fcov)
+			}
+		})
+	}
+}
+
+func TestFilterFileData(t *testing.T) {
+	const file1 = "binc.cpp"
+	const file2 = "/usr/include/a.h"
+	const file3 = "/usr/include/b.h"
+
+	cases := []struct {
+		in       []string
+		external bool
+		expected int
+	}{
+		{[]string{file1, file2, file3}, false, 1},
+		{[]string{file1, file2, file3}, true, 3},
+		{[]string{file1}, false, 1},
+		{[]string{file1}, true, 1},
+	}
+
+	for i, v := range cases {
+		name := fmt.Sprintf("Case %d", i)
+		t.Run(name, func(t *testing.T) {
+			data := make(map[string]FileData)
+			for _, v := range v.in {
+				data[v] = NewFileData(v)
+			}
+
+			data = filterFileData(data, v.external)
+			if out := len(data); out != v.expected {
+				LogNE(t, "file count", v.expected, out)
 			}
 		})
 	}

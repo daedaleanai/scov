@@ -37,13 +37,7 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	if !*external {
-		for key := range fileData {
-			if filepath.IsAbs(key) {
-				delete(fileData, key)
-			}
-		}
-	}
+	fileData = filterFileData(fileData, *external)
 	if len(fileData) == 0 {
 		fmt.Fprintf(os.Stderr, "error: no file data present\n")
 		os.Exit(1)
@@ -181,4 +175,17 @@ func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
 
 func applyLCountRecord(data *FileData, lineNo int, hitCount uint64) {
 	data.LineData[lineNo] += hitCount
+}
+
+func filterFileData(fileData map[string]FileData, external bool) map[string]FileData {
+	if external {
+		return fileData
+	}
+
+	for key := range fileData {
+		if filepath.IsAbs(key) {
+			delete(fileData, key)
+		}
+	}
+	return fileData
 }
