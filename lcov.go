@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -63,7 +64,7 @@ func main() {
 	}
 
 	if *htmldir != "" {
-		err := createHTML(*htmldir, fileData)
+		err := createHTML(*htmldir, fileData, time.Now().UTC())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: could not create HTML report: %s\n", err)
 			os.Exit(1)

@@ -111,13 +111,13 @@ type FileStatistics struct {
 	FCoverage Coverage
 }
 
-func createHTML(outdir string, data map[string]FileData) error {
+func createHTML(outdir string, data map[string]FileData, date time.Time) error {
 	err := os.MkdirAll(outdir, 0700)
 	if err != nil {
 		return err
 	}
 
-	err = createHTMLIndex(filepath.Join(outdir, "index.html"), data, time.Now().UTC())
+	err = createHTMLIndex(filepath.Join(outdir, "index.html"), data, date)
 	if err != nil {
 		return err
 	}
