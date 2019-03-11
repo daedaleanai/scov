@@ -55,22 +55,21 @@ test:
   script:
     - go test -coverprofile=cover.out
     - go tool cover -html=cover.out -o=cover.html
-    - mkdir public
-    - mv cover.html ./public
   only:
     - master
   artifacts:
     paths:
-      - public/
+      - cover.html
 
 pages:
   stage: deploy
   dependencies:
     - test
   script:
-    - ls ./public
+    - mkdir ./public
+    - mv cover.html ./public
+  only:
+    - master
   artifacts:
     paths:
       - public
-  only:
-    - master
