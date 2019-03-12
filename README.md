@@ -26,7 +26,7 @@ This will create a folder, and insert the HTML files into that folder.  Open `in
 
 **-text [filename]**   	Filename for text report, use - for stdout
 
-**-title string**    	Title for the HTML pages (default "LCovHTML")
+**-title string**    	Title for the HTML pages (default "GCovHTML")
 
 ## Installation
 

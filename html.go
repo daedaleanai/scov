@@ -14,7 +14,7 @@ import (
 var (
 	tmpl1 = template.New("html").Funcs(template.FuncMap{"htmlSafe": htmlSafe})
 	tmpl2 = template.Must(tmpl1.New("sparkbar").Parse(
-		`<div class="sparkbar"><div class="fill" style="width:{{printf "%.1f" .P}}px"></div><div class="empty" style="width:{{printf "%.1f" .Q}}px"></div></div>`,
+		`<div class="sparkbar"><div class="fill {{.Rating}}" style="width:{{printf "%.1f" .P}}px"></div><div class="empty" style="width:{{printf "%.1f" .Q}}px"></div></div>`,
 	))
 	tmplHead = template.Must(tmpl1.New("head").Parse(
 		`<head>
@@ -29,9 +29,13 @@ var (
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 {{htmlSafe "<!--<![endif]-->"}}
 <style>
+html { padding:1em; }
 body { max-width:70em; margin:auto; }
 .sparkbar { border: 1px solid black; border-radius:1px; }
-.sparkbar .fill { display: inline-block; height: 1em; background-color:lightgreen; }
+.sparkbar .fill { display: inline-block; height: 1em; }
+.sparkbar .high { background-color:lightgreen; }
+.sparkbar .medium { background-color:yellow; }
+.sparkbar .low { background-color:red; }
 .sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
 .source { font-family: monospace; width:100%; margin:3em 0; }
 .source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }

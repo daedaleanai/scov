@@ -24,6 +24,37 @@ func (c *Coverage) Accumulate(delta Coverage) {
 	c.Total += delta.Total
 }
 
+// Rating returns the rating (low, medium, or high) for this coverage.
+func (c *Coverage) Rating() CoverageRating {
+	if c.P() >= 90 {
+		return HighCoverage
+	}
+	if c.P() >= 75 {
+		return MediumCoverage
+	}
+	return LowCoverage
+}
+
+// CoverageRating is a classification of the coverage into low, medium or high.
+type CoverageRating uint8
+
+const (
+	LowCoverage CoverageRating = iota
+	MediumCoverage
+	HighCoverage
+)
+
+// String returns a string representation of the rating.
+func (cr CoverageRating) String() string {
+	if cr == LowCoverage {
+		return "low"
+	}
+	if cr == MediumCoverage {
+		return "medium"
+	}
+	return "high"
+}
+
 type FileData struct {
 	Filename string
 	LineData map[int]uint64

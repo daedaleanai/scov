@@ -15,7 +15,7 @@ var (
 	external = flag.Bool("external", false, "Set whether external files to be included")
 	help     = flag.Bool("h", false, "Request help")
 	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
-	title    = flag.String("title", "LCovHTML", "Title for the HTML pages")
+	title    = flag.String("title", "GCovHTML", "Title for the HTML pages")
 	htmldir  = flag.String("htmldir", ".", "Path for the HTML output")
 	text     = flag.String("text", "", "Filename for text report, use - for stdout")
 )

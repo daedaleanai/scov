@@ -2,7 +2,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LCovHTML</title>
+<title>GCovHTML</title>
 <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
 <!--[if lte IE 8]>
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-old-ie-min.css">
@@ -11,9 +11,13 @@
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 <!--<![endif]-->
 <style>
+html { padding:1em; }
 body { max-width:70em; margin:auto; }
 .sparkbar { border: 1px solid black; border-radius:1px; }
-.sparkbar .fill { display: inline-block; height: 1em; background-color:lightgreen; }
+.sparkbar .fill { display: inline-block; height: 1em; }
+.sparkbar .high { background-color:lightgreen; }
+.sparkbar .medium { background-color:yellow; }
+.sparkbar .low { background-color:red; }
 .sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
 .source { font-family: monospace; width:100%; margin:3em 0; }
 .source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }
@@ -25,7 +29,7 @@ body { max-width:70em; margin:auto; }
 </style>
 </head>
 <body>
-<div class="pure-g"><h1 class="pure-u">LCovHTML</h1></div>
+<div class="pure-g"><h1 class="pure-u">GCovHTML</h1></div>
 <div class="pure-g"><div class="pure-u">
 <h2>Overall</h2>
 </div></div>
@@ -45,7 +49,7 @@ body { max-width:70em; margin:auto; }
 <table class="pure-table pure-table-bordered">
 <thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="2">Function Coverage</th></tr></thead>
 <tbody>
-<tr><td><a href="binc.cpp.html">binc.cpp</a></td><td><div class="sparkbar"><div class="fill" style="width:59.6px"></div><div class="empty" style="width:40.4px"></div></div></td><td>90/151</td><td>59.6%</td><td>12/12</td><td>100.0%</td></tr>
+<tr><td><a href="binc.cpp.html">binc.cpp</a></td><td><div class="sparkbar"><div class="fill low" style="width:59.6px"></div><div class="empty" style="width:40.4px"></div></div></td><td>90/151</td><td>59.6%</td><td>12/12</td><td>100.0%</td></tr>
 </tbody>
 </table>
 </div></div>

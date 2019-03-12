@@ -2,7 +2,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LCovHTML &gt; binc.cpp</title>
+<title>GCovHTML &gt; binc.cpp</title>
 <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
 <!--[if lte IE 8]>
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-old-ie-min.css">
@@ -11,9 +11,13 @@
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 <!--<![endif]-->
 <style>
+html { padding:1em; }
 body { max-width:70em; margin:auto; }
 .sparkbar { border: 1px solid black; border-radius:1px; }
-.sparkbar .fill { display: inline-block; height: 1em; background-color:lightgreen; }
+.sparkbar .fill { display: inline-block; height: 1em; }
+.sparkbar .high { background-color:lightgreen; }
+.sparkbar .medium { background-color:yellow; }
+.sparkbar .low { background-color:red; }
 .sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
 .source { font-family: monospace; width:100%; margin:3em 0; }
 .source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }
@@ -25,7 +29,7 @@ body { max-width:70em; margin:auto; }
 </style>
 </head>
 <body>
-<div class="pure-g"><h1 class="pure-u">LCovHTML &gt; binc.cpp</h1></div>
+<div class="pure-g"><h1 class="pure-u">GCovHTML &gt; binc.cpp</h1></div>
 <div class="pure-g"><div class="pure-u">
 <h2>Overall</h2>
 <table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
