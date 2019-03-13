@@ -84,7 +84,7 @@ func TestLoadFile(t *testing.T) {
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
 			// Reset the nasty globals
-			data := make(map[string]FileData)
+			data := make(map[string]*FileData)
 
 			err := loadFile(data, filepath.Join("./testdata", v.filename))
 			if err != nil {
@@ -120,7 +120,7 @@ func TestFilterFileData(t *testing.T) {
 	for i, v := range cases {
 		name := fmt.Sprintf("Case %d", i)
 		t.Run(name, func(t *testing.T) {
-			data := make(map[string]FileData)
+			data := make(map[string]*FileData)
 			for _, v := range v.in {
 				data[v] = NewFileData(v)
 			}

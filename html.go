@@ -57,6 +57,9 @@ body { max-width:70em; margin:auto; }
 <tbody>
 <tr><td>Lines:</td><td>{{.LCoverage.Hits}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td></tr>
 <tr><td>Functions:</td><td>{{.FCoverage.Hits}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td></tr>
+{{ if .BCoverage.Valid -}}
+<tr><td>Branches:</td><td>{{.BCoverage.Hits}}</td><td>{{.BCoverage.Total}}</td><td>{{printf "%.1f" .BCoverage.P}}%</td></tr>
+{{ end -}}
 </tbody>
 </table>`,
 	))
@@ -113,9 +116,10 @@ type FileStatistics struct {
 	Name      string
 	LCoverage Coverage
 	FCoverage Coverage
+	BCoverage Coverage
 }
 
-func createHTML(outdir string, data map[string]FileData, date time.Time) error {
+func createHTML(outdir string, data map[string]*FileData, date time.Time) error {
 	err := os.MkdirAll(outdir, 0700)
 	if err != nil {
 		return err
@@ -137,7 +141,7 @@ func createHTML(outdir string, data map[string]FileData, date time.Time) error {
 	return nil
 }
 
-func createHTMLIndex(filename string, data map[string]FileData, date time.Time) error {
+func createHTMLIndex(filename string, data map[string]*FileData, date time.Time) error {
 	w, err := Open(filename)
 	if err != nil {
 		return err
@@ -149,9 +153,10 @@ func createHTMLIndex(filename string, data map[string]FileData, date time.Time) 
 	return err
 }
 
-func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) error {
+func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) error {
 	LCov := Coverage{}
 	FCov := Coverage{}
+	BCov := Coverage{}
 	files := []FileStatistics{}
 	for name, data := range data {
 		stats := FileStatistics{Name: name}
@@ -160,6 +165,8 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 		LCov.Accumulate(stats.LCoverage)
 		stats.FCoverage = data.FuncCoverage()
 		FCov.Accumulate(stats.FCoverage)
+		stats.BCoverage = data.BranchCoverage()
+		BCov.Accumulate(stats.BCoverage)
 
 		files = append(files, stats)
 	}
@@ -171,6 +178,7 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 		"Title":     *title,
 		"LCoverage": LCov,
 		"FCoverage": FCov,
+		"BCoverage": BCov,
 		"Files":     files,
 		"Date":      date.Format(time.UnixDate),
 	}
@@ -178,7 +186,7 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 	return tmpl.Execute(out, params)
 }
 
-func createHTMLForSource(filename string, sourcename string, data FileData) error {
+func createHTMLForSource(filename string, sourcename string, data *FileData) error {
 	err := os.MkdirAll(filepath.Dir(filename), 0700)
 	if err != nil {
 		return err
@@ -195,14 +203,12 @@ func createHTMLForSource(filename string, sourcename string, data FileData) erro
 	return err
 }
 
-func writeHTMLForSource(out io.Writer, sourcename string, data FileData) error {
-	lcov := data.LineCoverage()
-	fcov := data.FuncCoverage()
-
+func writeHTMLForSource(out io.Writer, sourcename string, data *FileData) error {
 	params := map[string]interface{}{
 		"Title":     *title + " > " + sourcename,
-		"LCoverage": lcov,
-		"FCoverage": fcov,
+		"LCoverage": data.LineCoverage(),
+		"FCoverage": data.FuncCoverage(),
+		"BCoverage": data.BranchCoverage(),
 	}
 
 	err := tmplSource1.Execute(out, params)

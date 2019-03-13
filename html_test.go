@@ -25,13 +25,13 @@ func TempDirectory(t *testing.T) (filename string, cleanup func()) {
 }
 
 func TestCreateHTML(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
@@ -66,13 +66,13 @@ func TestCreateHTML(t *testing.T) {
 }
 
 func TestCreateHTMLIndex(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
@@ -98,13 +98,13 @@ func TestCreateHTMLIndex(t *testing.T) {
 }
 
 func TestWriteHTMLIndex(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
@@ -128,7 +128,7 @@ func TestWriteHTMLIndex(t *testing.T) {
 }
 
 func TestCreateHTMLForSource(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
@@ -156,7 +156,7 @@ func TestCreateHTMLForSource(t *testing.T) {
 }
 
 func TestWriteHTMLForSource(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)

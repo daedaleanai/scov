@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-func createTextReport(filename string, data map[string]FileData) error {
+func createTextReport(filename string, data map[string]*FileData) error {
 	w, err := Open(filename)
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func createTextReport(filename string, data map[string]FileData) error {
 	return err
 }
 
-func writeTextReport(writer io.Writer, data map[string]FileData) error {
+func writeTextReport(writer io.Writer, data map[string]*FileData) error {
 	LCov := Coverage{}
 	FCov := Coverage{}
 

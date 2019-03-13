@@ -25,7 +25,7 @@ func (c *Coverage) Accumulate(delta Coverage) {
 }
 
 // Rating returns the rating (low, medium, or high) for this coverage.
-func (c *Coverage) Rating() CoverageRating {
+func (c Coverage) Rating() CoverageRating {
 	if c.P() >= 90 {
 		return HighCoverage
 	}
@@ -33,6 +33,10 @@ func (c *Coverage) Rating() CoverageRating {
 		return MediumCoverage
 	}
 	return LowCoverage
+}
+
+func (c Coverage) Valid() bool {
+	return c.Total > 0
 }
 
 // CoverageRating is a classification of the coverage into low, medium or high.
@@ -55,17 +59,29 @@ func (cr CoverageRating) String() string {
 	return "high"
 }
 
+// BranchStatus indicates whether a branch was taken, not taken, or if the
+// conditional was never executed.
+type BranchStatus uint8
+
+const (
+	BranchTaken BranchStatus = iota
+	BranchNotTaken
+	BranchNotExec
+)
+
 type FileData struct {
-	Filename string
-	LineData map[int]uint64
-	FuncData map[string]uint64
+	Filename   string
+	LineData   map[int]uint64
+	FuncData   map[string]uint64
+	BranchData map[int][]BranchStatus
 }
 
-func NewFileData(filename string) FileData {
-	return FileData{
-		Filename: filename,
-		LineData: make(map[int]uint64),
-		FuncData: make(map[string]uint64),
+func NewFileData(filename string) *FileData {
+	return &FileData{
+		Filename:   filename,
+		LineData:   make(map[int]uint64),
+		FuncData:   make(map[string]uint64),
+		BranchData: make(map[int][]BranchStatus),
 	}
 }
 
@@ -89,6 +105,20 @@ func (file *FileData) FuncCoverage() Coverage {
 			a++
 		}
 		b++
+	}
+	return Coverage{a, b}
+}
+
+func (file *FileData) BranchCoverage() Coverage {
+	a, b := 0, 0
+
+	for _, v := range file.BranchData {
+		for _, v := range v {
+			if v == BranchTaken {
+				a++
+			}
+			b++
+		}
 	}
 	return Coverage{a, b}
 }

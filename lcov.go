@@ -22,7 +22,7 @@ var (
 
 func main() {
 	// Initialize global maps used to track line and function coverage
-	fileData := make(map[string]FileData)
+	fileData := make(map[string]*FileData)
 
 	flag.Parse()
 	if *help {
@@ -74,14 +74,14 @@ func recordType(line string) (string, string) {
 	return line[:ndx], line[ndx+1:]
 }
 
-func loadFile(data map[string]FileData, name string) error {
+func loadFile(data map[string]*FileData, name string) error {
 	file, err := os.Open(name)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	currentData := FileData{}
+	currentData := (*FileData)(nil)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -103,14 +103,21 @@ func loadFile(data map[string]FileData, name string) error {
 			if err != nil {
 				return err
 			}
-			applyFunctionRecord(&currentData, funcName, hitCount)
+			applyFunctionRecord(currentData, funcName, hitCount)
 
 		case "lcount":
 			lineNo, hitCount, err := parseLCountRecord(value)
 			if err != nil {
 				return err
 			}
-			applyLCountRecord(&currentData, lineNo, hitCount)
+			applyLCountRecord(currentData, lineNo, hitCount)
+
+		case "branch":
+			lineNo, branchStatus, err := parseBranchRecord(value)
+			if err != nil {
+				return err
+			}
+			applyBranchRecord(currentData, lineNo, branchStatus)
 
 		default:
 			return fmt.Errorf("unrecognized record: %s", t)
@@ -177,7 +184,37 @@ func applyLCountRecord(data *FileData, lineNo int, hitCount uint64) {
 	data.LineData[lineNo] += hitCount
 }
 
-func filterFileData(fileData map[string]FileData, external bool) map[string]FileData {
+func parseBranchRecord(value string) (lineNo int, status BranchStatus, err error) {
+	values := strings.Split(value, ",")
+	if len(values) != 2 {
+		return 0, 0, fmt.Errorf("can't parse branch record")
+	}
+
+	lineNoTmp, err := strconv.ParseInt(values[0], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("can't parse branch record: %s", err)
+	}
+	lineNo = int(lineNoTmp)
+
+	switch values[1] {
+	case "taken":
+		return lineNo, BranchTaken, nil
+	case "nottaken":
+		return lineNo, BranchNotTaken, nil
+	case "notexec":
+		return lineNo, BranchNotExec, nil
+	}
+
+	return 0, 0, fmt.Errorf("can't parse branch record: unrecognized branch status")
+}
+
+func applyBranchRecord(data *FileData, lineNo int, status BranchStatus) {
+	tmp := data.BranchData[lineNo]
+	tmp = append(tmp, status)
+	data.BranchData[lineNo] = tmp
+}
+
+func filterFileData(fileData map[string]*FileData, external bool) map[string]*FileData {
 	if external {
 		return fileData
 	}
