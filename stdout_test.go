@@ -2,27 +2,9 @@ package main
 
 import (
 	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 )
-
-func TempFilename(t *testing.T) (filename string, cleanup func()) {
-	file, err := ioutil.TempFile("", "testing")
-	if err != nil {
-		t.Fatalf("could not create temporary file: %s", err)
-		// unreachable
-	}
-	name := file.Name()
-	file.Close()
-
-	return name, func() {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("could not remove temporary file: %s", err)
-		}
-	}
-}
 
 func TestCreateTextReport(t *testing.T) {
 	const expected = ` 59.6%	100.0%	binc.cpp
