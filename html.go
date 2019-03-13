@@ -43,6 +43,7 @@ body { max-width:70em; margin:auto; }
 .source .hit { background:lightblue; }
 .source .miss { background:LightCoral; }
 .source .ln { background:PaleGoldenrod; text-align:right; }
+.source .bd { background:#f2edbf; text-align:right; }
 .source .ld { background:#f6f3d4; text-align:right; }
 </style>
 </head>
@@ -57,6 +58,9 @@ body { max-width:70em; margin:auto; }
 <tbody>
 <tr><td>Lines:</td><td>{{.LCoverage.Hits}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td></tr>
 <tr><td>Functions:</td><td>{{.FCoverage.Hits}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td></tr>
+{{ if .BCoverage.Valid -}}
+<tr><td>Branches:</td><td>{{.BCoverage.Hits}}</td><td>{{.BCoverage.Total}}</td><td>{{printf "%.1f" .BCoverage.P}}%</td></tr>
+{{ end -}}
 </tbody>
 </table>`,
 	))
@@ -98,7 +102,7 @@ body { max-width:70em; margin:auto; }
 </div></div>
 <div class="pure-g"><div class="pure-u">
 <table class="source"><thead>
-<tr><th class="ln">Line #</th><th class="ld">Hit count</th><th>Source code</th></tr>
+<tr><th class="ln">Line #</th>{{if .BCoverage.Valid}}<th class="ld">Branches</th>{{end}}<th class="ld">Hit count</th><th>Source code</th></tr>
 </thead><tbody>
 `,
 	))
@@ -113,9 +117,10 @@ type FileStatistics struct {
 	Name      string
 	LCoverage Coverage
 	FCoverage Coverage
+	BCoverage Coverage
 }
 
-func createHTML(outdir string, data map[string]FileData, date time.Time) error {
+func createHTML(outdir string, data map[string]*FileData, date time.Time) error {
 	err := os.MkdirAll(outdir, 0700)
 	if err != nil {
 		return err
@@ -137,7 +142,7 @@ func createHTML(outdir string, data map[string]FileData, date time.Time) error {
 	return nil
 }
 
-func createHTMLIndex(filename string, data map[string]FileData, date time.Time) error {
+func createHTMLIndex(filename string, data map[string]*FileData, date time.Time) error {
 	w, err := Open(filename)
 	if err != nil {
 		return err
@@ -149,9 +154,10 @@ func createHTMLIndex(filename string, data map[string]FileData, date time.Time) 
 	return err
 }
 
-func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) error {
+func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) error {
 	LCov := Coverage{}
 	FCov := Coverage{}
+	BCov := Coverage{}
 	files := []FileStatistics{}
 	for name, data := range data {
 		stats := FileStatistics{Name: name}
@@ -160,6 +166,8 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 		LCov.Accumulate(stats.LCoverage)
 		stats.FCoverage = data.FuncCoverage()
 		FCov.Accumulate(stats.FCoverage)
+		stats.BCoverage = data.BranchCoverage()
+		BCov.Accumulate(stats.BCoverage)
 
 		files = append(files, stats)
 	}
@@ -171,6 +179,7 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 		"Title":     *title,
 		"LCoverage": LCov,
 		"FCoverage": FCov,
+		"BCoverage": BCov,
 		"Files":     files,
 		"Date":      date.Format(time.UnixDate),
 	}
@@ -178,7 +187,7 @@ func writeHTMLIndex(out io.Writer, data map[string]FileData, date time.Time) err
 	return tmpl.Execute(out, params)
 }
 
-func createHTMLForSource(filename string, sourcename string, data FileData) error {
+func createHTMLForSource(filename string, sourcename string, data *FileData) error {
 	err := os.MkdirAll(filepath.Dir(filename), 0700)
 	if err != nil {
 		return err
@@ -195,28 +204,27 @@ func createHTMLForSource(filename string, sourcename string, data FileData) erro
 	return err
 }
 
-func writeHTMLForSource(out io.Writer, sourcename string, data FileData) error {
-	lcov := data.LineCoverage()
-	fcov := data.FuncCoverage()
-
+func writeHTMLForSource(out io.Writer, sourcename string, data *FileData) error {
+	bcov := data.BranchCoverage()
 	params := map[string]interface{}{
 		"Title":     *title + " > " + sourcename,
-		"LCoverage": lcov,
-		"FCoverage": fcov,
+		"LCoverage": data.LineCoverage(),
+		"FCoverage": data.FuncCoverage(),
+		"BCoverage": bcov,
 	}
 
 	err := tmplSource1.Execute(out, params)
 	if err != nil {
 		return err
 	}
-	err = writeSourceListing(out, sourcename, data.LineData)
+	err = writeSourceListing(out, sourcename, data.LineData, bcov.Valid(), data.BranchData)
 	if err != nil {
 		return err
 	}
 	return tmplSource2.Execute(out, params)
 }
 
-func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[int]uint64) error {
+func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[int]uint64, withBranchData bool, branchData map[int][]BranchStatus) error {
 	filename := filepath.Join(*srcdir, sourcename)
 	file, err := os.Open(filename)
 	if err != nil {
@@ -229,20 +237,25 @@ func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[i
 	lineNo := 1
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if lc, ok := lineCountData[lineNo]; ok {
-			cl := "miss"
+		w.WriteString("<tr")
+		lc, ok := lineCountData[lineNo]
+		if ok {
 			if lc > 0 {
-				cl = "hit"
+				w.WriteString(` class="hit">`)
+			} else {
+				w.WriteString(` class="miss">`)
 			}
-			fmt.Fprintf(w, "<tr class=\"%s\"><td class=\"ln\">%d</td><td class=\"ld\">%d</td><td>%s</td></tr>\n",
-				cl, lineNo, lc,
-				template.HTMLEscapeString(scanner.Text()),
-			)
 		} else {
-			fmt.Fprintf(w, "<tr><td class=\"ln\">%d</td><td class=\"ld\"></td><td>%s</td></tr>\n",
-				lineNo, template.HTMLEscapeString(scanner.Text()),
-			)
+			w.WriteString(">")
 		}
+		fmt.Fprintf(w, "<td class=\"ln\">%d</td>", lineNo)
+		writeBranchDescription(w, withBranchData, branchData[lineNo])
+		if ok {
+			fmt.Fprintf(w, `<td class="ld">%d</td>`, lc)
+		} else {
+			w.WriteString(`<td class="ld"></td>`)
+		}
+		fmt.Fprintf(w, "<td>%s</td></tr>\n", template.HTMLEscapeString(scanner.Text()))
 		lineNo++
 	}
 	if err := scanner.Err(); err != nil {
@@ -254,4 +267,28 @@ func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[i
 
 func htmlSafe(text string) template.HTML {
 	return template.HTML(text)
+}
+
+func writeBranchDescription(w *bufio.Writer, withBranchData bool, data []BranchStatus) {
+	if !withBranchData {
+		return
+	}
+	if len(data) == 0 {
+		w.WriteString(`<td class="bd"></td>`)
+		return
+	}
+	if data[0] == BranchNotExec {
+		w.WriteString(`<td class="bd">[ NE ]</td>`)
+		return
+	}
+
+	w.WriteString(`<td class="bd">[`)
+	for _, v := range data {
+		if v == BranchTaken {
+			w.WriteString(" +")
+		} else {
+			w.WriteString(" -")
+		}
+	}
+	w.WriteString(` ]</td>`)
 }

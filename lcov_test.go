@@ -75,27 +75,32 @@ func TestParseLCountRecord(t *testing.T) {
 func TestLoadFile(t *testing.T) {
 	cases := []struct {
 		filename string
-		lcov1    Coverage
-		fcov1    Coverage
+		lcov     Coverage
+		fcov     Coverage
+		bcov     Coverage
 	}{
-		{"binc-7.3.0.cpp.gcov", Coverage{90, 151}, Coverage{12, 12}},
-		{"binc-8.2.0.cpp.gcov", Coverage{58, 119}, Coverage{10, 10}},
+		{"binc-7.3.0.cpp.gcov", Coverage{90, 151}, Coverage{12, 12}, Coverage{}},
+		{"binc-8.2.0.cpp.gcov", Coverage{58, 119}, Coverage{10, 10}, Coverage{}},
+		{"binc-8.2.0-branches.cpp.gcov", Coverage{59, 122}, Coverage{10, 10}, Coverage{17, 60}},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
 			// Reset the nasty globals
-			data := make(map[string]FileData)
+			data := make(map[string]*FileData)
 
 			err := loadFile(data, filepath.Join("./testdata", v.filename))
 			if err != nil {
 				t.Fatalf("could not read file: %s", err)
 			}
 			fileData := data["binc.cpp"]
-			if lcov := fileData.LineCoverage(); lcov != v.lcov1 {
-				LogNE(t, "line coverage", v.lcov1, lcov)
+			if lcov := fileData.LineCoverage(); lcov != v.lcov {
+				LogNE(t, "line coverage", v.lcov, lcov)
 			}
-			if fcov := fileData.FuncCoverage(); fcov != v.fcov1 {
-				LogNE(t, "function coverage", v.fcov1, fcov)
+			if fcov := fileData.FuncCoverage(); fcov != v.fcov {
+				LogNE(t, "function coverage", v.fcov, fcov)
+			}
+			if bcov := fileData.BranchCoverage(); bcov != v.bcov {
+				LogNE(t, "branch coverage", v.bcov, bcov)
 			}
 		})
 	}
@@ -120,7 +125,7 @@ func TestFilterFileData(t *testing.T) {
 	for i, v := range cases {
 		name := fmt.Sprintf("Case %d", i)
 		t.Run(name, func(t *testing.T) {
-			data := make(map[string]FileData)
+			data := make(map[string]*FileData)
 			for _, v := range v.in {
 				data[v] = NewFileData(v)
 			}

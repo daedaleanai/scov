@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -25,13 +27,13 @@ func TempDirectory(t *testing.T) (filename string, cleanup func()) {
 }
 
 func TestCreateHTML(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
@@ -66,13 +68,13 @@ func TestCreateHTML(t *testing.T) {
 }
 
 func TestCreateHTMLIndex(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
@@ -98,13 +100,13 @@ func TestCreateHTMLIndex(t *testing.T) {
 }
 
 func TestWriteHTMLIndex(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
@@ -128,7 +130,7 @@ func TestWriteHTMLIndex(t *testing.T) {
 }
 
 func TestCreateHTMLForSource(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
@@ -156,7 +158,7 @@ func TestCreateHTMLForSource(t *testing.T) {
 }
 
 func TestWriteHTMLForSource(t *testing.T) {
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
@@ -178,5 +180,33 @@ func TestWriteHTMLForSource(t *testing.T) {
 		LogNE(t, "length of output", len(expected), len(out))
 	} else if string(expected) != out {
 		LogNE(t, "output", string(expected), out)
+	}
+}
+
+func TestWriteBranchDescription(t *testing.T) {
+	cases := []struct {
+		data     []BranchStatus
+		withData bool
+		out      string
+	}{
+		{nil, false, ""},
+		{nil, true, `<td class="bd"></td>`},
+		{[]BranchStatus{}, true, `<td class="bd"></td>`},
+		{[]BranchStatus{BranchNotExec}, true, `<td class="bd">[ NE ]</td>`},
+		{[]BranchStatus{BranchTaken, BranchNotTaken}, true, `<td class="bd">[ + - ]</td>`},
+	}
+
+	for i, v := range cases {
+		s := bytes.NewBuffer(nil)
+		w := bufio.NewWriter(s)
+
+		writeBranchDescription(w, v.withData, v.data)
+		err := w.Flush()
+		if err != nil {
+			t.Errorf("failed to write, %s", err)
+		}
+		if s.String() != v.out {
+			t.Errorf("Case %d: expected %s, got %s", i, v.out, s.String())
+		}
 	}
 }

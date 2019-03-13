@@ -12,13 +12,13 @@ func TestCreateTextReport(t *testing.T) {
  59.6%	100.0%	Overall
 `
 
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
@@ -38,7 +38,7 @@ func TestCreateTextReport(t *testing.T) {
 }
 
 func TestCreateTextReportFail(t *testing.T) {
-	data := map[string]FileData{}
+	data := map[string]*FileData{}
 
 	err := createTextReport(".", data)
 	if err == nil {
@@ -52,13 +52,13 @@ func TestWriteTextReport(t *testing.T) {
  59.6%	100.0%	Overall
 `
 
-	data := make(map[string]FileData)
+	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]FileData{
+	data = map[string]*FileData{
 		"binc.cpp": data["binc.cpp"],
 	}
 
