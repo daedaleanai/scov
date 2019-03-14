@@ -35,6 +35,8 @@ func (c Coverage) Rating() CoverageRating {
 	return LowCoverage
 }
 
+// Valid returns true if data was collected.  In otherwords, unless the
+// coverage is valid, any calculations may lead to divide by zero.
 func (c Coverage) Valid() bool {
 	return c.Total > 0
 }

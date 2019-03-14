@@ -5,7 +5,7 @@ import (
 )
 
 // Writer wraps an output, and handles various details with tool output, such
-// as possibily directing output to standard out, and deleting an incomplete
+// as possibly directing output to standard out, and deleting an incomplete
 // output file if there was an error.
 type Writer struct {
 	file  *os.File
@@ -13,8 +13,8 @@ type Writer struct {
 }
 
 const (
-	flag_unowned = 1
-	flag_keep    = 2
+	flagUnowned = 1
+	flagKeep    = 2
 )
 
 // Open create a new Writer, directing output to standard out if the filename
@@ -23,7 +23,7 @@ func Open(filename string) (Writer, error) {
 	if filename == "-" {
 		return Writer{
 			file:  os.Stdout,
-			flags: flag_unowned,
+			flags: flagUnowned,
 		}, nil
 	}
 
@@ -40,14 +40,14 @@ func Open(filename string) (Writer, error) {
 // Close the writer, but only if the file is owned by the writer.  Close will
 // possibly remove the output file if there was an error (see Keep).
 func (w *Writer) Close() error {
-	if (w.flags & flag_unowned) != 0 {
+	if (w.flags & flagUnowned) != 0 {
 		return nil
 	}
 
 	filename := w.file.Name()
 	err := w.file.Close()
 
-	if (w.flags & flag_keep) == 0 {
+	if (w.flags & flagKeep) == 0 {
 		err2 := os.Remove(filename)
 		if err2 != nil && err != nil {
 			err = err2
@@ -66,7 +66,7 @@ func (w *Writer) File() *os.File {
 // err is not nil, the file will be remove when closed.
 func (w *Writer) Keep(err error) error {
 	if err == nil {
-		w.flags |= flag_keep
+		w.flags |= flagKeep
 	}
 	return err
 }
