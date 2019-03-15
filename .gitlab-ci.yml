@@ -33,8 +33,6 @@ golang-1.11:
       - dist/gcovhtml-darwin-amd64
       - dist/gcovhtml-freebsd-amd64
       - dist/gcovhtml-openbsd-amd64
-    only:
-      - tags
 
 golang-1.10:
   image: golang:1.10
@@ -55,25 +53,38 @@ test:
   image: golang:1.11
   stage: test
   script:
-    - go build
     - go test -coverprofile=cover.out
     - go tool cover -html=cover.out -o=cover.html
-    - cd ./example && make html
   only:
     - master
   artifacts:
     paths:
       - cover.html
+
+example:
+  image: gcc:7
+  stage: test
+  dependencies:
+    - golang-1.11
+  script:
+    - cd ./example && GCOVHTML=../dist/gcovhtml-linux-amd64 make html
+  only:
+    - master
+  artifacts:
+    paths:
       - example/*.html
       - example/methods/*.html
+
 
 pages:
   stage: deploy
   dependencies:
     - test
+    - example
   script:
     - mkdir ./public
     - mv cover.html ./public
+    - mv example/ ./public
   only:
     - master
   artifacts:
