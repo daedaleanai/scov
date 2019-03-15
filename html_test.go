@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -178,5 +180,33 @@ func TestWriteHTMLForSource(t *testing.T) {
 		LogNE(t, "length of output", len(expected), len(out))
 	} else if string(expected) != out {
 		LogNE(t, "output", string(expected), out)
+	}
+}
+
+func TestWriteBranchDescription(t *testing.T) {
+	cases := []struct {
+		data     []BranchStatus
+		withData bool
+		out      string
+	}{
+		{nil, false, ""},
+		{nil, true, `<td class="bd"></td>`},
+		{[]BranchStatus{}, true, `<td class="bd"></td>`},
+		{[]BranchStatus{BranchNotExec}, true, `<td class="bd">[ NE ]</td>`},
+		{[]BranchStatus{BranchTaken, BranchNotTaken}, true, `<td class="bd">[ + - ]</td>`},
+	}
+
+	for i, v := range cases {
+		s := bytes.NewBuffer(nil)
+		w := bufio.NewWriter(s)
+
+		writeBranchDescription(w, v.withData, v.data)
+		err := w.Flush()
+		if err != nil {
+			t.Errorf("failed to write, %s", err)
+		}
+		if s.String() != v.out {
+			t.Errorf("Case %d: expected %s, got %s", i, v.out, s.String())
+		}
 	}
 }

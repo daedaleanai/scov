@@ -43,6 +43,7 @@ body { max-width:70em; margin:auto; }
 .source .hit { background:lightblue; }
 .source .miss { background:LightCoral; }
 .source .ln { background:PaleGoldenrod; text-align:right; }
+.source .bd { background:#f2edbf; text-align:right; }
 .source .ld { background:#f6f3d4; text-align:right; }
 </style>
 </head>
@@ -101,7 +102,7 @@ body { max-width:70em; margin:auto; }
 </div></div>
 <div class="pure-g"><div class="pure-u">
 <table class="source"><thead>
-<tr><th class="ln">Line #</th><th class="ld">Hit count</th><th>Source code</th></tr>
+<tr><th class="ln">Line #</th>{{if .BCoverage.Valid}}<th class="ld">Branches</th>{{end}}<th class="ld">Hit count</th><th>Source code</th></tr>
 </thead><tbody>
 `,
 	))
@@ -204,25 +205,26 @@ func createHTMLForSource(filename string, sourcename string, data *FileData) err
 }
 
 func writeHTMLForSource(out io.Writer, sourcename string, data *FileData) error {
+	bcov := data.BranchCoverage()
 	params := map[string]interface{}{
 		"Title":     *title + " > " + sourcename,
 		"LCoverage": data.LineCoverage(),
 		"FCoverage": data.FuncCoverage(),
-		"BCoverage": data.BranchCoverage(),
+		"BCoverage": bcov,
 	}
 
 	err := tmplSource1.Execute(out, params)
 	if err != nil {
 		return err
 	}
-	err = writeSourceListing(out, sourcename, data.LineData)
+	err = writeSourceListing(out, sourcename, data.LineData, bcov.Valid(), data.BranchData)
 	if err != nil {
 		return err
 	}
 	return tmplSource2.Execute(out, params)
 }
 
-func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[int]uint64) error {
+func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[int]uint64, withBranchData bool, branchData map[int][]BranchStatus) error {
 	filename := filepath.Join(*srcdir, sourcename)
 	file, err := os.Open(filename)
 	if err != nil {
@@ -235,20 +237,25 @@ func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[i
 	lineNo := 1
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if lc, ok := lineCountData[lineNo]; ok {
-			cl := "miss"
+		w.WriteString("<tr")
+		lc, ok := lineCountData[lineNo]
+		if ok {
 			if lc > 0 {
-				cl = "hit"
+				w.WriteString(` class="hit">`)
+			} else {
+				w.WriteString(` class="miss">`)
 			}
-			fmt.Fprintf(w, "<tr class=\"%s\"><td class=\"ln\">%d</td><td class=\"ld\">%d</td><td>%s</td></tr>\n",
-				cl, lineNo, lc,
-				template.HTMLEscapeString(scanner.Text()),
-			)
 		} else {
-			fmt.Fprintf(w, "<tr><td class=\"ln\">%d</td><td class=\"ld\"></td><td>%s</td></tr>\n",
-				lineNo, template.HTMLEscapeString(scanner.Text()),
-			)
+			w.WriteString(">")
 		}
+		fmt.Fprintf(w, "<td class=\"ln\">%d</td>", lineNo)
+		writeBranchDescription(w, withBranchData, branchData[lineNo])
+		if ok {
+			fmt.Fprintf(w, `<td class="ld">%d</td>`, lc)
+		} else {
+			w.WriteString(`<td class="ld"></td>`)
+		}
+		fmt.Fprintf(w, "<td>%s</td></tr>\n", template.HTMLEscapeString(scanner.Text()))
 		lineNo++
 	}
 	if err := scanner.Err(); err != nil {
@@ -260,4 +267,28 @@ func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[i
 
 func htmlSafe(text string) template.HTML {
 	return template.HTML(text)
+}
+
+func writeBranchDescription(w *bufio.Writer, withBranchData bool, data []BranchStatus) {
+	if !withBranchData {
+		return
+	}
+	if len(data) == 0 {
+		w.WriteString(`<td class="bd"></td>`)
+		return
+	}
+	if data[0] == BranchNotExec {
+		w.WriteString(`<td class="bd">[ NE ]</td>`)
+		return
+	}
+
+	w.WriteString(`<td class="bd">[`)
+	for _, v := range data {
+		if v == BranchTaken {
+			w.WriteString(" +")
+		} else {
+			w.WriteString(" -")
+		}
+	}
+	w.WriteString(` ]</td>`)
 }

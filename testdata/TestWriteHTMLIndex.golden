@@ -25,6 +25,7 @@ body { max-width:70em; margin:auto; }
 .source .hit { background:lightblue; }
 .source .miss { background:LightCoral; }
 .source .ln { background:PaleGoldenrod; text-align:right; }
+.source .bd { background:#f2edbf; text-align:right; }
 .source .ld { background:#f6f3d4; text-align:right; }
 </style>
 </head>
