@@ -17,7 +17,7 @@ body { max-width:70em; margin:auto; }
 .coverage td:nth-child(2) { text-align:center; }
 .coverage td:nth-child(3) { text-align:center; }
 .coverage td:nth-child(4) { text-align:center; }
-.sparkbar { border: 1px solid black; border-radius:1px; }
+.sparkbar { border: 1px solid black; border-radius:1px; min-width:50px; }
 .sparkbar .fill { display: inline-block; height: 1em; }
 .sparkbar .high { background-color:lightgreen; }
 .sparkbar .medium { background-color:yellow; }

@@ -14,7 +14,7 @@ import (
 var (
 	tmpl1 = template.New("html").Funcs(template.FuncMap{"htmlSafe": htmlSafe})
 	tmpl2 = template.Must(tmpl1.New("sparkbar").Parse(
-		`<div class="sparkbar"><div class="fill {{.Rating}}" style="width:{{printf "%.1f" .P}}px"></div><div class="empty" style="width:{{printf "%.1f" .Q}}px"></div></div>`,
+		`<div class="sparkbar">{{if gt .P 99.0}}<div class="fill {{.Rating}}" style="width:100%"></div>{{else}}<div class="fill {{.Rating}}" style="width:{{printf "%.1f" .P}}%"></div><div class="empty" style="width:{{printf "%.1f" .Q}}%"></div>{{end}}</div>`,
 	))
 	tmplHead = template.Must(tmpl1.New("head").Parse(
 		`<head>
@@ -35,7 +35,7 @@ body { max-width:70em; margin:auto; }
 .coverage td:nth-child(2) { text-align:center; }
 .coverage td:nth-child(3) { text-align:center; }
 .coverage td:nth-child(4) { text-align:center; }
-.sparkbar { border: 1px solid black; border-radius:1px; }
+.sparkbar { border: 1px solid black; border-radius:1px; min-width:50px; }
 .sparkbar .fill { display: inline-block; height: 1em; }
 .sparkbar .high { background-color:lightgreen; }
 .sparkbar .medium { background-color:yellow; }
@@ -90,9 +90,9 @@ body { max-width:70em; margin:auto; }
 </div><div class="pure-u-1 pure-u-md-1-2">
 {{template "coverage" .}}
 </div></div>
-<div class="pure-g"><div class="pure-u">
+<div class="pure-g"><div class="pure-u-1">
 <h2>By File</h2>
-<table class="pure-table pure-table-bordered">
+<table class="pure-table pure-table-bordered" style="width:100%">
 {{ $useBranch := .BCoverage.Valid -}}
 <thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="3">Function Coverage</th>{{if $useBranch}}<th colspan="3">Branch Coverage</th>{{end}}</tr></thead>
 <tbody>
