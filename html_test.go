@@ -190,10 +190,10 @@ func TestWriteBranchDescription(t *testing.T) {
 		out      string
 	}{
 		{nil, false, ""},
-		{nil, true, `<td class="bd"></td>`},
-		{[]BranchStatus{}, true, `<td class="bd"></td>`},
-		{[]BranchStatus{BranchNotExec}, true, `<td class="bd">[ NE ]</td>`},
-		{[]BranchStatus{BranchTaken, BranchNotTaken}, true, `<td class="bd">[ + - ]</td>`},
+		{nil, true, `<td></td>`},
+		{[]BranchStatus{}, true, `<td></td>`},
+		{[]BranchStatus{BranchNotExec}, true, `<td>[ NE ]</td>`},
+		{[]BranchStatus{BranchTaken, BranchNotTaken}, true, `<td>[ + - ]</td>`},
 	}
 
 	for i, v := range cases {

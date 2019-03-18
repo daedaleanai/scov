@@ -41,14 +41,20 @@ body { max-width:70em; margin:auto; }
 .sparkbar .medium { background-color:yellow; }
 .sparkbar .low { background-color:red; }
 .sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
+{{ if .Source -}}
 .source { font-family: monospace; width:100%; margin:3em 0; }
 .source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }
 .source td { padding: .1em .5em; white-space: pre; }
 .source .hit { background:lightblue; }
 .source .miss { background:LightCoral; }
-.source .ln { background:PaleGoldenrod; text-align:right; }
-.source .bd { background:#f2edbf; text-align:right; }
-.source .ld { background:#f6f3d4; text-align:right; }
+.source td:nth-child(1), .source th:nth-child(1) { background:PaleGoldenrod; text-align:right; }
+{{ if .BCoverage.Valid -}}
+.source td:nth-child(2), .source th:nth-child(2) { background:#f2edbf; text-align:right; }
+.source td:nth-child(3), .source th:nth-child(3) { background:#f6f3d4; text-align:right; }
+{{ else -}}
+.source td:nth-child(2), .source th:nth-child(2) { background:#f6f3d4; text-align:right; }
+{{ end -}}
+{{ end -}}
 </style>
 </head>
 `,
@@ -118,7 +124,7 @@ body { max-width:70em; margin:auto; }
 </div></div>
 <div class="pure-g"><div class="pure-u">
 <table class="source"><thead>
-<tr><th class="ln">Line #</th>{{if .BCoverage.Valid}}<th class="ld">Branches</th>{{end}}<th class="ld">Hit count</th><th>Source code</th></tr>
+<tr><th>Line #</th>{{if .BCoverage.Valid}}<th>Branches</th>{{end}}<th>Hit count</th><th>Source code</th></tr>
 </thead><tbody>
 `,
 	))
@@ -224,6 +230,7 @@ func writeHTMLForSource(out io.Writer, sourcename string, data *FileData) error 
 	bcov := data.BranchCoverage()
 	params := map[string]interface{}{
 		"Title":     *title + " > " + sourcename,
+		"Source":    true,
 		"LCoverage": data.LineCoverage(),
 		"FCoverage": data.FuncCoverage(),
 		"BCoverage": bcov,
@@ -264,12 +271,12 @@ func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[i
 		} else {
 			w.WriteString(">")
 		}
-		fmt.Fprintf(w, "<td class=\"ln\">%d</td>", lineNo)
+		fmt.Fprintf(w, "<td>%d</td>", lineNo)
 		writeBranchDescription(w, withBranchData, branchData[lineNo])
 		if ok {
-			fmt.Fprintf(w, `<td class="ld">%d</td>`, lc)
+			fmt.Fprintf(w, `<td>%d</td>`, lc)
 		} else {
-			w.WriteString(`<td class="ld"></td>`)
+			w.WriteString(`<td></td>`)
 		}
 		fmt.Fprintf(w, "<td>%s</td></tr>\n", template.HTMLEscapeString(scanner.Text()))
 		lineNo++
@@ -290,15 +297,15 @@ func writeBranchDescription(w *bufio.Writer, withBranchData bool, data []BranchS
 		return
 	}
 	if len(data) == 0 {
-		w.WriteString(`<td class="bd"></td>`)
+		w.WriteString(`<td></td>`)
 		return
 	}
 	if data[0] == BranchNotExec {
-		w.WriteString(`<td class="bd">[ NE ]</td>`)
+		w.WriteString(`<td>[ NE ]</td>`)
 		return
 	}
 
-	w.WriteString(`<td class="bd">[`)
+	w.WriteString(`<td>[`)
 	for _, v := range data {
 		if v == BranchTaken {
 			w.WriteString(" +")

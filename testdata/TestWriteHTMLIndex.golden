@@ -23,14 +23,6 @@ body { max-width:70em; margin:auto; }
 .sparkbar .medium { background-color:yellow; }
 .sparkbar .low { background-color:red; }
 .sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
-.source { font-family: monospace; width:100%; margin:3em 0; }
-.source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }
-.source td { padding: .1em .5em; white-space: pre; }
-.source .hit { background:lightblue; }
-.source .miss { background:LightCoral; }
-.source .ln { background:PaleGoldenrod; text-align:right; }
-.source .bd { background:#f2edbf; text-align:right; }
-.source .ld { background:#f6f3d4; text-align:right; }
 </style>
 </head>
 <body>
