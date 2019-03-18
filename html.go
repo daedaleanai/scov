@@ -54,7 +54,7 @@ body { max-width:70em; margin:auto; }
 	))
 	tmplCoverage = template.Must(tmpl1.New("coverage").Parse(
 		`<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
-<thead><tr><td></td><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
+<thead><tr><th></th><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 <tbody>
 <tr><td>Lines:</td><td>{{.LCoverage.Hits}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td></tr>
 <tr><td>Functions:</td><td>{{.FCoverage.Hits}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td></tr>
