@@ -24,13 +24,15 @@ If you add the option `-b` when running `gcov`, the reports will include informa
 
 **-h**	Request help
 
-**-htmldir [folder]**  	Path for the HTML output (default ".")
+**-htmldir [folder]**  	Path for the HTML output (default ".").
 
-**-srcdir [folder]**  	Path for the source directory (default ".")
+**-srcdir [folder]**  	Path for the source directory (default ".").
 
-**-text [filename]**   	Filename for text report, use - for stdout
+**-srcid [string]**    	String to identify revision of the source.  This could be either `git describe` or `hg id`.
 
-**-title string**    	Title for the HTML pages (default "GCovHTML")
+**-text [filename]**   	Filename for text report, use - to direct the report to stdout.
+
+**-title string**    	Title for the HTML pages (default "GCovHTML").
 
 ## Installation
 

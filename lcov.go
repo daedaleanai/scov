@@ -15,9 +15,10 @@ var (
 	external = flag.Bool("external", false, "Set whether external files to be included")
 	help     = flag.Bool("h", false, "Request help")
 	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
+	srcid    = flag.String("srcid", "", "String to identify revision of source")
 	title    = flag.String("title", "GCovHTML", "Title for the HTML pages")
 	htmldir  = flag.String("htmldir", ".", "Path for the HTML output")
-	text     = flag.String("text", "", "Filename for text report, use - for stdout")
+	text     = flag.String("text", "", "Filename for text report, use - to direct the report to stdout")
 )
 
 func main() {

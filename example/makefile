@@ -15,7 +15,7 @@ text: example
 html: example
 	./example 0 20
 	gcov -i -b example.c methods/*.c
-	$(GCOVHTML) -title "Example" *.gcov
+	$(GCOVHTML) -title "Example" -srcid=`git describe` *.gcov
 
 clean:
 	-$(RM) *.o methods/*.o example

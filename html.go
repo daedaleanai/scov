@@ -87,6 +87,9 @@ body { max-width:70em; margin:auto; }
 </div></div>
 <div class="pure-g"><div class="pure-u-1 pure-u-md-1-2">
 <p>Coverage generated on: {{.Date}}</p>
+{{ if .ID -}}
+<p>Source ID: {{.ID}}</p>
+{{ end -}}
 </div><div class="pure-u-1 pure-u-md-1-2">
 {{template "coverage" .}}
 </div></div>
@@ -199,6 +202,7 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 
 	params := map[string]interface{}{
 		"Title":     *title,
+		"ID":        *srcid,
 		"LCoverage": LCov,
 		"FCoverage": FCov,
 		"BCoverage": BCov,
