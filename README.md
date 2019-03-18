@@ -14,7 +14,7 @@ gcov -i [source files]
 gcovhtml -title "My Report" -htmldir ./html *.gcov
 ```
 
-This will create a folder, and insert the HTML files into that folder.  Open `index.html` to get an overview of the code coverage, and follow the links for annotated source files.
+This will create a folder, and insert the HTML files into that folder.  Open `index.html` to get an overview of the code coverage, and follow the links for the annotated source files.
 
 If you add the option `-b` when running `gcov`, the reports will include information on the branch coverage.
 
@@ -41,16 +41,19 @@ To build a copy of `gcovhtml`, you will need a copy of [Go](https://golang.org/)
 Once Go is installed, you can clone the repository and build the application.
 
 ```shell
-go get gitlab.com/stone.code/gcovhtml
+go get -u gitlab.com/stone.code/gcovhtml
+go install gitlab.com/stone.code/gcovhtml
 ```
 
 ### Binaries
 
-Current binaries are built with every commit, and can be downloaded from the [pipelines pages](https://gitlab.com/stone.code/gcovhtml/pipelines).
+Binaries can be downloaded for any [release](https://gitlab.com/stone.code/gcovhtml/releases).  Builds are included for multiple platforms.  If your platform is missing, please [open an issue](https://gitlab.com/stone.code/gcovhtml/issues).
+
+Additionally, binaries are built with every commit, and they can be downloaded from the [pipelines pages](https://gitlab.com/stone.code/gcovhtml/pipelines).
 
 ## Contributing
 
-Development of this project is ongoing.  If you have find a bug or have any suggestions, please [open an issue](https://gitlab.com/stone.code/gcovhtml/issues).
+Development of this project is ongoing.  If you find a bug or have any suggestions, please [open an issue](https://gitlab.com/stone.code/gcovhtml/issues).
 
 If you'd like to contribute, please fork the repository and make changes.  Pull requests are welcome.
 
