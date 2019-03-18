@@ -24,6 +24,11 @@ func writeTextReport(writer io.Writer, data map[string]*FileData) error {
 
 	w := bufio.NewWriter(writer)
 
+	// Head
+	w.WriteString(" Lines\t Funcs\n")
+	w.WriteString("------\t------\n")
+
+	// Body
 	for name, data := range data {
 		lcov := data.LineCoverage()
 		LCov.Accumulate(lcov)
@@ -32,7 +37,9 @@ func writeTextReport(writer io.Writer, data map[string]*FileData) error {
 
 		fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", lcov.P(), fcov.P(), name)
 	}
-	fmt.Fprintf(w, "------\t------\t\n")
+
+	// Foot
+	w.WriteString("------\t------\n")
 	fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\tOverall\n", LCov.P(), FCov.P())
 	return w.Flush()
 }

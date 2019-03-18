@@ -67,14 +67,16 @@ example:
   dependencies:
     - golang-1.11
   script:
-    - cd ./example && GCOVHTML=../dist/gcovhtml-linux-amd64 make html
+    - cd ./example
+    - GCOVHTML=../dist/gcovhtml-linux-amd64 make text
+    - GCOVHTML=../dist/gcovhtml-linux-amd64 make html
   only:
     - master
   artifacts:
     paths:
+      - example/*.txt
       - example/*.html
       - example/methods/*.html
-
 
 pages:
   stage: deploy

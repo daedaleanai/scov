@@ -7,8 +7,10 @@ import (
 )
 
 func TestCreateTextReport(t *testing.T) {
-	const expected = ` 59.6%	100.0%	binc.cpp
-------	------	
+	const expected = ` Lines	 Funcs
+------	------
+ 59.6%	100.0%	binc.cpp
+------	------
  59.6%	100.0%	Overall
 `
 
@@ -47,8 +49,10 @@ func TestCreateTextReportFail(t *testing.T) {
 }
 
 func TestWriteTextReport(t *testing.T) {
-	const expected = ` 59.6%	100.0%	binc.cpp
-------	------	
+	const expected = ` Lines	 Funcs
+------	------
+ 59.6%	100.0%	binc.cpp
+------	------
  59.6%	100.0%	Overall
 `
 
