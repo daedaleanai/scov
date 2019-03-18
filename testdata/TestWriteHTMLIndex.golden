@@ -13,6 +13,10 @@
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
+.coverage { margin-left:auto;margin-right:0; }
+.coverage td:nth-child(2) { text-align:center; }
+.coverage td:nth-child(3) { text-align:center; }
+.coverage td:nth-child(4) { text-align:center; }
 .sparkbar { border: 1px solid black; border-radius:1px; }
 .sparkbar .fill { display: inline-block; height: 1em; }
 .sparkbar .high { background-color:lightgreen; }
@@ -37,7 +41,7 @@ body { max-width:70em; margin:auto; }
 <div class="pure-g"><div class="pure-u-1 pure-u-md-1-2">
 <p>Coverage generated on: Mon Jan  2 15:04:05 UTC 2006</p>
 </div><div class="pure-u-1 pure-u-md-1-2">
-<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
+<table class="pure-table pure-table-bordered coverage">
 <thead><tr><th></th><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 <tbody>
 <tr><td>Lines:</td><td>90</td><td>151</td><td>59.6%</td></tr>
@@ -48,9 +52,9 @@ body { max-width:70em; margin:auto; }
 <div class="pure-g"><div class="pure-u">
 <h2>By File</h2>
 <table class="pure-table pure-table-bordered">
-<thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="2">Function Coverage</th></tr></thead>
+<thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="3">Function Coverage</th></tr></thead>
 <tbody>
-<tr><td><a href="binc.cpp.html">binc.cpp</a></td><td><div class="sparkbar"><div class="fill low" style="width:59.6px"></div><div class="empty" style="width:40.4px"></div></div></td><td>90/151</td><td>59.6%</td><td>12/12</td><td>100.0%</td></tr>
+<tr><td><a href="binc.cpp.html">binc.cpp</a></td><td><div class="sparkbar"><div class="fill low" style="width:59.6px"></div><div class="empty" style="width:40.4px"></div></div></td><td>90/151</td><td>59.6%</td><td><div class="sparkbar"><div class="fill high" style="width:100.0px"></div><div class="empty" style="width:0.0px"></div></div></td><td>12/12</td><td>100.0%</td></tr>
 </tbody>
 </table>
 </div></div>

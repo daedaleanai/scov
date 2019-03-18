@@ -31,6 +31,10 @@ var (
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
+.coverage { margin-left:auto;margin-right:0; }
+.coverage td:nth-child(2) { text-align:center; }
+.coverage td:nth-child(3) { text-align:center; }
+.coverage td:nth-child(4) { text-align:center; }
 .sparkbar { border: 1px solid black; border-radius:1px; }
 .sparkbar .fill { display: inline-block; height: 1em; }
 .sparkbar .high { background-color:lightgreen; }
@@ -52,14 +56,17 @@ body { max-width:70em; margin:auto; }
 	tmplH1 = template.Must(tmpl1.New("h1").Parse(
 		`<div class="pure-g"><h1 class="pure-u">{{.Title}}</h1></div>`,
 	))
+	tmplCoverageRow = template.Must(tmpl1.New("coverageRow").Parse(
+		`<td>{{.Hits}}</td><td>{{.Total}}</td><td>{{printf "%.1f" .P}}%</td>`,
+	))
 	tmplCoverage = template.Must(tmpl1.New("coverage").Parse(
-		`<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
+		`<table class="pure-table pure-table-bordered coverage">
 <thead><tr><th></th><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 <tbody>
-<tr><td>Lines:</td><td>{{.LCoverage.Hits}}</td><td>{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td></tr>
-<tr><td>Functions:</td><td>{{.FCoverage.Hits}}</td><td>{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td></tr>
+<tr><td>Lines:</td>{{template "coverageRow" .LCoverage}}</tr>
+<tr><td>Functions:</td>{{template "coverageRow" .FCoverage}}</tr>
 {{ if .BCoverage.Valid -}}
-<tr><td>Branches:</td><td>{{.BCoverage.Hits}}</td><td>{{.BCoverage.Total}}</td><td>{{printf "%.1f" .BCoverage.P}}%</td></tr>
+<tr><td>Branches:</td>{{template "coverageRow" .BCoverage}}</tr>
 {{ end -}}
 </tbody>
 </table>`,
@@ -80,10 +87,19 @@ body { max-width:70em; margin:auto; }
 <div class="pure-g"><div class="pure-u">
 <h2>By File</h2>
 <table class="pure-table pure-table-bordered">
-<thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="2">Function Coverage</th></tr></thead>
+{{ $useBranch := .BCoverage.Valid -}}
+<thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="3">Function Coverage</th>{{if $useBranch}}<th colspan="3">Branch Coverage</th>{{end}}</tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
-<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td></tr>
+<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td><td>{{template "sparkbar" .FCoverage}}</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td>
+{{- if $useBranch -}}
+{{- if .BCoverage.Valid -}}
+<td>{{template "sparkbar" .BCoverage}}</td><td>{{.BCoverage.Hits}}/{{.BCoverage.Total}}</td><td>{{printf "%.1f" .BCoverage.P}}%</td>
+{{- else -}}
+<td colspan="3">No data</td>
+{{- end -}}
+{{- end -}}
+</tr>
 {{end -}}
 </tbody>
 </table>

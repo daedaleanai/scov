@@ -13,6 +13,10 @@
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
+.coverage { margin-left:auto;margin-right:0; }
+.coverage td:nth-child(2) { text-align:center; }
+.coverage td:nth-child(3) { text-align:center; }
+.coverage td:nth-child(4) { text-align:center; }
 .sparkbar { border: 1px solid black; border-radius:1px; }
 .sparkbar .fill { display: inline-block; height: 1em; }
 .sparkbar .high { background-color:lightgreen; }
@@ -33,7 +37,7 @@ body { max-width:70em; margin:auto; }
 <div class="pure-g"><h1 class="pure-u">GCovHTML &gt; binc.cpp</h1></div>
 <div class="pure-g"><div class="pure-u">
 <h2>Overall</h2>
-<table class="pure-table pure-table-bordered" style="margin-left:auto;margin-right:0">
+<table class="pure-table pure-table-bordered coverage">
 <thead><tr><th></th><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 <tbody>
 <tr><td>Lines:</td><td>90</td><td>151</td><td>59.6%</td></tr>
