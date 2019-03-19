@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
 	"testing"
@@ -8,6 +9,30 @@ import (
 
 func LogNE(t *testing.T, field string, expected, got interface{}) {
 	t.Errorf("Values for %s not equal, expected %v, got %v", field, expected, got)
+}
+
+func TestHandleRequestFlags(t *testing.T) {
+	cases := []struct {
+		help    bool
+		version bool
+		ok      bool
+	}{
+		{false, false, false},
+		{true, false, true},
+		{false, true, true},
+	}
+
+	for i, v := range cases {
+		buffer := bytes.NewBuffer(nil)
+		ok := handleRequestFlags(buffer, v.help, v.version)
+
+		if ok != (buffer.Len() > 0) {
+			t.Errorf("Case %d: mismatch between output and return status", i)
+		}
+		if ok != v.ok {
+			t.Errorf("Case %d: expected %v, got %v", i, v.ok, ok)
+		}
+	}
 }
 
 func TestParseFunctionRecord(t *testing.T) {

@@ -34,6 +34,8 @@ If you add the option `-b` when running `gcov`, the reports will include informa
 
 **-title string**    	Title for the HTML pages (default "GCovHTML").
 
+**-v**  Request version information.
+
 ## Installation
 
 ### From Source

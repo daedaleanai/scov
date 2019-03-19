@@ -16,15 +16,15 @@ golang-1.11:
     - go build
     - go test
     - mkdir dist
-    - GOOS=windows GOARCH=amd64 go build
+    - GOOS=windows GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
     - mv gcovhtml.exe ./dist/gcovhtml-windows-amd64.exe
-    - GOOS=linux GOARCH=amd64 go build
+    - GOOS=linux GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
     - mv gcovhtml ./dist/gcovhtml-linux-amd64
-    - GOOS=darwin GOARCH=amd64 go build
+    - GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
     - mv gcovhtml ./dist/gcovhtml-darwin-amd64
-    - GOOS=freebsd GOARCH=amd64 go build
+    - GOOS=freebsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
     - mv gcovhtml ./dist/gcovhtml-freebsd-amd64
-    - GOOS=openbsd GOARCH=amd64 go build
+    - GOOS=openbsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
     - mv gcovhtml ./dist/gcovhtml-openbsd-amd64
   artifacts:
     paths:

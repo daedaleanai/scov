@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 var (
 	external = flag.Bool("external", false, "Set whether external files to be included")
 	help     = flag.Bool("h", false, "Request help")
+	version  = flag.Bool("v", false, "Request version information")
 	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
 	srcid    = flag.String("srcid", "", "String to identify revision of source")
 	title    = flag.String("title", "GCovHTML", "Title for the HTML pages")
@@ -21,13 +23,16 @@ var (
 	text     = flag.String("text", "", "Filename for text report, use - to direct the report to stdout")
 )
 
+var (
+	versionInformation = "(development)"
+)
+
 func main() {
 	// Initialize global maps used to track line and function coverage
 	fileData := make(map[string]*FileData)
 
 	flag.Parse()
-	if *help {
-		flag.PrintDefaults()
+	if ok := handleRequestFlags(os.Stdout, *help, *version); ok {
 		os.Exit(0)
 	}
 
@@ -65,6 +70,20 @@ func main() {
 			os.Exit(1)
 		}
 	}
+}
+
+func handleRequestFlags(out io.Writer, help, version bool) bool {
+	if help {
+		flag.CommandLine.SetOutput(out)
+		flag.Usage()
+		return true
+	}
+	if version {
+		fmt.Fprintf(out, "gcovhtml %s\n", versionInformation)
+		return true
+	}
+
+	return false
 }
 
 func recordType(line string) (string, string) {
