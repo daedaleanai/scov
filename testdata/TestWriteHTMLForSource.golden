@@ -23,7 +23,7 @@ body { max-width:70em; margin:auto; }
 .sparkbar .medium { background-color:yellow; }
 .sparkbar .low { background-color:red; }
 .sparkbar .empty { display: inline-block; height: 1em; background-color: white; }
-.source { font-family: monospace; width:100%; margin:3em 0; }
+.source { font-family: monospace; width:100%; margin:0; }
 .source th { padding: .1em .5em; text-align:left; border-bottom: 1px solid black; }
 .source td { padding: .1em .5em; white-space: pre; }
 .source .hit { background:lightblue; }
@@ -45,6 +45,7 @@ body { max-width:70em; margin:auto; }
 </table>
 </div></div>
 <div class="pure-g"><div class="pure-u">
+<h2>File Listing</h2>
 <table class="source"><thead>
 <tr><th>Line #</th><th>Hit count</th><th>Source code</th></tr>
 </thead><tbody>
