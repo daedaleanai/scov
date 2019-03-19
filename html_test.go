@@ -145,7 +145,7 @@ func TestCreateHTMLForSource(t *testing.T) {
 	defer cleanup()
 
 	*srcdir = "./testdata"
-	err = createHTMLForSource(name, "binc.cpp", data["binc.cpp"])
+	err = createHTMLForSource(name, "binc.cpp", data["binc.cpp"], time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
 	if err != nil {
 		t.Fatalf("could not write output: %s", err)
 	}
@@ -171,7 +171,7 @@ func TestWriteHTMLForSource(t *testing.T) {
 
 	buffer := &strings.Builder{}
 	*srcdir = "./testdata"
-	err = writeHTMLForSource(buffer, "binc.cpp", data["binc.cpp"])
+	err = writeHTMLForSource(buffer, "binc.cpp", data["binc.cpp"], time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
 	if err != nil {
 		t.Errorf("could not write output: %s", err)
 	}

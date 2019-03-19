@@ -31,6 +31,7 @@ var (
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
+table { margin-bottom: 1em; }
 .coverage { margin-left:auto;margin-right:0; }
 .coverage td:nth-child(2) { text-align:center; }
 .coverage td:nth-child(3) { text-align:center; }
@@ -66,7 +67,7 @@ body { max-width:70em; margin:auto; }
 		`<td>{{.Hits}}</td><td>{{.Total}}</td><td>{{printf "%.1f" .P}}%</td>`,
 	))
 	tmplCoverage = template.Must(tmpl1.New("coverage").Parse(
-		`<table class="pure-table pure-table-bordered coverage">
+		`<table class="pure-table pure-table-horizontal coverage">
 <thead><tr><th></th><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 <tbody>
 <tr><td>Lines:</td>{{template "coverageRow" .LCoverage}}</tr>
@@ -86,9 +87,13 @@ body { max-width:70em; margin:auto; }
 <h2>Overall</h2>
 </div></div>
 <div class="pure-g"><div class="pure-u-1 pure-u-md-1-2">
-<p>Coverage generated on: {{.Date}}</p>
 {{ if .ID -}}
-<p>Source ID: {{.ID}}</p>
+<table class="pure-table pure-table-horizontal">
+<tr><td>Date:</td><td>{{.Date}}</td></tr>
+<tr><td>Source&nbsp;ID:</td><td>{{.ID}}</td></tr>
+</table>
+{{ else -}}
+<p>Date: {{.Date}}</p>
 {{ end -}}
 </div><div class="pure-u-1 pure-u-md-1-2">
 {{template "coverage" .}}
@@ -123,6 +128,13 @@ body { max-width:70em; margin:auto; }
 {{template "h1" .}}
 <div class="pure-g"><div class="pure-u">
 <h2>Overall</h2>
+</div></div>
+<div class="pure-g"><div class="pure-u-1 pure-u-md-1-2">
+<table class="pure-table pure-table-horizontal">
+<tr><td>Date:</td><td>{{.Date}}</td></tr>
+<tr><td>Filename:</td><td>{{.Filename}}</td></tr>
+</table>
+</div><div class="pure-u-1 pure-u-md-1-2">
 {{template "coverage" .}}
 </div></div>
 <div class="pure-g"><div class="pure-u">
@@ -159,7 +171,7 @@ func createHTML(outdir string, data map[string]*FileData, date time.Time) error 
 
 	for name, data := range data {
 		filename := filepath.Join(outdir, name+".html")
-		err = createHTMLForSource(filename, name, data)
+		err = createHTMLForSource(filename, name, data, date)
 		if err != nil {
 			return err
 		}
@@ -214,7 +226,7 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 	return tmpl.Execute(out, params)
 }
 
-func createHTMLForSource(filename string, sourcename string, data *FileData) error {
+func createHTMLForSource(filename string, sourcename string, data *FileData, date time.Time) error {
 	err := os.MkdirAll(filepath.Dir(filename), 0700)
 	if err != nil {
 		return err
@@ -226,16 +238,18 @@ func createHTMLForSource(filename string, sourcename string, data *FileData) err
 	}
 	defer w.Close()
 
-	err = writeHTMLForSource(w.File(), sourcename, data)
+	err = writeHTMLForSource(w.File(), sourcename, data, date)
 	w.Keep(err)
 	return err
 }
 
-func writeHTMLForSource(out io.Writer, sourcename string, data *FileData) error {
+func writeHTMLForSource(out io.Writer, sourcename string, data *FileData, date time.Time) error {
 	bcov := data.BranchCoverage()
 	params := map[string]interface{}{
-		"Title":     *title + " > " + sourcename,
+		"Title":     *title + " > " + filepath.Base(sourcename),
 		"Source":    true,
+		"Date":      date.Format(time.UnixDate),
+		"Filename":  sourcename,
 		"LCoverage": data.LineCoverage(),
 		"FCoverage": data.FuncCoverage(),
 		"BCoverage": bcov,
