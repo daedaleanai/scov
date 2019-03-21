@@ -7,15 +7,17 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
 var (
-	external = flag.Bool("external", false, "Set whether external files to be included")
 	help     = flag.Bool("h", false, "Request help")
 	version  = flag.Bool("v", false, "Request version information")
+	external = flag.Bool("external", false, "Set whether external files to be included")
+	exclude  = flag.String("exclude", "", "Exclude source files that match the regular expression")
 	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
 	srcid    = flag.String("srcid", "", "String to identify revision of source")
 	title    = flag.String("title", "GCovHTML", "Title for the HTML pages")
@@ -43,7 +45,8 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	fileData = filterFileData(fileData, *external)
+	fileData = filterExternalFileData(fileData, *external)
+	fileData = filterExcludedFileData(os.Stderr, fileData, *exclude)
 	if len(fileData) == 0 {
 		fmt.Fprintf(os.Stderr, "error: no file data present\n")
 		os.Exit(1)
@@ -234,13 +237,32 @@ func applyBranchRecord(data *FileData, lineNo int, status BranchStatus) {
 	data.BranchData[lineNo] = tmp
 }
 
-func filterFileData(fileData map[string]*FileData, external bool) map[string]*FileData {
+func filterExternalFileData(fileData map[string]*FileData, external bool) map[string]*FileData {
 	if external {
 		return fileData
 	}
 
 	for key := range fileData {
 		if filepath.IsAbs(key) {
+			delete(fileData, key)
+		}
+	}
+	return fileData
+}
+
+func filterExcludedFileData(out io.Writer, fileData map[string]*FileData, filter string) map[string]*FileData {
+	if filter == "" {
+		return fileData
+	}
+
+	re, err := regexp.Compile(filter)
+	if err != nil {
+		fmt.Fprintf(out, "warning: did not apply filter to exclude files: %s\n", err)
+		return fileData
+	}
+
+	for key := range fileData {
+		if re.FindString(key) != "" {
 			delete(fileData, key)
 		}
 	}

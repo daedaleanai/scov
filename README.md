@@ -22,9 +22,11 @@ Note that `gcov` version 7 or higher is required.  Earlier versions do not suppo
 
 ### Options
 
-**-external**   Set whether external files to be included
+**-exclude [regexp]**  	Exclude source files that match the regular expression.
 
-**-h**	Request help
+**-external**   Set whether external files to be included.
+
+**-h**	Request help.
 
 **-htmldir [folder]**  	Path for the HTML output (default ".").
 

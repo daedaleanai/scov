@@ -131,7 +131,7 @@ func TestLoadFile(t *testing.T) {
 	}
 }
 
-func TestFilterFileData(t *testing.T) {
+func TestFilterExternalFileData(t *testing.T) {
 	const file1 = "binc.cpp"
 	const file2 = "/usr/include/a.h"
 	const file3 = "/usr/include/b.h"
@@ -155,7 +155,46 @@ func TestFilterFileData(t *testing.T) {
 				data[v] = NewFileData(v)
 			}
 
-			data = filterFileData(data, v.external)
+			data = filterExternalFileData(data, v.external)
+			if out := len(data); out != v.expected {
+				LogNE(t, "file count", v.expected, out)
+			}
+		})
+	}
+}
+
+func TestFilterExcludedFileData(t *testing.T) {
+	const file1 = "binc.cpp"
+	const file2 = "/usr/include/a.h"
+	const file3 = "/usr/include/b.h"
+
+	cases := []struct {
+		in       []string
+		filter   string
+		ok       bool
+		expected int
+	}{
+		{[]string{file1, file2, file3}, "", true, 3},
+		{[]string{file1, file2, file3}, ".+", true, 0},
+		{[]string{file1, file2, file3}, "^/", true, 1},
+		{[]string{file1, file2, file3}, "\\.h$", true, 1},
+		{[]string{file1, file2, file3}, "\\.cpp", true, 2},
+		{[]string{file1, file2, file3}, "[]", false, 3},
+	}
+
+	for i, v := range cases {
+		name := fmt.Sprintf("Case %d", i)
+		t.Run(name, func(t *testing.T) {
+			data := make(map[string]*FileData)
+			for _, v := range v.in {
+				data[v] = NewFileData(v)
+			}
+
+			out := bytes.NewBuffer(nil)
+			data = filterExcludedFileData(out, data, v.filter)
+			if ok := out.Len() == 0; ok != v.ok {
+				LogNE(t, "ok", v.ok, ok)
+			}
 			if out := len(data); out != v.expected {
 				LogNE(t, "file count", v.expected, out)
 			}
