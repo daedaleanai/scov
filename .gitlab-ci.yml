@@ -1,19 +1,8 @@
-image: golang
-
-golang-1.12:
-  image: golang:1.12
+golang-tagged:
+  image: golang
   stage: build
   script:
     - go version
-    - go build
-    - go test 
-
-golang-1.11:
-  image: golang:1.11
-  stage: build
-  script:
-    - go version
-    - go build
     - go test
     - mkdir dist
     - GOOS=windows GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
@@ -33,6 +22,28 @@ golang-1.11:
       - dist/gcovhtml-darwin-amd64
       - dist/gcovhtml-freebsd-amd64
       - dist/gcovhtml-openbsd-amd64
+  only: 
+    - tags
+
+golang-1.12:
+  image: golang:1.12
+  stage: build
+  script:
+    - go version
+    - go build
+    - go test 
+
+golang-1.11:
+  image: golang:1.11
+  stage: build
+  script:
+    - go version
+    - go build
+    - go test
+  artifacts:
+    paths:
+      - gcovhtml
+    expire_in: 1 week
 
 golang-1.10:
   image: golang:1.10
@@ -61,15 +72,15 @@ test:
     paths:
       - cover.html
 
-example:
+example-gcov-7:
   image: gcc:7
   stage: test
   dependencies:
     - golang-1.11
   script:
     - cd ./example
-    - GCOVHTML=../dist/gcovhtml-linux-amd64 make text
-    - GCOVHTML=../dist/gcovhtml-linux-amd64 make html
+    - GCOVHTML=../gcovhtml make text
+    - GCOVHTML=../gcovhtml make html
   only:
     - master
   artifacts:
@@ -77,12 +88,25 @@ example:
       - example/*.txt
       - example/*.html
       - example/methods/*.html
+    expire_in: 1 week
+
+example-gcov-8:
+  image: gcc:8
+  stage: test
+  dependencies:
+    - golang-1.11
+  script:
+    - cd ./example
+    - GCOVHTML=../gcovhtml make text
+    - GCOVHTML=../gcovhtml make html
+  only:
+    - master
 
 pages:
   stage: deploy
   dependencies:
     - test
-    - example
+    - example-gcov-7
   script:
     - mkdir ./public
     - mv cover.html ./public
