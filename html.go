@@ -21,6 +21,7 @@ var (
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{.Title}}</title>
+<meta name="description" content="Code coverage report">
 <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
 {{htmlSafe "<!--[if lte IE 8]>"}}
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-old-ie-min.css">
@@ -28,6 +29,7 @@ var (
 {{htmlSafe "<!--[if gt IE 8]><!-->"}}
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 {{htmlSafe "<!--<![endif]-->"}}
+<link rel="generator" href="https://gitlab.com/stone.code/gcovhtml">
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
@@ -36,8 +38,8 @@ table { margin-bottom: 1em; }
 .coverage td:nth-child(2) { text-align:center; }
 .coverage td:nth-child(3) { text-align:center; }
 .coverage td:nth-child(4) { text-align:center; }
-.sparkbar { border: 1px solid black; border-radius:1px; min-width:50px; }
-.sparkbar .fill { display: inline-block; height: 1em; }
+.sparkbar { border: 1px solid black; border-radius:1px; min-width:50px; height:1em; }
+.sparkbar .fill { display: inline-block; height: 100%; }
 .sparkbar .high { background-color:lightgreen; }
 .sparkbar .medium { background-color:yellow; }
 .sparkbar .low { background-color:red; }
@@ -79,7 +81,8 @@ table { margin-bottom: 1em; }
 </table>`,
 	))
 	tmpl = template.Must(tmpl1.Parse(
-		`<html>
+		`<!DOCTYPE html>
+<html>
 {{template "head" . -}}
 <body>
 {{template "h1" .}}
@@ -122,7 +125,8 @@ table { margin-bottom: 1em; }
 </html>`,
 	))
 	tmplSource1 = template.Must(tmpl1.New("sourcePrefix").Parse(
-		`<html>
+		`<!DOCTYPE html>
+<html>
 {{template "head" . -}}
 <body>
 {{template "h1" .}}
