@@ -66,6 +66,7 @@ test:
   script:
     - go test -coverprofile=cover.out
     - go tool cover -html=cover.out -o=cover.html
+    - bash <(curl -s https://codecov.io/bash)
   only:
     - master
   artifacts:
