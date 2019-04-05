@@ -73,7 +73,7 @@ test:
     paths:
       - cover.html
 
-example-gcov-7:
+example-gcc-7:
   image: gcc:7
   stage: test
   dependencies:
@@ -91,7 +91,7 @@ example-gcov-7:
       - example/methods/*.html
     expire_in: 1 week
 
-example-gcov-8:
+example-gcc-8:
   image: gcc:8
   stage: test
   dependencies:
@@ -102,12 +102,43 @@ example-gcov-8:
     - GCOVHTML=../gcovhtml make html
   only:
     - master
+  artifacts:
+    paths:
+      - example/*.txt
+      - example/*.html
+      - example/methods/*.html
+    expire_in: 1 week
+
+example-clang-8:
+  stage: test
+  dependencies:
+    - golang-1.11
+  script:
+    - cat /etc/*-release
+    - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" >> /etc/apt/sources.list
+    - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" >> /etc/apt/sources.list
+    - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+    - apt-get update -qq -y
+    - apt-get install -qq -y llvm-8 clang-8
+    - alias llvm-profdata=llvm-profdata-8
+    - alias llvm-cov=llvm-cov-8
+    - cd ./example
+    - GCOVHTML=../gcovhtml CC=clang-8 make text
+    - GCOVHTML=../gcovhtml CC=clang-8 make html
+  only:
+    - master
+  artifacts:
+    paths:
+      - example/*.txt
+      - example/*.html
+      - example/methods/*.html
+    expire_in: 1 week
 
 pages:
   stage: deploy
   dependencies:
     - test
-    - example-gcov-7
+    - example-gcc-7
   script:
     - mkdir ./public
     - mv cover.html ./public
