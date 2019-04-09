@@ -68,7 +68,7 @@ func TestParseLCountRecord(t *testing.T) {
 			}
 			lineNo, hc, err := parseLCountRecord(value)
 			if lineNo != v.lineNo {
-				LogNE(t, "function name", v.lineNo, lineNo)
+				LogNE(t, "line number", v.lineNo, lineNo)
 			}
 			if hc != v.hitCount {
 				LogNE(t, "hit count", v.hitCount, hc)
