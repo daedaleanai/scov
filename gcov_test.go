@@ -93,6 +93,7 @@ func TestParseBranchRecord(t *testing.T) {
 		{"branch:176,taken", true, 176, BranchTaken},
 		{"branch:176,nottaken", true, 176, BranchNotTaken},
 		{"branch:176,notexec", true, 176, BranchNotExec},
+		{"branch:176,tkn", false, 0, 0},
 		{"branch:176", false, 0, 0},
 		{"branch:#,taken", false, 0, 0},
 	}
