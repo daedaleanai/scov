@@ -10,15 +10,18 @@ func TestParseFunctionRecord(t *testing.T) {
 		value    string
 		ok       bool
 		name     string
+		line     int
 		hitCount uint64
 	}{
-		{"function:222,6,main", true, "main", 6},
-		{"function:222,223,6,main", true, "main", 6},
-		{"function:222,0,main", true, "main", 0},
-		{"function:222,223,0,main", true, "main", 0},
-		{"function:222,#,main", false, "", 0},
-		{"function:222,223,#,main", false, "", 0},
-		{"function:222,main", false, "", 0},
+		{"function:222,6,main", true, "main", 222, 6},
+		{"function:222,223,6,main", true, "main", 222, 6},
+		{"function:222,0,main", true, "main", 222, 0},
+		{"function:222,223,0,main", true, "main", 222, 0},
+		{"function:#,6,main", false, "", 0, 0},
+		{"function:222,#,main", false, "", 0, 0},
+		{"function:#,223,6,main", false, "", 0, 0},
+		{"function:222,223,#,main", false, "", 0, 0},
+		{"function:222,main", false, "", 0, 0},
 	}
 
 	for _, v := range cases {
@@ -27,9 +30,12 @@ func TestParseFunctionRecord(t *testing.T) {
 			if rt != "function" {
 				LogNE(t, "record type", "function", rt)
 			}
-			name, hc, err := parseFunctionRecord(value)
+			name, line, hc, err := parseFunctionRecord(value)
 			if name != v.name {
 				LogNE(t, "function name", v.name, name)
+			}
+			if line != v.line {
+				LogNE(t, "function line", v.name, name)
 			}
 			if hc != v.hitCount {
 				LogNE(t, "hit count", v.hitCount, hc)

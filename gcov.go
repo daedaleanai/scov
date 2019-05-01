@@ -36,7 +36,7 @@ func loadGCovFile(data map[string]*FileData, file *os.File) error {
 			}
 
 		case "function":
-			funcName, hitCount, err := parseFunctionRecord(value)
+			funcName, _, hitCount, err := parseFunctionRecord(value)
 			if err != nil {
 				return err
 			}
@@ -67,31 +67,39 @@ func loadGCovFile(data map[string]*FileData, file *os.File) error {
 	return nil
 }
 
-func parseFunctionRecord(value string) (funcName string, hitCount uint64, err error) {
+func parseFunctionRecord(value string) (funcName string, funcStart int, hitCount uint64, err error) {
 	values := strings.Split(value, ",")
 	if len(values) == 3 {
-		// The first field is the line number for the function.
-		// We are not using that information.
+		tmp, err := strconv.ParseUint(values[0], 10, 64)
+		if err != nil {
+			return "", 0, 0, fmt.Errorf("can't parse function record: %s", err)
+		}
+		funcStart = int(tmp)
 
 		hitCount, err = strconv.ParseUint(values[1], 10, 64)
 		if err != nil {
-			return "", 0, fmt.Errorf("can't parse function record: %s", err)
+			return "", 0, 0, fmt.Errorf("can't parse function record: %s", err)
 		}
 		funcName = values[2]
-		return funcName, hitCount, nil
+		return funcName, funcStart, hitCount, nil
 	} else if len(values) == 4 {
 		// The first two fields are the line number range for the function.
-		// We are not using that information.
+		// We are using the start.
+		tmp, err := strconv.ParseUint(values[0], 10, 64)
+		if err != nil {
+			return "", 0, 0, fmt.Errorf("can't parse function record: %s", err)
+		}
+		funcStart = int(tmp)
 
 		hitCount, err = strconv.ParseUint(values[2], 10, 64)
 		if err != nil {
-			return "", 0, fmt.Errorf("can't parse function record: %s", err)
+			return "", 0, 0, fmt.Errorf("can't parse function record: %s", err)
 		}
 		funcName = values[3]
-		return funcName, hitCount, nil
+		return funcName, funcStart, hitCount, nil
 	}
 
-	return "", 0, fmt.Errorf("can't parse function record")
+	return "", 0, 0, fmt.Errorf("can't parse function record")
 }
 
 func applyFunctionRecord(data *FileData, funcName string, hitCount uint64) {
