@@ -118,7 +118,9 @@ func TestBRDARecord(t *testing.T) {
 	}{
 		{"BRDA:42,0,0,0", true, 42, BranchNotTaken},
 		{"BRDA:42,0,1,3", true, 42, BranchTaken},
+		{"BRDA:42,0,1", false, 0, 0},
 		{"BRDA:#,0,0,0", false, 0, 0},
+		{"BRDA:42,0,0,#", false, 0, 0},
 	}
 
 	for _, v := range cases {
