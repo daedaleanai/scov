@@ -52,6 +52,8 @@ Note that `llvm` version 8 or higher is required.  Earlier versions do not suppo
 
 **-htmldir [folder]**  	Path for the HTML output (default ".").
 
+**-htmljs**    	Use javascript to enhance reports.
+
 **-srcdir [folder]**  	Path for the source directory (default ".").
 
 **-srcid [string]**    	String to identify revision of the source.  This could be either `git describe` or `hg id`.

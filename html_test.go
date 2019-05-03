@@ -129,6 +129,16 @@ func TestWriteHTMLIndex(t *testing.T) {
 
 }
 
+func TestCreateJS(t *testing.T) {
+	name, cleanup := TempFilename(t)
+	defer cleanup()
+
+	err := createJS(name)
+	if err != nil {
+		t.Errorf("could not write output: %s", err)
+	}
+}
+
 func TestCreateHTMLForSource(t *testing.T) {
 	data := make(map[string]*FileData)
 	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")

@@ -32,10 +32,10 @@ html: example
 ifeq ($(findstring clang,$(CC)),clang)
 	$(LLVM_PROFDATA) merge -o default.prof default.profraw
 	$(LLVM_COV) export -format lcov -instr-profile default.prof ./example > default.info
-	$(GCOVHTML) -title "Example" -srcid=`git describe` *.info
+	$(GCOVHTML) -title "Example" -htmljs=true -srcid=`git describe` *.info
 else
 	gcov -i -b example.c methods/*.c
-	$(GCOVHTML) -title "Example" -srcid=`git describe` *.gcov
+	$(GCOVHTML) -title "Example" -htmljs=true -srcid=`git describe` *.gcov
 endif
 
 clean:

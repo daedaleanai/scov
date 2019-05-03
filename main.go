@@ -19,6 +19,7 @@ var (
 	srcid    = flag.String("srcid", "", "String to identify revision of source")
 	title    = flag.String("title", "GCovHTML", "Title for the HTML pages")
 	htmldir  = flag.String("htmldir", ".", "Path for the HTML output")
+	htmljs   = flag.Bool("htmljs", false, "Use javascript to enhance reports")
 	text     = flag.String("text", "", "Filename for text report, use - to direct the report to stdout")
 )
 

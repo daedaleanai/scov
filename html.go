@@ -58,7 +58,15 @@ table { margin-bottom: 1em; }
 .source td:nth-child(2), .source th:nth-child(2) { background:#f6f3d4; text-align:right; }
 {{ end -}}
 {{ end -}}
+{{ if .Script -}}
+th .reveal { float:right; transition: opacity 0.5s; opacity: 0.1; }
+th .reveal .pure-button { padding: 0 0.5em; }
+th:hover .reveal { opacity: 1; }
+{{ end -}}
 </style>
+{{ if .Script -}}
+<script src="index.js" ></script>
+{{ end -}}
 </head>
 `,
 	))
@@ -105,7 +113,7 @@ table { margin-bottom: 1em; }
 <h2>By File</h2>
 <table class="pure-table pure-table-bordered" style="width:100%">
 {{ $useBranch := .BCoverage.Valid -}}
-<thead><tr><th>Filename</th><th colspan="3">Line Coverage</th><th colspan="3">Function Coverage</th>{{if $useBranch}}<th colspan="3">Branch Coverage</th>{{end}}</tr></thead>
+<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Filename</th><th colspan="3"{{if .Script}} data-sort="perc-3"{{end}}>Line Coverage</th><th colspan="3"{{if .Script}} data-sort="perc-6"{{end}}>Function Coverage</th>{{if $useBranch}}<th colspan="3"{{if .Script}} data-sort="perc-9"{{end}}>Branch Coverage</th>{{end}}</tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
 <tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td><td>{{template "sparkbar" .FCoverage}}</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td>
@@ -173,6 +181,13 @@ func createHTML(outdir string, data map[string]*FileData, date time.Time) error 
 		return err
 	}
 
+	if *htmljs {
+		err = createJS(filepath.Join(outdir, "index.js"))
+		if err != nil {
+			return err
+		}
+	}
+
 	for name, data := range data {
 		filename := filepath.Join(outdir, name+".html")
 		err = createHTMLForSource(filename, name, data, date)
@@ -225,9 +240,91 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 		"BCoverage": BCov,
 		"Files":     files,
 		"Date":      date.Format(time.UnixDate),
+		"Script":    *htmljs,
 	}
 
 	return tmpl.Execute(out, params)
+}
+
+func createJS(filename string) error {
+	w, err := Open(filename)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	err = writeJS(w.File())
+	w.Keep(err)
+	return err
+}
+
+func writeJS(out io.Writer) error {
+	const js = `function sortTable( table, cmp ) {
+    var tbody = table.getElementsByTagName('tbody')[0]
+
+    var list = tbody.childNodes;
+    var arr = [];
+    for ( var i in list ) {
+        if ( list[i].nodeType==1 ) arr.push( list[i].cloneNode(true) )
+    }
+    arr.sort( cmp )
+    while ( tbody.firstChild ) tbody.removeChild(tbody.firstChild )
+    for ( var i in arr ) {
+        tbody.appendChild( arr[i] )
+    }
+}
+
+var cmpTable = {
+    'text-0' : function(a) {
+        return a.childNodes[0].innerHTML
+    },
+    'text-1' : function(a) {
+        return a.childNodes[1].innerHtml
+    },
+    'perc-3' : function(a) {
+        return parseFloat(a.childNodes[3].innerHTML)
+    },
+    'perc-6' : function(a) {
+        return parseFloat(a.childNodes[6].innerHTML)
+    },
+    'perc-9' : function(a) {
+        return parseFloat(a.childNodes[9].innerHTML)
+    }
+}
+
+window.onload = function() {
+    var es = document.getElementsByTagName('th')
+    for ( var i = 0; i < es.length; i++ ) {
+        var e = es[i]
+        var a = e.getAttribute('data-sort')
+        if ( !a ) continue
+
+        e.innerHTML = e.innerHTML + ' <span class="reveal"><a class="pure-button" data-sort=' + a + '>▲</a><a class="pure-button" data-sort=' + a + '>▼</a></span>'
+        e.getElementsByTagName('a')[0].onclick = function() {
+            var ndx = this.getAttribute('data-sort')
+            var cmp = cmpTable[ndx]
+            var table = this.parentElement.parentElement.parentElement.parentElement.parentElement
+            sortTable( table, function(a,b) {
+                var v1 = cmp(a)
+                var v2 = cmp(b)
+                return v1 < v2 ? -1 : v1 > v2 ? +1 : 0
+            })
+        }
+        e.getElementsByTagName('a')[1].onclick = function() {
+            var ndx = this.getAttribute('data-sort')
+            var cmp = cmpTable[ndx]
+            var table = this.parentElement.parentElement.parentElement.parentElement.parentElement
+            sortTable( table, function(a,b) {
+                var v1 = cmp(a)
+                var v2 = cmp(b)
+                return v1 < v2 ? +1 : v1 > v2 ? -1 : 0
+            })
+        }
+    }
+}`
+
+	_, err := out.Write([]byte(js))
+	return err
 }
 
 func createHTMLForSource(filename string, sourcename string, data *FileData, date time.Time) error {
