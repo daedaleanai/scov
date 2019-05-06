@@ -97,6 +97,9 @@ func loadFile(data map[string]*FileData, filename string) error {
 	if filepath.Ext(filename) == ".info" {
 		return loadLCovFile(data, file)
 	}
+	if filepath.Ext(filename) == ".gz" {
+		return loadGCovJSFile(data, file)
+	}
 
 	return loadGCovFile(data, file)
 }

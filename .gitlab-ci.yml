@@ -109,6 +109,24 @@ example-gcc-8:
       - example/methods/*.html
     expire_in: 1 week
 
+example-gcc-9:
+  image: gcc:9
+  stage: test
+  dependencies:
+    - golang-1.11
+  script:
+    - cd ./example
+    - GCOVHTML=../gcovhtml make text
+    - GCOVHTML=../gcovhtml make html
+  only:
+    - master
+  artifacts:
+    paths:
+      - example/*.txt
+      - example/*.html
+      - example/methods/*.html
+    expire_in: 1 week
+
 example-clang-8:
   stage: test
   dependencies:
@@ -138,7 +156,7 @@ pages:
   stage: deploy
   dependencies:
     - test
-    - example-gcc-7
+    - example-gcc-8
   script:
     - mkdir ./public
     - mv cover.html ./public
