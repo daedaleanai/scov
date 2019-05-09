@@ -88,20 +88,48 @@ func handleRequestFlags(out io.Writer, help, version bool) bool {
 }
 
 func loadFile(data map[string]*FileData, filename string) error {
+	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	if filepath.Ext(filename) == ".info" {
-		return loadLCovFile(data, file)
-	}
-	if filepath.Ext(filename) == ".gz" {
-		return loadGCovJSFile(data, file)
+	// If this is a directory, we will need to process the directory entries.
+	stat, err := file.Stat()
+	if err != nil {
+		return err
+	} else if stat.IsDir() {
+		return loadFilesFromDir(data, file)
 	}
 
-	return loadGCovFile(data, file)
+	switch ext := filepath.Ext(filename); ext {
+	case ".info":
+		return loadLCovFile(data, file)
+	case ".gz":
+		return loadGCovJSFile(data, file)
+	case ".gcov":
+		return loadGCovFile(data, file)
+	default:
+		return fmt.Errorf("unrecognized file extension: %s", ext)
+	}
+}
+
+func loadFilesFromDir(data map[string]*FileData, file *os.File) error {
+	names, err := file.Readdirnames(0)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range names {
+		if ext := filepath.Ext(v); ext == ".info" || ext == ".gz" || ext == ".gcov" {
+			err := loadFile(data, filepath.Join(file.Name(), v))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func filterExcludedFileData(out io.Writer, fileData map[string]*FileData, filter string) map[string]*FileData {
