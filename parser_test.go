@@ -51,7 +51,7 @@ func TestParserLoadFile(t *testing.T) {
 		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
 		{"example-8.3.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
 		// gcc 9.1.0
-		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{0, 0}},
+		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
 		// gcc with lcov
 		{"example-lcov-1.13.info", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
 		// clang 8.0.1

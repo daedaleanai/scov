@@ -25,8 +25,15 @@ type GCovFunction struct {
 }
 
 type GCovLine struct {
-	LineNumber int    `json:"line_number"`
-	Count      uint64 `json:"count"`
+	LineNumber int          `json:"line_number"`
+	Count      uint64       `json:"count"`
+	Branches   []GCovBranch `json:"branches"`
+}
+
+type GCovBranch struct {
+	Fallthrough bool   `json:"fallthrough"`
+	Count       uint64 `json:"count"`
+	Throw       bool   `json:"throw"`
 }
 
 func loadGCovJSFile(fds FileDataSet, file *os.File) error {
@@ -52,6 +59,14 @@ func loadGCovJSFile(fds FileDataSet, file *os.File) error {
 
 		for _, u := range v.Lines {
 			applyLCountRecord(currentData, u.LineNumber, u.Count)
+
+			for _, b := range u.Branches {
+				status := BranchNotTaken
+				if b.Count > 0 {
+					status = BranchTaken
+				}
+				applyBranchRecord(currentData, u.LineNumber, status)
+			}
 		}
 	}
 
