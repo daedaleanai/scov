@@ -136,3 +136,11 @@ func (fds FileDataSet) FileData(filename string) *FileData {
 	fds[filename] = tmp
 	return tmp
 }
+
+func (fds FileDataSet) LineCoverage() Coverage {
+	lcov := Coverage{}
+	for _, data := range fds {
+		lcov.Accumulate(data.LineCoverage())
+	}
+	return lcov
+}

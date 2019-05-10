@@ -36,27 +36,32 @@ func TestIdentifyFileType(t *testing.T) {
 
 func TestParserLoadFile(t *testing.T) {
 	cases := []struct {
-		filename string
-		lcov     Coverage
-		fcov     Coverage
-		bcov     Coverage
+		filename  string
+		lcovTotal Coverage
+		lcov      Coverage
+		fcov      Coverage
+		bcov      Coverage
 	}{
-		{"example-7.4.0.c.gcov", Coverage{9, 10}, Coverage{1, 1}, Coverage{}},
-		{"example-7.4.0-branches.c.gcov", Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
-		{"example-8.3.0.c.gcov", Coverage{9, 10}, Coverage{1, 1}, Coverage{}},
-		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
-		{"example-lcov-1.13.info", Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
-		{"example-llvm-8.0.1.info", Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}},
-		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{1, 1}, Coverage{0, 0}},
+		{"example-7.4.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}},
+		{"example-7.4.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
+		{"example-8.3.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}},
+		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
+		{"example-lcov-1.13.info", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
+		{"example-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}},
+		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{0, 0}},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
-			data := make(map[string]*FileData)
+			data := make(FileDataSet)
 
 			err := loadFile(data, filepath.Join("./testdata", v.filename))
 			if err != nil {
 				t.Fatalf("could not read file: %s", err)
 			}
+			if lcov := data.LineCoverage(); lcov != v.lcovTotal {
+				t.Errorf("total line coverage: expected %v, got %v", v.lcovTotal, lcov)
+			}
+
 			fileData, ok := data["example.c"]
 			if !ok {
 				t.Fatalf("missing data for file 'example.c' after loading")

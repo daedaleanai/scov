@@ -29,7 +29,7 @@ var (
 
 func main() {
 	// Initialize global maps used to track line and function coverage
-	fileData := make(map[string]*FileData)
+	fileData := make(FileDataSet)
 
 	flag.Parse()
 	if ok := handleRequestFlags(os.Stdout, *help, *version); ok {
@@ -57,10 +57,7 @@ func main() {
 			os.Exit(1)
 		}
 	} else {
-		lcov := Coverage{}
-		for _, data := range fileData {
-			lcov.Accumulate(data.LineCoverage())
-		}
+		lcov := fileData.LineCoverage()
 		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", lcov.P())
 	}
 
