@@ -45,6 +45,7 @@ func TestParserLoadFile(t *testing.T) {
 		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
 		{"example-lcov-1.13.info", Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
 		{"example-llvm-8.0.1.info", Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}},
+		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{1, 1}, Coverage{0, 0}},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
