@@ -1,0 +1,8 @@
+file:methods/gauss.c
+function:38,1,gauss_get_sum
+lcount:38,1
+lcount:42,1
+branch:42,nottaken
+branch:42,taken
+lcount:44,0
+lcount:47,1

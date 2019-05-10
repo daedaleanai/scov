@@ -39,6 +39,6 @@ endif
 clean:
 	-$(RM) *.o methods/*.o example
 	-$(RM) *.gcno *.gcda methods/*.gcno methods/*.gcda
-	-$(RM) *.info *.prof *.profraw *.json.gz
+	-$(RM) *.gcov *.info *.prof *.profraw *.json.gz
 	-$(RM) *.txt
 	-$(RM) *.html methods/*.html

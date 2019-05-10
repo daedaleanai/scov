@@ -1,0 +1,17 @@
+version:8.3.0
+file:example.c
+function:28,59,1,main
+lcount:28,1,0
+lcount:34,1,0
+branch:34,taken
+branch:34,nottaken
+lcount:36,1,0
+lcount:37,1,0
+lcount:43,1,0
+lcount:44,1,0
+lcount:49,1,0
+branch:49,nottaken
+branch:49,taken
+lcount:51,0,1
+lcount:55,1,0
+lcount:58,1,0

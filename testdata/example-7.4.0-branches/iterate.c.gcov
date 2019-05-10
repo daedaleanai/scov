@@ -1,0 +1,14 @@
+file:methods/iterate.c
+function:19,1,iterate_get_sum
+lcount:19,1
+lcount:23,1
+lcount:28,22
+branch:28,taken
+branch:28,taken
+lcount:33,21
+branch:33,nottaken
+branch:33,taken
+lcount:35,0
+lcount:36,0
+lcount:41,21
+lcount:44,1
