@@ -103,16 +103,12 @@ func loadFile(data map[string]*FileData, filename string) error {
 		return loadFilesFromDir(data, file)
 	}
 
-	switch ext := filepath.Ext(filename); ext {
-	case ".info":
-		return loadLCovFile(data, file)
-	case ".gz":
-		return loadGCovJSFile(data, file)
-	case ".gcov":
-		return loadGCovFile(data, file)
-	default:
-		return fmt.Errorf("unrecognized file extension: %s", ext)
+	parser, ok := identifyFileType(filename)
+	if !ok {
+		return fmt.Errorf("unrecognized file extension: %s", filepath.Ext(filename))
 	}
+
+	return parser.loadFile(data, file)
 }
 
 func loadFilesFromDir(data map[string]*FileData, file *os.File) error {
@@ -122,7 +118,7 @@ func loadFilesFromDir(data map[string]*FileData, file *os.File) error {
 	}
 
 	for _, v := range names {
-		if ext := filepath.Ext(v); ext == ".info" || ext == ".gz" || ext == ".gcov" {
+		if _, ok := identifyFileType(v); ok {
 			err := loadFile(data, filepath.Join(file.Name(), v))
 			if err != nil {
 				return err

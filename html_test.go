@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 )
@@ -28,105 +27,85 @@ func TempDirectory(t *testing.T) (filename string, cleanup func()) {
 
 func TestCreateHTML(t *testing.T) {
 	data := make(map[string]*FileData)
-	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
+	err := loadFile(data, "./testdata/example-7.4.0.c.gcov")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
 	}
 
 	data = map[string]*FileData{
-		"binc.cpp": data["binc.cpp"],
+		"example.c": data["example.c"],
 	}
 
 	name, cleanup := TempDirectory(t)
 	defer cleanup()
 
-	*srcdir = "./testdata"
+	*srcdir = "./example"
 	err = createHTML(name, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
 	if err != nil {
 		t.Fatalf("could not write output: %s", err)
 	}
 
-	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLIndex.golden")
+	expected, err := ioutil.ReadFile("./testdata/TestCreateHTMLIndex/example-7.4.0.c.gcov.golden")
 	if err != nil {
 		t.Fatalf("could not read file: %s", err)
-	}
-	if out, err := ioutil.ReadFile(filepath.Join(name, "index.html")); err != nil {
-		t.Fatalf("could not read output file: %s", err)
-	} else if string(expected) != string(out) {
-		LogNE(t, "output text", string(expected), string(out))
 	}
 
-	expected, err = ioutil.ReadFile("./testdata/TestWriteHTMLForSource.golden")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
-	if out, err := ioutil.ReadFile(filepath.Join(name, "binc.cpp.html")); err != nil {
+	if out, err := ioutil.ReadFile(filepath.Join(name, "index.html")); err != nil {
 		t.Fatalf("could not read output file: %s", err)
-	} else if string(expected) != string(out) {
+	} else if !bytes.Equal(expected, out) {
 		LogNE(t, "output text", string(expected), string(out))
 	}
 }
 
 func TestCreateHTMLIndex(t *testing.T) {
-	data := make(map[string]*FileData)
-	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
+	cases := []struct {
+		filename string
+	}{
+		{"example-7.4.0.c.gcov"},
+		{"example-7.4.0-branches.c.gcov"},
+		{"example-8.3.0.c.gcov"},
+		{"example-8.3.0-branches.c.gcov"},
 	}
 
-	data = map[string]*FileData{
-		"binc.cpp": data["binc.cpp"],
+	for _, v := range cases {
+		v := v
+		t.Run(v.filename, func(t *testing.T) {
+			data := make(map[string]*FileData)
+			err := loadFile(data, filepath.Join("./testdata", v.filename))
+			if err != nil {
+				t.Fatalf("could not read file: %s", err)
+			}
+
+			data = map[string]*FileData{
+				"example.c": data["example.c"],
+			}
+
+			filename, cleanup := TempFilename(t)
+			defer cleanup()
+
+			*srcdir = "./example"
+			err = createHTMLIndex(filename, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+			if err != nil {
+				t.Fatalf("could not write output: %s", err)
+			}
+			out, err := ioutil.ReadFile(filename)
+
+			if *update {
+				err := ioutil.WriteFile(filepath.Join("./testdata", t.Name()+".golden"), out, 0644)
+				if err != nil {
+					t.Fatalf("could not write golden file: %s", err)
+				}
+			}
+
+			expected, err := ioutil.ReadFile(filepath.Join("./testdata", t.Name()+".golden"))
+			if err != nil {
+				t.Fatalf("could not read golden file: %s", err)
+			}
+			if !bytes.Equal(expected, out) {
+				t.Errorf("output does not match golden file")
+			}
+		})
 	}
-
-	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLIndex.golden")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
-
-	name, cleanup := TempFilename(t)
-	defer cleanup()
-
-	*srcdir = "./testdata"
-	err = createHTMLIndex(name, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
-	if err != nil {
-		t.Fatalf("could not write output: %s", err)
-	}
-
-	if out, err := ioutil.ReadFile(name); err != nil {
-		t.Fatalf("could not read output file: %s", err)
-	} else if string(expected) != string(out) {
-		LogNE(t, "output text", string(expected), string(out))
-	}
-}
-
-func TestWriteHTMLIndex(t *testing.T) {
-	data := make(map[string]*FileData)
-	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
-
-	data = map[string]*FileData{
-		"binc.cpp": data["binc.cpp"],
-	}
-
-	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLIndex.golden")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
-
-	buffer := &strings.Builder{}
-	err = writeHTMLIndex(buffer, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
-	if err != nil {
-		t.Errorf("could not write output: %s", err)
-	}
-
-	if out := buffer.String(); len(expected) != len(out) {
-		LogNE(t, "length of output", len(expected), len(out))
-	} else if string(expected) != out {
-		LogNE(t, "output", string(expected), out)
-	}
-
 }
 
 func TestCreateJS(t *testing.T) {
@@ -140,56 +119,49 @@ func TestCreateJS(t *testing.T) {
 }
 
 func TestCreateHTMLForSource(t *testing.T) {
-	data := make(map[string]*FileData)
-	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
+	cases := []struct {
+		filename string
+	}{
+		{"example-7.4.0.c.gcov"},
+		{"example-7.4.0-branches.c.gcov"},
+		{"example-8.3.0.c.gcov"},
+		{"example-8.3.0-branches.c.gcov"},
 	}
 
-	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLForSource.golden")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
+	for _, v := range cases {
+		v := v
+		t.Run(v.filename, func(t *testing.T) {
+			data := make(map[string]*FileData)
+			err := loadFile(data, filepath.Join("./testdata", v.filename))
+			if err != nil {
+				t.Fatalf("could not read file: %s", err)
+			}
 
-	name, cleanup := TempFilename(t)
-	defer cleanup()
+			filename, cleanup := TempFilename(t)
+			defer cleanup()
 
-	*srcdir = "./testdata"
-	err = createHTMLForSource(name, "binc.cpp", data["binc.cpp"], time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
-	if err != nil {
-		t.Fatalf("could not write output: %s", err)
-	}
+			*srcdir = "./example"
+			err = createHTMLForSource(filename, "example.c", data["example.c"], time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+			if err != nil {
+				t.Fatalf("could not write output: %s", err)
+			}
+			out, err := ioutil.ReadFile(filename)
 
-	if out, err := ioutil.ReadFile(name); err != nil {
-		t.Fatalf("could not read output file: %s", err)
-	} else if string(expected) != string(out) {
-		LogNE(t, "output text", string(expected), string(out))
-	}
-}
+			if *update {
+				err := ioutil.WriteFile(filepath.Join("./testdata", t.Name()+".golden"), out, 0644)
+				if err != nil {
+					t.Fatalf("could not write golden file: %s", err)
+				}
+			}
 
-func TestWriteHTMLForSource(t *testing.T) {
-	data := make(map[string]*FileData)
-	err := loadFile(data, "./testdata/binc-7.3.0.cpp.gcov")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
-
-	expected, err := ioutil.ReadFile("./testdata/TestWriteHTMLForSource.golden")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
-
-	buffer := &strings.Builder{}
-	*srcdir = "./testdata"
-	err = writeHTMLForSource(buffer, "binc.cpp", data["binc.cpp"], time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
-	if err != nil {
-		t.Errorf("could not write output: %s", err)
-	}
-
-	if out := buffer.String(); len(expected) != len(out) {
-		LogNE(t, "length of output", len(expected), len(out))
-	} else if string(expected) != out {
-		LogNE(t, "output", string(expected), out)
+			expected, err := ioutil.ReadFile(filepath.Join("./testdata", t.Name()+".golden"))
+			if err != nil {
+				t.Fatalf("could not read golden file: %s", err)
+			}
+			if !bytes.Equal(expected, out) {
+				t.Errorf("output does not match golden file")
+			}
+		})
 	}
 }
 

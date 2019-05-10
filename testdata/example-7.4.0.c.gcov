@@ -1,0 +1,12 @@
+file:example.c
+function:28,1,main
+lcount:28,1
+lcount:34,1
+lcount:36,1
+lcount:37,1
+lcount:43,1
+lcount:44,1
+lcount:49,1
+lcount:51,0
+lcount:55,1
+lcount:58,1
