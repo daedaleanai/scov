@@ -124,3 +124,15 @@ func (file *FileData) BranchCoverage() Coverage {
 	}
 	return Coverage{a, b}
 }
+
+type FileDataSet map[string]*FileData
+
+func (fds FileDataSet) FileData(filename string) *FileData {
+	if tmp, ok := fds[filename]; ok {
+		return tmp
+	}
+
+	tmp := NewFileData(filename)
+	fds[filename] = tmp
+	return tmp
+}

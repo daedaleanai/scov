@@ -28,3 +28,20 @@ func TestCoverage_Rating(t *testing.T) {
 		}
 	}
 }
+
+func TestFileDataSetFileData(t *testing.T) {
+	fds := FileDataSet{}
+
+	fd1 := fds.FileData("a.c")
+	if fd1 == nil {
+		t.Errorf("expected a non-nil response")
+	}
+	fd2 := fds.FileData("b.c")
+	if fd1 == fd2 {
+		t.Errorf("expected a different response")
+	}
+	fd2 = fds.FileData("a.c")
+	if fd1 != fd2 {
+		t.Errorf("expected a different response")
+	}
+}

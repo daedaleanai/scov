@@ -17,7 +17,7 @@ func recordType(line string) (string, string) {
 	return line[:ndx], line[ndx+1:]
 }
 
-func loadGCovFile(data map[string]*FileData, file *os.File) error {
+func loadGCovFile(fds FileDataSet, file *os.File) error {
 	currentData := (*FileData)(nil)
 
 	scanner := bufio.NewScanner(file)
@@ -28,12 +28,7 @@ func loadGCovFile(data map[string]*FileData, file *os.File) error {
 			//fmt.Println("version", value)
 
 		case "file":
-			if tmp, ok := data[value]; ok {
-				currentData = tmp
-			} else {
-				currentData = NewFileData(value)
-				data[value] = currentData
-			}
+			currentData = fds.FileData(value)
 
 		case "function":
 			funcName, _, hitCount, err := parseFunctionRecord(value)

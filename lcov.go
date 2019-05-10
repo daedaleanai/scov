@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func loadLCovFile(data map[string]*FileData, file *os.File) error {
+func loadLCovFile(fds FileDataSet, file *os.File) error {
 	currentData := (*FileData)(nil)
 
 	scanner := bufio.NewScanner(file)
@@ -21,12 +21,7 @@ func loadLCovFile(data map[string]*FileData, file *os.File) error {
 
 		case "SF": // Source file
 			value = normalizeSourceFilename(value)
-			if tmp, ok := data[value]; ok {
-				currentData = tmp
-			} else {
-				currentData = NewFileData(value)
-				data[value] = currentData
-			}
+			currentData = fds.FileData(value)
 
 		case "FNF": // Functions founds
 			// ignore

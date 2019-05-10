@@ -87,7 +87,7 @@ func handleRequestFlags(out io.Writer, help, version bool) bool {
 	return false
 }
 
-func loadFile(data map[string]*FileData, filename string) error {
+func loadFile(data FileDataSet, filename string) error {
 	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {
@@ -111,7 +111,7 @@ func loadFile(data map[string]*FileData, filename string) error {
 	return parser.loadFile(data, file)
 }
 
-func loadFilesFromDir(data map[string]*FileData, file *os.File) error {
+func loadFilesFromDir(data FileDataSet, file *os.File) error {
 	names, err := file.Readdirnames(0)
 	if err != nil {
 		return err
@@ -128,7 +128,7 @@ func loadFilesFromDir(data map[string]*FileData, file *os.File) error {
 	return nil
 }
 
-func filterExcludedFileData(out io.Writer, fileData map[string]*FileData, filter string) map[string]*FileData {
+func filterExcludedFileData(out io.Writer, fileData FileDataSet, filter string) FileDataSet {
 	if filter == "" {
 		return fileData
 	}

@@ -27,7 +27,7 @@ func identifyFileType(filename string) (Parser, bool) {
 	}
 }
 
-func (p Parser) loadFile(data map[string]*FileData, file *os.File) error {
+func (p Parser) loadFile(data FileDataSet, file *os.File) error {
 	switch p {
 	case ParserLCov:
 		return loadLCovFile(data, file)

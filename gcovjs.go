@@ -29,7 +29,7 @@ type GCovLine struct {
 	Count      uint64 `json:"count"`
 }
 
-func loadGCovJSFile(data map[string]*FileData, file *os.File) error {
+func loadGCovJSFile(fds FileDataSet, file *os.File) error {
 	currentData := (*FileData)(nil)
 	jsonData := GCovData{}
 
@@ -45,12 +45,7 @@ func loadGCovJSFile(data map[string]*FileData, file *os.File) error {
 
 	for _, v := range jsonData.Files {
 		filename := v.File
-		if tmp, ok := data[filename]; ok {
-			currentData = tmp
-		} else {
-			currentData = NewFileData(filename)
-			data[filename] = currentData
-		}
+		currentData = fds.FileData(filename)
 
 		for _, u := range v.Functions {
 			applyFunctionRecord(currentData, u.Name, u.ExecutionCount)
