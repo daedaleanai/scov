@@ -15,6 +15,8 @@ func TestIdentifyFileType(t *testing.T) {
 		{"/home/person/example-7.4.0.c.gcov", ParserGCov, true},
 		{"example-7.4.0.c.info", ParserLCov, true},
 		{"/home/person/example-7.4.0.c.info", ParserLCov, true},
+		{"example.7.4.0.c.dummy", 0, false},
+		{"/home/person/example.7.4.0.c.dummy", 0, false},
 	}
 
 	for _, v := range cases {
