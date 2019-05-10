@@ -20,7 +20,7 @@ type GCovFile struct {
 
 type GCovFunction struct {
 	Name           string `json:"name"`
-	StartLine      int    `json"start_line"`
+	StartLine      int    `json:"start_line"`
 	ExecutionCount uint64 `json:"execution_count"`
 }
 
@@ -30,7 +30,6 @@ type GCovLine struct {
 }
 
 func loadGCovJSFile(fds FileDataSet, file *os.File) error {
-	currentData := (*FileData)(nil)
 	jsonData := GCovData{}
 
 	gz, err := gzip.NewReader(file)
@@ -45,7 +44,7 @@ func loadGCovJSFile(fds FileDataSet, file *os.File) error {
 
 	for _, v := range jsonData.Files {
 		filename := v.File
-		currentData = fds.FileData(filename)
+		currentData := fds.FileData(filename)
 
 		for _, u := range v.Functions {
 			applyFunctionRecord(currentData, u.Name, u.ExecutionCount)

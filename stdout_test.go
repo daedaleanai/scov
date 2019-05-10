@@ -43,6 +43,9 @@ func TestCreateTextReport(t *testing.T) {
 				t.Fatalf("could not write output: %s", err)
 			}
 			out, err := ioutil.ReadFile(filename)
+			if err != nil {
+				t.Fatalf("could not read the output: %s", err)
+			}
 
 			if *update {
 				err := ioutil.WriteFile(filepath.Join("./testdata", t.Name()+".golden"), out, 0644)
