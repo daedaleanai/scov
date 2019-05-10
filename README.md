@@ -26,6 +26,8 @@ If you add the option `-b` when running `gcov`, the reports will include informa
 
 Note that `gcov` version 7 or higher is required.  Earlier versions do not support the `-i` command-line flag.
 
+Starting with `gcov` version 9, the format of the output files has changed.  You will need to replace `*.gcov` with `*.json.gz`.
+
 ### Using clang
 
 For recent versions of `clang`, adding the command-line flags `fprofile-instr-generate` and `-fcoverage-mapping` when compiling, and `-fprofile-instr-generate` when linking, will build an instrumented binary. After rnning the instrumented binary, you will need to process and extract the data using LLVM's tools.  Finally, you can run `gcovhtml` to create the reports.
