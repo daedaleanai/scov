@@ -2,7 +2,7 @@ CFLAGS ?= -O0 -I$(SRCDIR)/methods
 LDFLAGS ?=
 LLVM_PROFDATA ?= llvm-profdata-8 
 LLVM_COV ?= llvm-cov-8 
-GCOVHTML ?= ../gcovhtml
+SCOV ?= ../scov
 ifeq ($(findstring clang,$(CC)),clang)
 CFLAGS +=  -fprofile-instr-generate -fcoverage-mapping
 LDFLAGS += -fprofile-instr-generate
@@ -24,7 +24,7 @@ ifeq ($(findstring clang,$(CC)),clang)
 else
 	gcov -i -b example.c methods/*.c
 endif
-	$(GCOVHTML) -htmldir "" -text coverage.txt .
+	$(SCOV) -htmldir "" -text coverage.txt .
 
 html: example
 	./example 0 20
@@ -34,7 +34,7 @@ ifeq ($(findstring clang,$(CC)),clang)
 else
 	gcov -i -b example.c methods/*.c
 endif
-	$(GCOVHTML) -title "Example" -htmljs=true -srcid=`git describe` .
+	$(SCOV) -title "Example" -htmljs=true -srcid=`git describe` .
 
 clean:
 	-$(RM) *.o methods/*.o example

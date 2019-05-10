@@ -6,22 +6,22 @@ golang-tagged:
     - go test
     - mkdir dist
     - GOOS=windows GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv gcovhtml.exe ./dist/gcovhtml-windows-amd64.exe
+    - mv scov.exe ./dist/scov-windows-amd64.exe
     - GOOS=linux GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv gcovhtml ./dist/gcovhtml-linux-amd64
+    - mv scov ./dist/scov-linux-amd64
     - GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv gcovhtml ./dist/gcovhtml-darwin-amd64
+    - mv scov ./dist/scov-darwin-amd64
     - GOOS=freebsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv gcovhtml ./dist/gcovhtml-freebsd-amd64
+    - mv scov ./dist/scov-freebsd-amd64
     - GOOS=openbsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv gcovhtml ./dist/gcovhtml-openbsd-amd64
+    - mv scov ./dist/scov-openbsd-amd64
   artifacts:
     paths:
-      - dist/gcovhtml-windows-amd64.exe
-      - dist/gcovhtml-linux-amd64
-      - dist/gcovhtml-darwin-amd64
-      - dist/gcovhtml-freebsd-amd64
-      - dist/gcovhtml-openbsd-amd64
+      - dist/scov-windows-amd64.exe
+      - dist/scov-linux-amd64
+      - dist/scov-darwin-amd64
+      - dist/scov-freebsd-amd64
+      - dist/scov-openbsd-amd64
   only: 
     - tags
 
@@ -42,7 +42,7 @@ golang-1.11:
     - go test
   artifacts:
     paths:
-      - gcovhtml
+      - scov
     expire_in: 1 week
 
 golang-1.10:
@@ -80,8 +80,8 @@ example-gcc-7:
     - golang-1.11
   script:
     - cd ./example
-    - GCOVHTML=../gcovhtml make text
-    - GCOVHTML=../gcovhtml make html
+    - SCOV=../scov make text
+    - SCOV=../scov make html
   only:
     - master
   artifacts:
@@ -98,8 +98,8 @@ example-gcc-8:
     - golang-1.11
   script:
     - cd ./example
-    - GCOVHTML=../gcovhtml make text
-    - GCOVHTML=../gcovhtml make html
+    - SCOV=../scov make text
+    - SCOV=../scov make html
   only:
     - master
   artifacts:
@@ -116,8 +116,8 @@ example-gcc-9:
     - golang-1.11
   script:
     - cd ./example
-    - GCOVHTML=../gcovhtml make text
-    - GCOVHTML=../gcovhtml make html
+    - SCOV=../scov make text
+    - SCOV=../scov make html
   only:
     - master
   artifacts:
@@ -141,8 +141,8 @@ example-clang-8:
     - alias llvm-profdata=llvm-profdata-8
     - alias llvm-cov=llvm-cov-8
     - cd ./example
-    - GCOVHTML=../gcovhtml CC=clang-8 make text
-    - GCOVHTML=../gcovhtml CC=clang-8 make html
+    - SCOV=../scov CC=clang-8 make text
+    - SCOV=../scov CC=clang-8 make html
   only:
     - master
   artifacts:

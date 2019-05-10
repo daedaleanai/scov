@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GCovHTML &gt; example.c</title>
+<title>SCov &gt; example.c</title>
 <meta name="description" content="Code coverage report">
 <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
 <!--[if lte IE 8]>
@@ -12,7 +12,7 @@
 <!--[if gt IE 8]><!-->
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 <!--<![endif]-->
-<link rel="generator" href="https://gitlab.com/stone.code/gcovhtml">
+<link rel="generator" href="https://gitlab.com/stone.code/scov">
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
@@ -37,7 +37,7 @@ table { margin-bottom: 1em; }
 </style>
 </head>
 <body>
-<div class="pure-g"><h1 class="pure-u">GCovHTML &gt; example.c</h1></div>
+<div class="pure-g"><h1 class="pure-u">SCov &gt; example.c</h1></div>
 <div class="pure-g"><div class="pure-u">
 <h2>Overall</h2>
 </div></div>

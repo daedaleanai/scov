@@ -17,7 +17,7 @@ var (
 	exclude  = flag.String("exclude", "", "Exclude source files that match the regular expression")
 	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
 	srcid    = flag.String("srcid", "", "String to identify revision of source")
-	title    = flag.String("title", "GCovHTML", "Title for the HTML pages")
+	title    = flag.String("title", "SCov", "Title for the HTML pages")
 	htmldir  = flag.String("htmldir", ".", "Path for the HTML output")
 	htmljs   = flag.Bool("htmljs", false, "Use javascript to enhance reports")
 	text     = flag.String("text", "", "Filename for text report, use - to direct the report to stdout")
@@ -77,7 +77,7 @@ func handleRequestFlags(out io.Writer, help, version bool) bool {
 		return true
 	}
 	if version {
-		fmt.Fprintf(out, "gcovhtml %s\n", versionInformation)
+		fmt.Fprintf(out, "scov %s\n", versionInformation)
 		return true
 	}
 

@@ -29,7 +29,7 @@ var (
 {{htmlSafe "<!--[if gt IE 8]><!-->"}}
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 {{htmlSafe "<!--<![endif]-->"}}
-<link rel="generator" href="https://gitlab.com/stone.code/gcovhtml">
+<link rel="generator" href="https://gitlab.com/stone.code/scov">
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
