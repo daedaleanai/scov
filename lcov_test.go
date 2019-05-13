@@ -40,6 +40,41 @@ func TestDARecord(t *testing.T) {
 	}
 }
 
+func TestFNRecord(t *testing.T) {
+	cases := []struct {
+		value    string
+		ok       bool
+		funcName string
+		location int
+	}{
+		{"FN:38,gauss_get_sum", true, "gauss_get_sum", 38},
+		{"FN:3", false, "", 0},
+		{"FN:#,gauss_get_sum", false, "", 0},
+	}
+
+	for _, v := range cases {
+		t.Run(v.value, func(t *testing.T) {
+			rt, value := recordType(v.value)
+			if rt != "FN" {
+				LogNE(t, "record type", "FN", rt)
+			}
+			funcName, location, err := parseFNRecord(value)
+			if funcName != v.funcName {
+				LogNE(t, "function name", v.funcName, funcName)
+			}
+			if location != v.location {
+				LogNE(t, "hit count", v.location, location)
+			}
+			if (err == nil) != v.ok {
+				LogNE(t, "ok", v.ok, err == nil)
+				if err != nil {
+					t.Logf("err = %s", err)
+				}
+			}
+		})
+	}
+}
+
 func TestFNDARecord(t *testing.T) {
 	cases := []struct {
 		value    string
