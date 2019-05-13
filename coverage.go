@@ -61,6 +61,12 @@ func (cr CoverageRating) String() string {
 	return "high"
 }
 
+// FuncData represents data about a function.
+type FuncData struct {
+	StartLine int
+	Count     uint64
+}
+
 // BranchStatus indicates whether a branch was taken, not taken, or if the
 // conditional was never executed.
 type BranchStatus uint8
@@ -71,10 +77,11 @@ const (
 	BranchNotExec
 )
 
+// FileData maintains coverage statistics for a single file.
 type FileData struct {
 	Filename   string
 	LineData   map[int]uint64
-	FuncData   map[string]uint64
+	FuncData   map[string]FuncData
 	BranchData map[int][]BranchStatus
 }
 
@@ -82,7 +89,7 @@ func NewFileData(filename string) *FileData {
 	return &FileData{
 		Filename:   filename,
 		LineData:   make(map[int]uint64),
-		FuncData:   make(map[string]uint64),
+		FuncData:   make(map[string]FuncData),
 		BranchData: make(map[int][]BranchStatus),
 	}
 }
@@ -103,7 +110,7 @@ func (file *FileData) FuncCoverage() Coverage {
 	a, b := 0, 0
 
 	for _, v := range file.FuncData {
-		if v != 0 {
+		if v.Count != 0 {
 			a++
 		}
 		b++

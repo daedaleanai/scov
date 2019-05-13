@@ -54,7 +54,7 @@ func loadGCovJSFile(fds FileDataSet, file *os.File) error {
 		currentData := fds.FileData(filename)
 
 		for _, u := range v.Functions {
-			applyFunctionRecord(currentData, u.Name, u.ExecutionCount)
+			applyFunctionRecord(currentData, u.Name, u.StartLine, u.ExecutionCount)
 		}
 
 		for _, u := range v.Lines {

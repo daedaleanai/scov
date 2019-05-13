@@ -30,14 +30,18 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			// ignore
 
 		case "FN": // Function
-			// ignore
+			funcName, funcStart, err := parseFNRecord(value)
+			if err != nil {
+				return err
+			}
+			applyFunctionRecord(currentData, funcName, funcStart, 0)
 
 		case "FNDA": // Function data
 			funcName, hitCount, err := parseFNDARecord(value)
 			if err != nil {
 				return err
 			}
-			applyFunctionRecord(currentData, funcName, hitCount)
+			applyFunctionRecord(currentData, funcName, 0, hitCount)
 
 		case "LF": // Lines founds
 			// ignore
@@ -106,16 +110,31 @@ func parseDARecord(value string) (lineNo int, hitCount uint64, err error) {
 	return lineNo, hitCount, nil
 }
 
-func parseFNDARecord(value string) (funcName string, hitCount uint64, err error) {
+func parseFNRecord(value string) (funcName string, funcStart int, err error) {
 	values := strings.Split(value, ",")
 
 	if len(values) != 2 {
 		return "", 0, fmt.Errorf("can't parse function record")
 	}
 
-	hitCount, err = strconv.ParseUint(values[0], 10, 64)
+	line, err := strconv.ParseInt(values[0], 10, 64)
 	if err != nil {
 		return "", 0, fmt.Errorf("can't parse function record: %s", err)
+	}
+	funcName = values[1]
+	return funcName, int(line), nil
+}
+
+func parseFNDARecord(value string) (funcName string, hitCount uint64, err error) {
+	values := strings.Split(value, ",")
+
+	if len(values) != 2 {
+		return "", 0, fmt.Errorf("can't parse function data record")
+	}
+
+	hitCount, err = strconv.ParseUint(values[0], 10, 64)
+	if err != nil {
+		return "", 0, fmt.Errorf("can't parse function data record: %s", err)
 	}
 	funcName = values[1]
 	return funcName, hitCount, nil

@@ -41,21 +41,22 @@ func TestParserLoadFile(t *testing.T) {
 		lcov      Coverage
 		fcov      Coverage
 		bcov      Coverage
+		funcStart int
 	}{
 		// gcc 7.4.0
-		{"example-7.4.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}},
-		{"example-7.4.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
-		{"example-7.4.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
+		{"example-7.4.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}, 28},
+		{"example-7.4.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
+		{"example-7.4.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
 		// gcc 8.3.0
-		{"example-8.3.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}},
-		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
-		{"example-8.3.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
+		{"example-8.3.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}, 28},
+		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
+		{"example-8.3.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
 		// gcc 9.1.0
-		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
+		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
 		// gcc with lcov
-		{"example-lcov-1.13.info", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}},
+		{"example-lcov-1.13.info", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
 		// clang 8.0.1
-		{"example-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}},
+		{"example-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}, 29},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
@@ -78,6 +79,9 @@ func TestParserLoadFile(t *testing.T) {
 			}
 			if fcov := fileData.FuncCoverage(); fcov != v.fcov {
 				LogNE(t, "function coverage", v.fcov, fcov)
+			}
+			if got := fileData.FuncData["main"].StartLine; got != v.funcStart {
+				LogNE(t, "location of main", v.funcStart, got)
 			}
 			if bcov := fileData.BranchCoverage(); bcov != v.bcov {
 				LogNE(t, "branch coverage", v.bcov, bcov)

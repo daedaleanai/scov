@@ -31,11 +31,11 @@ func loadGCovFile(fds FileDataSet, file *os.File) error {
 			currentData = fds.FileData(value)
 
 		case "function":
-			funcName, _, hitCount, err := parseFunctionRecord(value)
+			funcName, funcStart, hitCount, err := parseFunctionRecord(value)
 			if err != nil {
 				return err
 			}
-			applyFunctionRecord(currentData, funcName, hitCount)
+			applyFunctionRecord(currentData, funcName, funcStart, hitCount)
 
 		case "lcount":
 			lineNo, hitCount, err := parseLCountRecord(value)
@@ -97,8 +97,16 @@ func parseFunctionRecord(value string) (funcName string, funcStart int, hitCount
 	return "", 0, 0, fmt.Errorf("can't parse function record")
 }
 
-func applyFunctionRecord(data *FileData, funcName string, hitCount uint64) {
-	data.FuncData[funcName] += hitCount
+func applyFunctionRecord(data *FileData, funcName string, funcStart int, hitCount uint64) {
+	if v, ok := data.FuncData[funcName]; ok {
+		v.Count += hitCount
+		data.FuncData[funcName] = v
+	} else {
+		data.FuncData[funcName] = FuncData{
+			StartLine: funcStart,
+			Count:     hitCount,
+		}
+	}
 }
 
 func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
