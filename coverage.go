@@ -18,10 +18,11 @@ func (c Coverage) Q() float32 {
 	return 100 - float32(c.Hits)*100/float32(c.Total)
 }
 
-// Accumulate revises the counts to accumulate data over several sub-scopes.
-func (c *Coverage) Accumulate(delta Coverage) {
+// Add combines the coverage data from different scopes.
+func (c Coverage) Add(delta Coverage) Coverage {
 	c.Hits += delta.Hits
 	c.Total += delta.Total
+	return c
 }
 
 // Rating returns the rating (low, medium, or high) for this coverage.
@@ -147,7 +148,7 @@ func (fds FileDataSet) FileData(filename string) *FileData {
 func (fds FileDataSet) LineCoverage() Coverage {
 	lcov := Coverage{}
 	for _, data := range fds {
-		lcov.Accumulate(data.LineCoverage())
+		lcov = lcov.Add(data.LineCoverage())
 	}
 	return lcov
 }

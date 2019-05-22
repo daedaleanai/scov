@@ -31,9 +31,9 @@ func writeTextReport(writer io.Writer, data map[string]*FileData) error {
 	// Body
 	for name, data := range data {
 		lcov := data.LineCoverage()
-		LCov.Accumulate(lcov)
+		LCov = LCov.Add(lcov)
 		fcov := data.FuncCoverage()
-		FCov.Accumulate(fcov)
+		FCov = FCov.Add(fcov)
 
 		fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", lcov.P(), fcov.P(), name)
 	}

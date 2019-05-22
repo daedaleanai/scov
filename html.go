@@ -220,11 +220,11 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 		stats := FileStatistics{Name: name}
 
 		stats.LCoverage = data.LineCoverage()
-		LCov.Accumulate(stats.LCoverage)
+		LCov = LCov.Add(stats.LCoverage)
 		stats.FCoverage = data.FuncCoverage()
-		FCov.Accumulate(stats.FCoverage)
+		FCov = FCov.Add(stats.FCoverage)
 		stats.BCoverage = data.BranchCoverage()
-		BCov.Accumulate(stats.BCoverage)
+		BCov = BCov.Add(stats.BCoverage)
 
 		files = append(files, stats)
 	}
