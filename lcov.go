@@ -69,6 +69,9 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			}
 			applyBranchRecord(currentData, lineNo, branchStatus)
 
+		default:
+			// Unknown records are ignored.  If future versions of the file
+			// format introduce new records, we don't want to have an error.		}
 		}
 	}
 	if err := scanner.Err(); err != nil {
