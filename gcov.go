@@ -6,16 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
-
-func recordType(line string) (string, string) {
-	ndx := strings.IndexByte(line, ':')
-	if ndx < 0 {
-		return line, ""
-	}
-	return line[:ndx], line[ndx+1:]
-}
 
 func loadGCovFile(fds FileDataSet, file *os.File) error {
 	currentData := (*FileData)(nil)
@@ -64,7 +55,9 @@ func loadGCovFile(fds FileDataSet, file *os.File) error {
 }
 
 func parseFunctionRecord(value string) (funcName string, funcStart int, hitCount uint64, err error) {
-	values := strings.Split(value, ",")
+	buffer := [4]string{}
+	values := splitOnComma(buffer[:], value)
+
 	if len(values) == 3 {
 		tmp, err := strconv.ParseUint(values[0], 10, 64)
 		if err != nil {
@@ -111,7 +104,9 @@ func applyFunctionRecord(data *FileData, funcName string, funcStart int, hitCoun
 }
 
 func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
-	values := strings.Split(value, ",")
+	buffer := [4]string{}
+	values := splitOnComma(buffer[:], value)
+
 	if l := len(values); l != 2 && l != 3 {
 		return 0, 0, fmt.Errorf("can't parse lcount record")
 	}
@@ -134,7 +129,9 @@ func applyLCountRecord(data *FileData, lineNo int, hitCount uint64) {
 }
 
 func parseBranchRecord(value string) (lineNo int, status BranchStatus, err error) {
-	values := strings.Split(value, ",")
+	buffer := [4]string{}
+	values := splitOnComma(buffer[:], value)
+
 	if len(values) != 2 {
 		return 0, 0, fmt.Errorf("can't parse branch record")
 	}

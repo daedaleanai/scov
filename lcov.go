@@ -95,7 +95,9 @@ func normalizeSourceFilename(filename string) string {
 }
 
 func parseDARecord(value string) (lineNo int, hitCount uint64, err error) {
-	values := strings.Split(value, ",")
+	buffer := [4]string{}
+	values := splitOnComma(buffer[:], value)
+
 	if l := len(values); l != 2 {
 		return 0, 0, fmt.Errorf("can't parse DA record")
 	}
@@ -114,7 +116,8 @@ func parseDARecord(value string) (lineNo int, hitCount uint64, err error) {
 }
 
 func parseFNRecord(value string) (funcName string, funcStart int, err error) {
-	values := strings.Split(value, ",")
+	buffer := [4]string{}
+	values := splitOnComma(buffer[:], value)
 
 	if len(values) != 2 {
 		return "", 0, fmt.Errorf("can't parse function record")
@@ -129,7 +132,8 @@ func parseFNRecord(value string) (funcName string, funcStart int, err error) {
 }
 
 func parseFNDARecord(value string) (funcName string, hitCount uint64, err error) {
-	values := strings.Split(value, ",")
+	buffer := [4]string{}
+	values := splitOnComma(buffer[:], value)
 
 	if len(values) != 2 {
 		return "", 0, fmt.Errorf("can't parse function data record")
@@ -144,7 +148,9 @@ func parseFNDARecord(value string) (funcName string, hitCount uint64, err error)
 }
 
 func parseBRDARecord(value string) (lineNo int, status BranchStatus, err error) {
-	values := strings.Split(value, ",")
+	buffer := [4]string{}
+	values := splitOnComma(buffer[:], value)
+
 	if len(values) != 4 {
 		return 0, 0, fmt.Errorf("can't parse branch record")
 	}
