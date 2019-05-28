@@ -17,6 +17,7 @@ var (
 	exclude  = flag.String("exclude", "", "Exclude source files that match the regular expression")
 	srcdir   = flag.String("srcdir", ".", "Path for the source directory")
 	srcid    = flag.String("srcid", "", "String to identify revision of source")
+	testid   = flag.String("testid", "", "String to identify the test suite")
 	title    = flag.String("title", "SCov", "Title for the HTML pages")
 	htmldir  = flag.String("htmldir", ".", "Path for the HTML output")
 	htmljs   = flag.Bool("htmljs", false, "Use javascript to enhance reports")

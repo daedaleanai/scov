@@ -34,7 +34,7 @@ ifeq ($(findstring clang,$(CC)),clang)
 else
 	gcov -i -b example.c methods/*.c
 endif
-	$(SCOV) -title "Example" -htmljs=true -srcid=`git describe` .
+	$(SCOV) -title "Example" -htmljs=true -srcid=`git describe` -testid="./example 0 20" .
 
 lcov: example
 	./example 0 20
@@ -47,4 +47,4 @@ clean:
 	-$(RM) *.gcno *.gcda methods/*.gcno methods/*.gcda
 	-$(RM) *.gcov *.info *.prof *.profraw *.json.gz
 	-$(RM) *.txt
-	-$(RM) -rf *.html methods/*.html lcov-html
+	-$(RM) -rf *.html *.js methods/*.html lcov-html
