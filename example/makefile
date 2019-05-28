@@ -36,9 +36,15 @@ else
 endif
 	$(SCOV) -title "Example" -htmljs=true -srcid=`git describe` .
 
+lcov: example
+	./example 0 20
+	-$(RM) *.gcov
+	lcov --capture --directory . --output-file coverage.info
+	genhtml coverage.info --output-directory ./lcov-html
+
 clean:
 	-$(RM) *.o methods/*.o example
 	-$(RM) *.gcno *.gcda methods/*.gcno methods/*.gcda
 	-$(RM) *.gcov *.info *.prof *.profraw *.json.gz
 	-$(RM) *.txt
-	-$(RM) *.html methods/*.html
+	-$(RM) -rf *.html methods/*.html lcov-html
