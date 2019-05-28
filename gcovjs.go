@@ -3,7 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"encoding/json"
-	"os"
+	"io"
 )
 
 type GCovData struct {
@@ -36,7 +36,7 @@ type GCovBranch struct {
 	Throw       bool   `json:"throw"`
 }
 
-func loadGCovJSFile(fds FileDataSet, file *os.File) error {
+func loadGCovJSFile(fds FileDataSet, file io.Reader) error {
 	jsonData := GCovData{}
 
 	gz, err := gzip.NewReader(file)
