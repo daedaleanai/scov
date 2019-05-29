@@ -82,7 +82,9 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 <thead><tr><th></th><th>Hit</th><th>Total</th><th>Coverage</th><tr></thead>
 <tbody>
 <tr><td>Lines:</td>{{template "coverageRow" .LCoverage}}</tr>
+{{ if .FCoverage.Valid -}}
 <tr><td>Functions:</td>{{template "coverageRow" .FCoverage}}</tr>
+{{ end -}}
 {{ if .BCoverage.Valid -}}
 <tr><td>Branches:</td>{{template "coverageRow" .BCoverage}}</tr>
 {{ end -}}

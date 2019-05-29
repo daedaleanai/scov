@@ -17,6 +17,8 @@ func TestIdentifyFileType(t *testing.T) {
 		{"/home/person/example-7.4.0.c.info", ParserLCov, true},
 		{"example-7.4.0.json", ParserLLVM, true},
 		{"/home/person/example-7.4.0.json", ParserLLVM, true},
+		{"example-7.4.0.out", ParserGo, true},
+		{"/home/person/example-7.4.0.out", ParserGo, true},
 		{"example.7.4.0.c.dummy", 0, false},
 		{"/home/person/example.7.4.0.c.dummy", 0, false},
 	}

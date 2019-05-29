@@ -12,6 +12,7 @@ const (
 	ParserLCov
 	ParserGCovJS
 	ParserLLVM
+	ParserGo
 )
 
 func identifyFileType(filename string) (Parser, bool) {
@@ -25,6 +26,8 @@ func identifyFileType(filename string) (Parser, bool) {
 		return ParserGCovJS, true
 	case ".json":
 		return ParserLLVM, true
+	case ".out":
+		return ParserGo, true
 	default:
 		return 0, false
 	}
@@ -40,6 +43,8 @@ func (p Parser) loadFile(data FileDataSet, file *os.File) error {
 		return loadGCovJSFile(data, file)
 	case ParserLLVM:
 		return loadLLVMFile(data, file)
+	case ParserGo:
+		return loadGoFile(data, file)
 	}
 
 	panic("Unreachable")
