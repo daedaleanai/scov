@@ -78,10 +78,11 @@ example-gcc-7:
   stage: test
   dependencies:
     - golang-1.11
-  script:
-    - wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+  before_script:
+    - wget -q http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
     - tar xfz lcov-1.14.tar.gz
     - PATH=$PATH:`pwd`/lcov-1.14/bin/
+  script:
     - cd ./example
     - make example
     - time SCOV=../scov make text
@@ -101,10 +102,16 @@ example-gcc-8:
   stage: test
   dependencies:
     - golang-1.11
+  before_script:
+    - wget -q http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+    - tar xfz lcov-1.14.tar.gz
+    - PATH=$PATH:`pwd`/lcov-1.14/bin/
   script:
     - cd ./example
-    - SCOV=../scov make text
-    - SCOV=../scov make html
+    - make example
+    - time SCOV=../scov make text
+    - time SCOV=../scov make html
+    - time make lcov
   only:
     - master
   artifacts:
@@ -121,8 +128,9 @@ example-gcc-9:
     - golang-1.11
   script:
     - cd ./example
-    - SCOV=../scov make text
-    - SCOV=../scov make html
+    - make example
+    - time SCOV=../scov make text
+    - time SCOV=../scov make html
   only:
     - master
   artifacts:
@@ -136,18 +144,20 @@ example-clang-8:
   stage: test
   dependencies:
     - golang-1.11
-  script:
+  before_script:
     - cat /etc/*-release
     - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" >> /etc/apt/sources.list
     - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
     - apt-get update -qq -y
     - apt-get install -qq -y llvm-8 clang-8
+  script:
     - alias llvm-profdata=llvm-profdata-8
     - alias llvm-cov=llvm-cov-8
     - cd ./example
-    - SCOV=../scov CC=clang-8 make text
-    - SCOV=../scov CC=clang-8 make html
+    - make CC=clang-8 example
+    - time SCOV=../scov CC=clang-8 make text
+    - time SCOV=../scov CC=clang-8 make html
   only:
     - master
   artifacts:
