@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
+	"strconv"
 )
 
 type LLVMData struct {
@@ -18,8 +20,8 @@ type LLVMData2 struct {
 }
 
 type LLVMFile struct {
-	Filename string  `json:"filename"`
-	Segments [][]int `json:"segments"`
+	Filename string        `json:"filename"`
+	Segments []LLVMSegment `json:"segments"`
 }
 
 type LLVMFunction struct {
@@ -27,6 +29,81 @@ type LLVMFunction struct {
 	Count     uint64   `json:"count"`
 	Regions   [][]int  `json:"regions"`
 	Filenames []string `json:"filenames"`
+}
+
+type LLVMSegment struct {
+	Line          int
+	Column        int
+	Count         uint64
+	HasCount      bool
+	IsRegionEntry bool
+}
+
+func (s *LLVMSegment) UnmarshalJSON(data []byte) error {
+	// Strip of the outer square brackets for the array.
+	if data[0] != '[' || data[len(data)-1] != ']' {
+		return errors.New("expected an array")
+	}
+	data = data[1 : len(data)-1]
+
+	// Get the Line
+	ndx := bytes.IndexByte(data, ',')
+	if ndx < 1 {
+		return errors.New("expected at least 5 elements in the array")
+	}
+	tmp, err := strconv.ParseInt(string(data[:ndx]), 10, 64)
+	if err != nil {
+		return err
+	}
+	s.Line = int(tmp)
+	data = data[ndx+1:]
+
+	// Get the Column
+	ndx = bytes.IndexByte(data, ',')
+	if ndx < 1 {
+		return errors.New("expected at least 5 elements in the array")
+	}
+	tmp, err = strconv.ParseInt(string(data[:ndx]), 10, 64)
+	if err != nil {
+		return err
+	}
+	s.Column = int(tmp)
+	data = data[ndx+1:]
+
+	// Get the Count
+	ndx = bytes.IndexByte(data, ',')
+	if ndx < 1 {
+		return errors.New("expected at least 5 elements in the array")
+	}
+	s.Count, err = strconv.ParseUint(string(data[:ndx]), 10, 64)
+	if err != nil {
+		return err
+	}
+	data = data[ndx+1:]
+
+	// Get the HasCount
+	ndx = bytes.IndexByte(data, ',')
+	if ndx < 1 {
+		return errors.New("expected at least 5 elements in the array")
+	}
+	s.HasCount, err = strconv.ParseBool(string(data[:ndx]))
+	if err != nil {
+		return err
+	}
+	data = data[ndx+1:]
+
+	// Get the IsRegionEntry
+	ndx = bytes.IndexByte(data, ',')
+	if ndx >= 1 {
+		// Ignore any new elements in the array.
+		data = data[:ndx]
+	}
+	s.IsRegionEntry, err = strconv.ParseBool(string(data))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func loadLLVMFile(fds FileDataSet, file io.Reader) error {
@@ -47,11 +124,11 @@ func loadLLVMFile(fds FileDataSet, file io.Reader) error {
 			currentData := fds.FileData(filename)
 
 			for i := range w.Segments[:len(w.Segments)-1] {
-				startLine := w.Segments[i][0]
-				endLine := w.Segments[i+1][0]
-				count := w.Segments[i][2]
-				hasCount := (w.Segments[i][3] != 0)
-				isRegionEntry := (w.Segments[i][4] != 0)
+				startLine := w.Segments[i].Line
+				endLine := w.Segments[i+1].Line
+				count := w.Segments[i].Count
+				hasCount := w.Segments[i].HasCount
+				isRegionEntry := w.Segments[i].IsRegionEntry
 
 				if isRegionEntry && hasCount {
 					for i := startLine; i <= endLine; i++ {

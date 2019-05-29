@@ -61,6 +61,7 @@ func TestParserLoadFile(t *testing.T) {
 		{"example-llvm-6.0.1.json", Coverage{37, 47}, Coverage{14, 17}, Coverage{1, 1}, Coverage{0, 0}, 29},
 		// clang 8.0.1
 		{"example-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}, 29},
+		{"example-llvm-8.0.1.json", Coverage{33, 47}, Coverage{10, 17}, Coverage{1, 1}, Coverage{0, 0}, 29},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {

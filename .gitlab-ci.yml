@@ -196,9 +196,6 @@ example-clang-8:
     - cd ./example
     - make example
     - ./example
-    - $LLVM_PROFDATA merge -o default.prof default.profraw
-    - $LLVM_COV export -instr-profile default.prof ./example > default.json
-    - cat default.json
     - time make text
     - time make html
   only:
