@@ -146,12 +146,44 @@ example-gcc-9:
       - example/methods/*.html
     expire_in: 1 week
 
+example-clang-7:
+  stage: test
+  dependencies:
+    - golang-1.11
+  variables:
+    CC: clang-7
+    LLVM_PROFDATA: llvm-profdata-7
+    LLVM_COV: llvm-cov-7
+    SCOV: $CI_PROJECT_DIR/scov
+  before_script:
+    - cat /etc/*-release
+    - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
+    - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
+    - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+    - apt-get update -qq -y
+    - apt-get install -qq -y llvm-7 clang-7
+  script:
+    - cd ./example
+    - make example
+    - time make text
+    - time make html
+  only:
+    - master
+  artifacts:
+    paths:
+      - example/*.txt
+      - example/*.html
+      - example/methods/*.html
+    expire_in: 1 week
+
 example-clang-8:
   stage: test
   dependencies:
     - golang-1.11
   variables:
     CC: clang-8
+    LLVM_PROFDATA: llvm-profdata-8
+    LLVM_COV: llvm-cov-8
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
     - cat /etc/*-release
@@ -161,10 +193,12 @@ example-clang-8:
     - apt-get update -qq -y
     - apt-get install -qq -y llvm-8 clang-8
   script:
-    - alias llvm-profdata=llvm-profdata-8
-    - alias llvm-cov=llvm-cov-8
     - cd ./example
     - make example
+    - ./example
+    - $LLVM_PROFDATA merge -o default.prof default.profraw
+    - $LLVM_COV export -instr-profile default.prof ./example > default.json
+    - cat default.json
     - time make text
     - time make html
   only:

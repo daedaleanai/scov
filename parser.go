@@ -11,6 +11,7 @@ const (
 	ParserGCov Parser = iota
 	ParserLCov
 	ParserGCovJS
+	ParserLLVM
 )
 
 func identifyFileType(filename string) (Parser, bool) {
@@ -22,6 +23,8 @@ func identifyFileType(filename string) (Parser, bool) {
 		return ParserGCov, true
 	case ".gz":
 		return ParserGCovJS, true
+	case ".json":
+		return ParserLLVM, true
 	default:
 		return 0, false
 	}
@@ -35,6 +38,8 @@ func (p Parser) loadFile(data FileDataSet, file *os.File) error {
 		return loadGCovFile(data, file)
 	case ParserGCovJS:
 		return loadGCovJSFile(data, file)
+	case ParserLLVM:
+		return loadLLVMFile(data, file)
 	}
 
 	panic("Unreachable")

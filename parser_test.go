@@ -15,6 +15,8 @@ func TestIdentifyFileType(t *testing.T) {
 		{"/home/person/example-7.4.0.c.gcov", ParserGCov, true},
 		{"example-7.4.0.c.info", ParserLCov, true},
 		{"/home/person/example-7.4.0.c.info", ParserLCov, true},
+		{"example-7.4.0.json", ParserLLVM, true},
+		{"/home/person/example-7.4.0.json", ParserLLVM, true},
 		{"example.7.4.0.c.dummy", 0, false},
 		{"/home/person/example.7.4.0.c.dummy", 0, false},
 	}
@@ -55,6 +57,8 @@ func TestParserLoadFile(t *testing.T) {
 		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
 		// gcc with lcov
 		{"example-lcov-1.13.info", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
+		// clang 6.0.1
+		{"example-llvm-6.0.1.json", Coverage{37, 47}, Coverage{14, 17}, Coverage{1, 1}, Coverage{0, 0}, 29},
 		// clang 8.0.1
 		{"example-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}, 29},
 	}

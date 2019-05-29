@@ -20,7 +20,7 @@ text: example
 	./example 0 20
 ifeq ($(findstring clang,$(CC)),clang)
 	$(LLVM_PROFDATA) merge -o default.prof default.profraw
-	$(LLVM_COV) export -format lcov -instr-profile default.prof ./example > default.info
+	$(LLVM_COV) export -instr-profile default.prof ./example > default.json
 else
 	gcov -i -b example.c methods/*.c
 endif
@@ -30,7 +30,7 @@ html: example
 	./example 0 20
 ifeq ($(findstring clang,$(CC)),clang)
 	$(LLVM_PROFDATA) merge -o default.prof default.profraw
-	$(LLVM_COV) export -format lcov -instr-profile default.prof ./example > default.info
+	$(LLVM_COV) export -instr-profile default.prof ./example > default.json
 else
 	gcov -i -b example.c methods/*.c
 endif
