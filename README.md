@@ -60,7 +60,9 @@ The coverage information collected by `clang` is by basic block.  When convertin
 
 **-srcdir [folder]**  	Path for the source directory (default ".").
 
-**-srcid [string]**    	String to identify revision of the source.  This could be either `git describe` or `hg id`.
+**-srcid [string]**    	String to identify revision of the source.  As an example, the string could be either `git describe` or `hg id`.  The value does not affect any analysis, but may be included in reports as metadata.
+
+**-testid [string]**  	String to identify the test suite.  If the project has separate test suites, the string can be used identify the test suite used to generate coverage data.  The value does not affect any analysis, but may be included in reports as metadata.
 
 **-text [filename]**   	Filename for text report, use - to direct the report to stdout.
 
