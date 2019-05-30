@@ -45,6 +45,7 @@ func (c Coverage) Valid() bool {
 // CoverageRating is a classification of the coverage into low, medium or high.
 type CoverageRating uint8
 
+// These constants provide a rough classification for the amount of coverage in a scope.
 const (
 	LowCoverage CoverageRating = iota
 	MediumCoverage

@@ -5,8 +5,11 @@ import (
 	"path/filepath"
 )
 
+// Parser identifies one of the parsers available to read coverage information.
 type Parser int
 
+// These constants identify the various parsers that are available to read
+// code coverage information.
 const (
 	ParserGCov Parser = iota
 	ParserLCov
