@@ -34,10 +34,10 @@ var (
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
 table { margin-bottom: 1em; }
-.coverage { margin-left:auto;margin-right:0; }
-.coverage td:nth-child(2) { text-align:center; }
-.coverage td:nth-child(3) { text-align:center; }
-.coverage td:nth-child(4) { text-align:center; }
+.coverage { min-width:100%; }
+.coverage td:nth-child(2), .coverage th:nth-child(2) { text-align:center; }
+.coverage td:nth-child(3), .coverage th:nth-child(3) { text-align:center; }
+.coverage td:nth-child(4), .coverage th:nth-child(4) { text-align:center; }
 .sparkbar { border: 1px solid black; border-radius:1px; min-width:50px; height:1em; }
 .sparkbar .fill { display: inline-block; height: 100%; }
 .sparkbar .high { background-color:lightgreen; }
@@ -64,6 +64,14 @@ th .reveal .pure-button { padding: 0 0.5em; }
 th:hover .reveal { opacity: 1; }
 {{ end -}}
 footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: #e0e0e0; padding: .5em 1em; }
+@media screen and (min-width: 48em) {
+	.pure-gutter-md > div { box-sizing: border-box; padding: 0 0.5em; }
+	.pure-gutter-md > div:first-child { padding-left: 0; }
+	.pure-gutter-md > div:last-child { padding-right: 0; }
+}
+@media screen and (max-width: 48em) {
+	.table-md td, .table-md th { padding: 0.5em; }
+}
 </style>
 {{ if .Script -}}
 <script src="index.js" ></script>
@@ -118,22 +126,29 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 {{template "head" . -}}
 <body>
 {{template "h1" .}}
-<div class="pure-g"><div class="pure-u">
-<h2>Overall</h2>
-</div></div>
-<div class="pure-g"><div class="pure-u-1 pure-u-md-1-2">
+<div class="pure-g pure-gutter-md"><div class="pure-u-1 pure-u-md-1-2">
+<h2>Metadata</h2>
 {{ template "metadata" . -}}
 </div><div class="pure-u-1 pure-u-md-1-2">
+<h2>Coverage Summary</h2>
 {{ template "coverage" . -}}
 </div></div>
 <div class="pure-g"><div class="pure-u-1">
 <h2>By File</h2>
-<table class="pure-table pure-table-bordered" style="width:100%">
+<table class="pure-table pure-table-bordered table-md" style="width:100%">
+{{ $useFunc := .FCoverage.Valid -}}
 {{ $useBranch := .BCoverage.Valid -}}
-<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Filename</th><th colspan="3"{{if .Script}} data-sort="perc-3"{{end}}>Line Coverage</th><th colspan="3"{{if .Script}} data-sort="perc-6"{{end}}>Function Coverage</th>{{if $useBranch}}<th colspan="3"{{if .Script}} data-sort="perc-9"{{end}}>Branch Coverage</th>{{end}}</tr></thead>
+<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Filename</th><th colspan="3"{{if .Script}} data-sort="perc-3"{{end}}>Line Coverage</th>{{if $useFunc}}<th colspan="3"{{if .Script}} data-sort="perc-6"{{end}}>Function Coverage</th>{{end}}{{if $useBranch}}<th colspan="3"{{if .Script}} data-sort="perc-9"{{end}}>Branch Coverage</th>{{end}}</tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
-<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td><td>{{template "sparkbar" .FCoverage}}</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td>
+<tr><td><a href="{{.Name}}.html">{{.Name}}</a></td><td>{{template "sparkbar" .LCoverage}}</td><td>{{.LCoverage.Hits}}/{{.LCoverage.Total}}</td><td>{{printf "%.1f" .LCoverage.P}}%</td>
+{{- if $useFunc -}}
+{{- if .FCoverage.Valid -}}
+<td>{{template "sparkbar" .FCoverage}}</td><td>{{.FCoverage.Hits}}/{{.FCoverage.Total}}</td><td>{{printf "%.1f" .FCoverage.P}}%</td>
+{{- else -}}
+<td colspan="3">No data</td>
+{{- end -}}
+{{- end -}}
 {{- if $useBranch -}}
 {{- if .BCoverage.Valid -}}
 <td>{{template "sparkbar" .BCoverage}}</td><td>{{.BCoverage.Hits}}/{{.BCoverage.Total}}</td><td>{{printf "%.1f" .BCoverage.P}}%</td>
@@ -156,12 +171,11 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 {{template "head" . -}}
 <body>
 {{template "h1" .}}
-<div class="pure-g"><div class="pure-u">
-<h2>Overall</h2>
-</div></div>
-<div class="pure-g"><div class="pure-u-1 pure-u-md-1-2">
+<div class="pure-g pure-gutter-md"><div class="pure-u-1 pure-u-md-1-2">
+<h2>Metadata</h2>
 {{ template "metadata" . }}
 </div><div class="pure-u-1 pure-u-md-1-2">
+<h2>Coverage</h2>
 {{ template "coverage" . }}
 </div></div>
 <div class="pure-g"><div class="pure-u">

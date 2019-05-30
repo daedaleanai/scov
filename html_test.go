@@ -32,10 +32,6 @@ func TestCreateHTML(t *testing.T) {
 		t.Fatalf("could not read file: %s", err)
 	}
 
-	data = map[string]*FileData{
-		"example.c": data["example.c"],
-	}
-
 	name, cleanup := TempDirectory(t)
 	defer cleanup()
 
@@ -74,10 +70,6 @@ func TestCreateHTMLIndex(t *testing.T) {
 			err := loadFile(data, filepath.Join("./testdata", v.filename))
 			if err != nil {
 				t.Fatalf("could not read file: %s", err)
-			}
-
-			data = map[string]*FileData{
-				"example.c": data["example.c"],
 			}
 
 			filename, cleanup := TempFilename(t)
