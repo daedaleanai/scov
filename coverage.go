@@ -66,7 +66,7 @@ func (cr CoverageRating) String() string {
 // FuncData represents data about a function.
 type FuncData struct {
 	StartLine int
-	Count     uint64
+	HitCount  uint64
 }
 
 // BranchStatus indicates whether a branch was taken, not taken, or if the
@@ -112,7 +112,7 @@ func (file *FileData) FuncCoverage() Coverage {
 	a, b := 0, 0
 
 	for _, v := range file.FuncData {
-		if v.Count != 0 {
+		if v.HitCount != 0 {
 			a++
 		}
 		b++

@@ -93,12 +93,12 @@ func parseFunctionRecord(value string) (funcName string, funcStart int, hitCount
 
 func applyFunctionRecord(data *FileData, funcName string, funcStart int, hitCount uint64) {
 	if v, ok := data.FuncData[funcName]; ok {
-		v.Count += hitCount
+		v.HitCount += hitCount
 		data.FuncData[funcName] = v
 	} else {
 		data.FuncData[funcName] = FuncData{
 			StartLine: funcStart,
-			Count:     hitCount,
+			HitCount:  hitCount,
 		}
 	}
 }
