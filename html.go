@@ -161,6 +161,17 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 </tbody>
 </table>
 </div></div>
+<div class="pure-g"><div class="pure-u-1">
+<h2>By Function</h2>
+<table class="pure-table pure-table-bordered table-md" style="width:100%">
+<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Function</th><th{{if .Script}} data-sort="perc-1"{{end}}>Hits</th></tr></thead>
+<tbody>
+{{range $ndx, $data := .Funcs -}}
+<tr><td><a href="{{.Filename}}.html#L{{.StartLine}}">{{.Name}}</a></td><td>{{.HitCount}}</td></tr>
+{{- end -}}
+</tbody>
+</table>
+</div></div>
 {{ template "footer" . }}
 </body>
 </html>`,
@@ -193,11 +204,20 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 	))
 )
 
+// FileStatistics is used to capture coverage statistics for a file.
 type FileStatistics struct {
 	Name      string
 	LCoverage Coverage
 	FCoverage Coverage
 	BCoverage Coverage
+}
+
+// FuncStatistic is used to capture data for a function.
+type FuncStatistic struct {
+	Name      string
+	Filename  string
+	StartLine int
+	HitCount  uint64
 }
 
 func createHTML(outdir string, data map[string]*FileData, date time.Time) error {
@@ -246,8 +266,9 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 	FCov := Coverage{}
 	BCov := Coverage{}
 	files := []FileStatistics{}
-	for name, data := range data {
-		stats := FileStatistics{Name: name}
+	funcs := []FuncStatistic{}
+	for filename, data := range data {
+		stats := FileStatistics{Name: filename}
 
 		stats.LCoverage = data.LineCoverage()
 		LCov = LCov.Add(stats.LCoverage)
@@ -257,9 +278,21 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 		BCov = BCov.Add(stats.BCoverage)
 
 		files = append(files, stats)
+
+		for name, data := range data.FuncData {
+			funcs = append(funcs, FuncStatistic{
+				Name:      name,
+				Filename:  filename,
+				StartLine: data.StartLine,
+				HitCount:  data.HitCount,
+			})
+		}
 	}
 	sort.Slice(files, func(i, j int) bool {
 		return files[i].Name < files[j].Name
+	})
+	sort.Slice(funcs, func(i, j int) bool {
+		return funcs[i].Name < funcs[j].Name
 	})
 
 	params := map[string]interface{}{
@@ -270,6 +303,7 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 		"FCoverage": FCov,
 		"BCoverage": BCov,
 		"Files":     files,
+		"Funcs":     funcs,
 		"Date":      date.Format(time.UnixDate),
 		"Script":    *htmljs,
 	}
@@ -311,6 +345,9 @@ var cmpTable = {
     },
     'text-1' : function(a) {
         return a.childNodes[1].innerHtml
+    },
+    'perc-1' : function(a) {
+        return parseFloat(a.childNodes[1].innerHTML)
     },
     'perc-3' : function(a) {
         return parseFloat(a.childNodes[3].innerHTML)
@@ -413,6 +450,7 @@ func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[i
 	lineNo := 1
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
+		fmt.Fprintf(w, `<tr id="L%d"`, lineNo)
 		w.WriteString("<tr")
 		lc, ok := lineCountData[lineNo]
 		if ok {
