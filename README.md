@@ -52,10 +52,12 @@ Although the primary goal of `scov` is to support C and C++, `scov` can parse co
 
 ```shell
 go test -coverprofile=cover.out .
-scov -title "My Report" -htmldir ./html cover.out
+scov -title "My Report" -htmldir ./html -srcdir $GOPATH/src cover.out
 ```
 
 This will create a folder, and insert the HTML files into that folder.  Open `index.html` to get an overview of the code coverage, and follow the links for the annotated source files.
+
+Because `go` reports all file paths based on the GOPATH, the source directory needs to be set so that `scov` can find the source files.  Note that if there are multiple directories in the GOPATH, then the trick above can not be used, and the correct folder will need to be specified.
 
 ## Options
 
