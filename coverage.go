@@ -73,6 +73,7 @@ type FuncData struct {
 // conditional was never executed.
 type BranchStatus uint8
 
+// The following constants represent the possible status for branches.
 const (
 	BranchTaken BranchStatus = iota
 	BranchNotTaken
@@ -87,6 +88,7 @@ type FileData struct {
 	BranchData map[int][]BranchStatus
 }
 
+// NewFileData initializes a new FileData.
 func NewFileData(filename string) *FileData {
 	return &FileData{
 		Filename:   filename,
@@ -96,6 +98,7 @@ func NewFileData(filename string) *FileData {
 	}
 }
 
+// LineCoverage calculates line coverage for the file.
 func (file *FileData) LineCoverage() Coverage {
 	a, b := 0, 0
 
@@ -108,6 +111,7 @@ func (file *FileData) LineCoverage() Coverage {
 	return Coverage{a, b}
 }
 
+// FuncCoverage calculates function coverage for the file.
 func (file *FileData) FuncCoverage() Coverage {
 	a, b := 0, 0
 
@@ -120,6 +124,7 @@ func (file *FileData) FuncCoverage() Coverage {
 	return Coverage{a, b}
 }
 
+// BranchCoverage calculates branch coverage for the file.
 func (file *FileData) BranchCoverage() Coverage {
 	a, b := 0, 0
 
@@ -134,8 +139,10 @@ func (file *FileData) BranchCoverage() Coverage {
 	return Coverage{a, b}
 }
 
+// FileDataSet maintains coverage statistics for multiple files.
 type FileDataSet map[string]*FileData
 
+// FileData returns the data for a particular file in the set.
 func (fds FileDataSet) FileData(filename string) *FileData {
 	if tmp, ok := fds[filename]; ok {
 		return tmp
@@ -146,6 +153,7 @@ func (fds FileDataSet) FileData(filename string) *FileData {
 	return tmp
 }
 
+// LineCoverage calculates line coverage over all of the files in the set.
 func (fds FileDataSet) LineCoverage() Coverage {
 	lcov := Coverage{}
 	for _, data := range fds {
