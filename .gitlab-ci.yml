@@ -31,7 +31,7 @@ golang-1.12:
   script:
     - go version
     - go build
-    - go test 
+    - go test
 
 golang-1.11:
   image: golang:1.11
@@ -40,9 +40,11 @@ golang-1.11:
     - go version
     - go build
     - go test
+    - cd ./behemoth && go build
   artifacts:
     paths:
       - scov
+      - behemoth/behemoth
     expire_in: 1 week
 
 golang-1.10:
@@ -73,6 +75,21 @@ test:
   artifacts:
     paths:
       - cover.html
+
+benchmark:
+  image: gcc:7
+  stage: test
+  before_script:
+    - apt-get update -qq -y
+    - apt-get install -qq -y time lcov
+  script:
+    - cd behemoth/test
+    - make html LOC=10000 && make clean
+    - make lcov LOC=10000 && make clean
+    - make html LOC=50000 && make clean
+    - make lcov LOC=50000 && make clean
+  only:
+    - master
 
 example-gcc-7:
   image: gcc:7
@@ -133,6 +150,36 @@ example-gcc-9:
     - golang-1.11
   variables:
     SCOV: $CI_PROJECT_DIR/scov
+  script:
+    - cd ./example
+    - make example
+    - time make text
+    - time make html
+  only:
+    - master
+  artifacts:
+    paths:
+      - example/*.txt
+      - example/*.html
+      - example/methods/*.html
+    expire_in: 1 week
+
+example-clang-6:
+  stage: test
+  dependencies:
+    - golang-1.11
+  variables:
+    CC: clang-6.0
+    LLVM_PROFDATA: llvm-profdata-6.0
+    LLVM_COV: llvm-cov-6.0
+    SCOV: $CI_PROJECT_DIR/scov
+  before_script:
+    - cat /etc/*-release
+    - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
+    - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
+    - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+    - apt-get update -qq -y
+    - apt-get install -qq -y llvm-6.0 clang-6.0
   script:
     - cd ./example
     - make example
