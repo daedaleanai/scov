@@ -13,6 +13,7 @@ import (
 var (
 	loc       = flag.Int("loc", 1, "Target for the number of lines of code")
 	seed      = flag.Int("seed", 0, "Seed for random number generator")
+	files     = flag.Uint("files", 0, "Number of sub-files to create")
 	funcCount = 0
 )
 
@@ -26,6 +27,9 @@ func main() {
 	writeHeaders(os.Stdout)
 	writeDummyFunc(os.Stdout)
 	writeMain(os.Stdout)
+	for i := uint(0); i < *files; i++ {
+		writeSource(i + 1)
+	}
 }
 
 func writeHeaders(out io.Writer) {
@@ -39,13 +43,43 @@ func writeDummyFunc(out io.Writer) {
 }
 
 func writeMain(out io.Writer) {
-	fmt.Fprintf(out, "int main( int argc, char const* argv[]) {\n")
+	if *files > 0 {
+		for i := uint(0); i < *files; i++ {
+			fmt.Fprintf(out, "extern int file%d( int p );\n", i+1)
+		}
+		out.Write([]byte{'\n'})
+	}
+
+	fmt.Fprintf(out, "int main( int argc, char const* argv[] ) {\n")
 	fmt.Fprintf(out, "\tint p = 0;\n")
 	fmt.Fprintf(out, "\tif ( argc>1 ) {\n")
 	fmt.Fprintf(out, "\t\tp = atoi( argv[1] );\n")
 	fmt.Fprintf(out, "\t}\n\n")
 
-	stmt := makeStatements(out, *loc)
+	if *files > 0 {
+		for i := uint(0); i < *files; i++ {
+			fmt.Fprintf(out, "\tfile%d( p );\n", i+1)
+		}
+	} else {
+		stmt := makeStatements(out, *loc)
+		for _, v := range stmt {
+			fmt.Fprintf(out, "\t%s\n", v)
+		}
+	}
+	fmt.Fprintf(out, "\treturn 0;\n}\n\n")
+}
+
+func writeSource(ndx uint) {
+	out, err := os.Create(fmt.Sprintf("file%d.c", ndx))
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+
+	fmt.Fprintf(out, "extern void dummy( int p );\n\n")
+
+	stmt := makeStatements(out, *loc/int(*files))
+	fmt.Fprintf(out, "int file%d( int p ) {\n", ndx)
 	for _, v := range stmt {
 		fmt.Fprintf(out, "\t%s\n", v)
 	}
@@ -122,16 +156,13 @@ func encodeName() string {
 	s = append(s, 'a'+byte(v%26))
 
 	name := string(s)
-	if isReserved(name) {
-		return name + "_func"
-	}
-	return name
+	return "bm_" + name
 }
 
 func writeFunc(out io.Writer, name string, count int) {
 	stmt := makeStatements(out, count)
 
-	fmt.Fprintf(out, "int %s( int p ) {\n", name)
+	fmt.Fprintf(out, "static int %s( int p ) {\n", name)
 	for _, v := range stmt {
 		fmt.Fprintf(out, "\t%s\n", v)
 	}

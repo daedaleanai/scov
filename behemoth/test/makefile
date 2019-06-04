@@ -2,7 +2,8 @@ CFLAGS ?= -O0 -I$(SRCDIR)/methods
 LDFLAGS ?=
 LLVM_PROFDATA ?= llvm-profdata-8 
 LLVM_COV ?= llvm-cov-8 
-LOC ?= 100
+LOC ?= 100000
+FILES ?= 10
 SCOV ?= ../../scov
 ifeq ($(findstring clang,$(CC)),clang)
 CFLAGS +=  -fprofile-instr-generate -fcoverage-mapping
@@ -11,14 +12,17 @@ else
 CFLAGS += --coverage
 LDFLAGS += --coverage
 endif
+SRC := rand$(LOC).c $(addsuffix .c,$(addprefix file,$(shell seq 1 ${FILES})))
+OBJ := $(SRC:.c=.o)
 
 SRCDIR ?= .
 VPATH := $(SRCDIR)
 
-rand$(LOC): rand$(LOC).o
+rand$(LOC): $(OBJ)
+	$(CC) $(LDFLAGS) -o $@ $^
 
-rand$(LOC).c:
-	../behemoth -loc $(LOC) > $@
+$(SRC):
+	../behemoth -loc $(LOC) -files $(FILES) > $@
 
 html: rand$(LOC) $(SCOV)
 	./rand$(LOC)
@@ -26,7 +30,7 @@ ifeq ($(findstring clang,$(CC)),clang)
 	$(LLVM_PROFDATA) merge -o default.prof default.profraw
 	$(LLVM_COV) export -instr-profile default.prof ./example > default.json
 else
-	time gcov -i -b rand$(LOC).c
+	time gcov -i -b *.c
 endif
 	time $(SCOV) -title "Example" -htmljs=true -srcid=`git describe` -testid="./rand" .
 
@@ -37,5 +41,5 @@ lcov: rand$(LOC)
 	time genhtml rand$(LOC).info --output-directory .
 
 clean:
-	-$(RM) rand* *.gcno *.gcda
+	-$(RM) rand* file* *.gcno *.gcda
 	-$(RM) -rf *.html *.js *.png *.css ./test/
