@@ -9,7 +9,6 @@ import (
 )
 
 func loadGoFile(fds FileDataSet, file *os.File) error {
-	currentData := (*FileData)(nil)
 	mode := ""
 
 	scanner := bufio.NewScanner(file)
@@ -26,7 +25,7 @@ func loadGoFile(fds FileDataSet, file *os.File) error {
 				return err
 			}
 
-			currentData = fds.FileData(filename)
+			currentData := fds.FileData(filename)
 			for i := start.Line; i <= end.Line; i++ {
 				applyLCountRecord(currentData, i, hitCount)
 			}

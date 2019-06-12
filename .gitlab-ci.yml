@@ -70,6 +70,12 @@ test:
     - go tool cover -html=cover.out -o=cover.html
     - bash <(curl -s https://codecov.io/bash)
     - go vet
+    - go get -u github.com/gordonklaus/ineffassign
+    - go install github.com/gordonklaus/ineffassign
+    - $GOPATH/bin/ineffassign $GOPATH/src/gitlab.com/$CI_PROJECT_PATH
+    - go get -u github.com/client9/misspell/cmd/misspell
+    - go install github.com/client9/misspell/cmd/misspell
+    - $GOPATH/bin/misspell *.go
   only:
     - master
   artifacts:
