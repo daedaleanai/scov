@@ -23,12 +23,6 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			value = normalizeSourceFilename(value)
 			currentData = fds.FileData(value)
 
-		case "FNF": // Functions founds
-			// ignore
-
-		case "FNH": // Functions hit
-			// ignore
-
 		case "FN": // Function
 			funcName, funcStart, err := parseFNRecord(value)
 			if err != nil {
@@ -43,24 +37,12 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			}
 			applyFunctionRecord(currentData, funcName, 0, hitCount)
 
-		case "LF": // Lines founds
-			// ignore
-
-		case "LH": // Lines hit
-			// ignore
-
 		case "DA": // Line data
 			lineNo, hitCount, err := parseDARecord(value)
 			if err != nil {
 				return err
 			}
 			applyLCountRecord(currentData, lineNo, hitCount)
-
-		case "BRF": // Branches found
-			// ignore
-
-		case "BRH": // Branches hit
-			// ignore
 
 		case "BRDA": // Branch data
 			lineNo, branchStatus, err := parseBRDARecord(value)
@@ -71,7 +53,18 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 
 		default:
 			// Unknown records are ignored.  If future versions of the file
-			// format introduce new records, we don't want to have an error.		}
+			// format introduce new records, we don't want to have an error.
+			//
+			// We are also skipping known records:
+			//    LF  lines found
+			//    LH  lines hit
+			//    FNF functions found
+			//    FNH functions hit
+			//    BRF branches found
+			//    BRH branches hit
+			//
+			// The above records provides summaries of the counts in the data
+			// records, but will calculate that ourselves.
 		}
 	}
 	if err := scanner.Err(); err != nil {
