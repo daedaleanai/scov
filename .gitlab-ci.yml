@@ -75,7 +75,7 @@ test:
     - $GOPATH/bin/ineffassign $GOPATH/src/gitlab.com/$CI_PROJECT_PATH
     - go get -u github.com/client9/misspell/cmd/misspell
     - go install github.com/client9/misspell/cmd/misspell
-    - $GOPATH/bin/misspell *.go
+    - $GOPATH/bin/misspell *.go behemoth/*.go
   only:
     - master
   artifacts:

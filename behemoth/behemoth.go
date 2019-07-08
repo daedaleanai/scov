@@ -97,7 +97,7 @@ func makeStatements(out io.Writer, count int) []string {
 		for i := 0; i < count; i++ {
 			p := rand.Float32()
 			if p < 0.8 {
-				// dummy statment
+				// dummy statement
 				stmt = append(stmt, "dummy( p );")
 			} else {
 				// if statement
@@ -113,7 +113,7 @@ func makeStatements(out io.Writer, count int) []string {
 		for i := 0; i < count; i++ {
 			p := rand.Float32()
 			if p < 0.7 {
-				// dummy statment
+				// dummy statement
 				stmt = append(stmt, "dummy( p );")
 			} else if p < 0.9 {
 				// function call
