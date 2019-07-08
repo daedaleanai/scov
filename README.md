@@ -22,7 +22,7 @@ scov -title "My Report" -htmldir ./html *.gcov
 
 This will create a folder, and insert the HTML files into that folder.  Open `index.html` to get an overview of the code coverage, and follow the links for the annotated source files.
 
-If you add the option `-b` when running `gcov`, the reports will include information on the branch coverage.
+There are a few options when running `gcov` that may be particularly useful.  If you add the option `-b` , the reports will include information on the branch coverage.  For C++, if you add the option `-m`, the reports will use demangled function names.
 
 Note that `gcov` version 7 or higher is required.  Earlier versions do not support the `-i` command-line flag.
 
