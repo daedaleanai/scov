@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -26,30 +27,53 @@ func TempDirectory(t *testing.T) (filename string, cleanup func()) {
 }
 
 func TestCreateHTML(t *testing.T) {
-	data := make(map[string]*FileData)
-	err := loadFile(data, "./testdata/example-7.4.0.c.gcov")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
+	cases := []struct {
+		filename string
+		js       bool
+	}{
+		{"example-7.4.0.c.gcov", false},
+		{"example-8.3.0.c.gcov", true},
+		{"example-7.4.0.c.gcov", true},
+		{"example-8.3.0.c.gcov", false},
 	}
 
-	name, cleanup := TempDirectory(t)
-	defer cleanup()
+	for _, v := range cases {
+		v := v
+		t.Run(v.filename+"("+strconv.FormatBool(v.js)+")", func(t *testing.T) {
+			data := make(map[string]*FileData)
+			err := loadFile(data, "./testdata/example-7.4.0.c.gcov")
+			if err != nil {
+				t.Fatalf("could not read file: %s", err)
+			}
 
-	*srcdir = "./example"
-	err = createHTML(name, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
-	if err != nil {
-		t.Fatalf("could not write output: %s", err)
-	}
+			name, cleanup := TempDirectory(t)
+			defer cleanup()
 
-	expected, err := ioutil.ReadFile("./testdata/TestCreateHTMLIndex/example-7.4.0.c.gcov.golden")
-	if err != nil {
-		t.Fatalf("could not read file: %s", err)
-	}
+			*srcdir = "./example"
+			*htmljs = v.js
+			err = createHTML(name, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+			if err != nil {
+				t.Fatalf("could not write output: %s", err)
+			}
+			out, err := ioutil.ReadFile(filepath.Join(name, "index.html"))
+			if err != nil {
+				t.Fatalf("could not read the output: %s", err)
+			}
 
-	if out, err := ioutil.ReadFile(filepath.Join(name, "index.html")); err != nil {
-		t.Fatalf("could not read output file: %s", err)
-	} else if !bytes.Equal(expected, out) {
-		LogNE(t, "output text", string(expected), string(out))
+			if *update {
+				err := ioutil.WriteFile(filepath.Join("./testdata", t.Name()+".golden"), out, 0644)
+				if err != nil {
+					t.Fatalf("could not write golden file: %s", err)
+				}
+			}
+
+			expected, err := ioutil.ReadFile(filepath.Join("./testdata", t.Name()+".golden"))
+			if err != nil {
+				t.Fatalf("could not read output file: %s", err)
+			} else if !bytes.Equal(expected, out) {
+				LogNE(t, "output text", string(expected), string(out))
+			}
+		})
 	}
 }
 
@@ -76,6 +100,7 @@ func TestCreateHTMLIndex(t *testing.T) {
 			defer cleanup()
 
 			*srcdir = "./example"
+			*htmljs = false
 			err = createHTMLIndex(filename, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
 			if err != nil {
 				t.Fatalf("could not write output: %s", err)
