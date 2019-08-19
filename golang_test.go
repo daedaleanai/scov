@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"io/ioutil"
 	"path/filepath"
 	"testing"
 )
@@ -35,6 +37,35 @@ func TestParserLoadGoFile(t *testing.T) {
 			}
 		})
 	}
+
+	filename := cases[0].filename
+	t.Run(filename+" (corrupted)", func(t *testing.T) {
+		data, err := ioutil.ReadFile(filepath.Join("./testdata", filename))
+		if err != nil {
+			t.Fatalf("could not read file: %s", err)
+		}
+
+		// Drop the first byte
+		err = loadGoFile(make(FileDataSet), bytes.NewReader(data[1:]))
+		if err == nil {
+			t.Errorf("expected an error")
+		}
+	})
+	t.Run(filename+" (corrupted)", func(t *testing.T) {
+		data, err := ioutil.ReadFile(filepath.Join("./testdata", filename))
+		if err != nil {
+			t.Fatalf("could not read file: %s", err)
+		}
+
+		// Drop the first comma
+		ndx := bytes.IndexByte(data, ',')
+		err = loadGoFile(make(FileDataSet),
+			bytes.NewReader(append(data[:ndx], data[ndx+1:]...)),
+		)
+		if err == nil {
+			t.Errorf("expected an error")
+		}
+	})
 }
 
 func TestParseGoRecord(t *testing.T) {

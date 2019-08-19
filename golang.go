@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"errors"
-	"os"
+	"io"
 	"strconv"
 	"strings"
 )
 
-func loadGoFile(fds FileDataSet, file *os.File) error {
+func loadGoFile(fds FileDataSet, file io.Reader) error {
 	mode := ""
 
 	scanner := bufio.NewScanner(file)
@@ -38,11 +38,13 @@ func loadGoFile(fds FileDataSet, file *os.File) error {
 	return nil
 }
 
+// Position is a line/column pair used to specify a location in a source file.
 type Position struct {
 	Line   int
 	Column int
 }
 
+// IsZero returns true if the position is the zero value.
 func (p Position) IsZero() bool {
 	return p.Line == 0 && p.Column == 0
 }

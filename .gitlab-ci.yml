@@ -25,6 +25,14 @@ golang-tagged:
   only: 
     - tags
 
+golang-1.13:
+  image: golang:1.13-rc
+  stage: build
+  script:
+    - go version
+    - go build
+    - go test
+
 golang-1.12:
   image: golang:1.12
   stage: build
@@ -57,6 +65,13 @@ golang-1.10:
 
 golang-1.9:
   image: golang:1.9
+  stage: build
+  script:
+    - go version
+    - go build
+
+golang-1.8:
+  image: golang:1.8
   stage: build
   script:
     - go version
@@ -171,6 +186,7 @@ example-gcc-9:
     expire_in: 1 week
 
 example-clang-6:
+  image: debian:stretch
   stage: test
   dependencies:
     - golang-1.11
@@ -181,11 +197,13 @@ example-clang-6:
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
     - cat /etc/*-release
+    - apt-get update -qq -y
+    - apt-get install -qq -y wget gnupg2
     - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
     - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
     - apt-get update -qq -y
-    - apt-get install -qq -y llvm-6.0 clang-6.0
+    - apt-get install -qq -y llvm-6.0 clang-6.0 make git
   script:
     - cd ./example
     - make example
@@ -201,6 +219,7 @@ example-clang-6:
     expire_in: 1 week
 
 example-clang-7:
+  image: debian:stretch
   stage: test
   dependencies:
     - golang-1.11
@@ -211,11 +230,13 @@ example-clang-7:
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
     - cat /etc/*-release
+    - apt-get update -qq -y
+    - apt-get install -qq -y wget gnupg2
     - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
     - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
     - apt-get update -qq -y
-    - apt-get install -qq -y llvm-7 clang-7
+    - apt-get install -qq -y llvm-7 clang-7 make git
   script:
     - cd ./example
     - make example
@@ -231,6 +252,7 @@ example-clang-7:
     expire_in: 1 week
 
 example-clang-8:
+  image: debian:buster
   stage: test
   dependencies:
     - golang-1.11
@@ -241,11 +263,47 @@ example-clang-8:
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
     - cat /etc/*-release
-    - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" >> /etc/apt/sources.list
-    - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" >> /etc/apt/sources.list
+    - apt-get update -qq -y
+    - apt-get install -qq -y wget gnupg2
+    - echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-8 main" >> /etc/apt/sources.list
+    - echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-8 main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
     - apt-get update -qq -y
-    - apt-get install -qq -y llvm-8 clang-8
+    - apt-get install -qq -y llvm-8 clang-8 make git
+  script:
+    - cd ./example
+    - make example
+    - ./example
+    - time make text
+    - time make html
+  only:
+    - master
+  artifacts:
+    paths:
+      - example/*.txt
+      - example/*.html
+      - example/methods/*.html
+    expire_in: 1 week
+
+example-clang-9:
+  image: debian:buster
+  stage: test
+  dependencies:
+    - golang-1.11
+  variables:
+    CC: clang-9
+    LLVM_PROFDATA: llvm-profdata-9
+    LLVM_COV: llvm-cov-9
+    SCOV: $CI_PROJECT_DIR/scov
+  before_script:
+    - cat /etc/*-release
+    - apt-get update -qq -y
+    - apt-get install -qq -y wget gnupg2
+    - echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-9 main" >> /etc/apt/sources.list
+    - echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-9 main" >> /etc/apt/sources.list
+    - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+    - apt-get update -qq -y
+    - apt-get install -qq -y llvm-9 clang-9 make git
   script:
     - cd ./example
     - make example
