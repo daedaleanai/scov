@@ -21,6 +21,7 @@ var (
 	title      = flag.String("title", "SCov", "Title for the HTML pages")
 	htmldir    = flag.String("htmldir", ".", "Path for the HTML output")
 	htmljs     = flag.Bool("htmljs", false, "Use javascript to enhance reports")
+	markdown   = flag.String("markdown", "", "Filename for markdown report, use - to direct report to stdout")
 	text       = flag.String("text", "", "Filename for text report, use - to direct the report to stdout")
 	projecturl = flag.String("url", "", "URL for the project")
 )
@@ -52,17 +53,34 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Write the coverage to stdout, but only if we aren't sending another
+	// report to stdout.
+	// Note we ignore HTML reports, because they never go to stdout because of
+	// their complexity.
+	if *text != "-" && *markdown != "-" {
+		lcov := fileData.LineCoverage()
+		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", lcov.P())
+	}
+
+	// Text report, if requested.
 	if *text != "" {
 		err := createTextReport(*text, fileData)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: could not create text report: %s\n", err)
 			os.Exit(1)
 		}
-	} else {
-		lcov := fileData.LineCoverage()
-		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", lcov.P())
 	}
 
+	// Markdown report, if requested.
+	if *markdown != "" {
+		err := createMarkdownReport(*markdown, fileData, time.Now().UTC())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: could not create text report: %s\n", err)
+			os.Exit(1)
+		}
+	}
+
+	// HTML report, if requested.
 	if *htmldir != "" {
 		err := createHTML(*htmldir, fileData, time.Now().UTC())
 		if err != nil {

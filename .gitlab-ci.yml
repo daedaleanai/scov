@@ -156,6 +156,7 @@ example-gcc-8:
     - cd ./example
     - make example
     - time make text
+    - time make markdown
     - time make html
     - time make lcov
   only:
@@ -163,6 +164,7 @@ example-gcc-8:
   artifacts:
     paths:
       - example/*.txt
+      - example/*.md
       - example/*.html
       - example/methods/*.html
     expire_in: 1 week

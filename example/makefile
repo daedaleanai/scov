@@ -36,6 +36,16 @@ else
 endif
 	$(SCOV) -title "Example" -htmljs=true -srcid=`git describe` -testid="./example 0 20" .
 
+markdown: example
+	./example 0 20
+ifeq ($(findstring clang,$(CC)),clang)
+	$(LLVM_PROFDATA) merge -o default.prof default.profraw
+	$(LLVM_COV) export -instr-profile default.prof ./example > default.json
+else
+	gcov -i -b example.c methods/*.c
+endif
+	$(SCOV) -title "Example" -htmldir "" -markdown coverage.md -srcid=`git describe` -testid="./example 0 20" .
+
 lcov: example
 	./example 0 20
 	-$(RM) *.gcov
@@ -46,5 +56,5 @@ clean:
 	-$(RM) *.o methods/*.o example
 	-$(RM) *.gcno *.gcda methods/*.gcno methods/*.gcda
 	-$(RM) *.gcov *.info *.prof *.profraw *.json.gz
-	-$(RM) *.txt
+	-$(RM) *.txt *.md
 	-$(RM) -rf *.html *.js methods/*.html lcov-html
