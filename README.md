@@ -81,6 +81,8 @@ Because `go` reports all file paths based on the GOPATH, the source directory ne
 
 **-title string**    	Title for the HTML pages (default "SCov").
 
+**-url string**     	URL for the project.
+
 **-v**  Request version information.
 
 ## Installation

@@ -30,6 +30,9 @@ var (
 	<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 {{htmlSafe "<!--<![endif]-->"}}
 <link rel="generator" href="https://gitlab.com/stone.code/scov">
+{{ if .ProjectURL -}}
+<link rel="project" href="{{.ProjectURL}}">
+{{ end -}}
 <style>
 html { padding:1em; }
 body { max-width:70em; margin:auto; }
@@ -296,16 +299,17 @@ func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) er
 	})
 
 	params := map[string]interface{}{
-		"Title":     *title,
-		"SrcID":     *srcid,
-		"TestID":    *testid,
-		"LCoverage": LCov,
-		"FCoverage": FCov,
-		"BCoverage": BCov,
-		"Files":     files,
-		"Funcs":     funcs,
-		"Date":      date.Format(time.UnixDate),
-		"Script":    *htmljs,
+		"Title":      *title,
+		"SrcID":      *srcid,
+		"TestID":     *testid,
+		"ProjectURL": *projecturl,
+		"LCoverage":  LCov,
+		"FCoverage":  FCov,
+		"BCoverage":  BCov,
+		"Files":      files,
+		"Funcs":      funcs,
+		"Date":       date.Format(time.UnixDate),
+		"Script":     *htmljs,
 	}
 
 	return tmpl.Execute(out, params)
