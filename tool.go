@@ -37,6 +37,14 @@ func Open(filename string) (Writer, error) {
 	}, nil
 }
 
+// combineErrors reports the first non-nil error in the list.
+func combineErrors(err1, err2 error) error {
+	if err1 == nil {
+		return err2
+	}
+	return err1
+}
+
 // Close the writer, but only if the file is owned by the writer.  Close will
 // possibly remove the output file if there was an error (see Keep).
 func (w *Writer) Close() error {
@@ -49,9 +57,7 @@ func (w *Writer) Close() error {
 
 	if (w.flags & flagKeep) == 0 {
 		err2 := os.Remove(filename)
-		if err2 != nil && err != nil {
-			err = err2
-		}
+		return combineErrors(err, err2)
 	}
 
 	return err

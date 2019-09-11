@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -69,5 +70,24 @@ func TestOpenFail(t *testing.T) {
 	_, err := Open(".")
 	if err == nil {
 		t.Errorf("Unexpected success")
+	}
+}
+
+func TestCombineErrors(t *testing.T) {
+	mock1 := errors.New("mock1")
+	mock2 := errors.New("mock2")
+
+	cases := []struct{ err1, err2, expected error }{
+		{nil, nil, nil},
+		{mock1, nil, mock1},
+		{nil, mock2, mock2},
+		{mock1, mock2, mock1},
+	}
+
+	for i, v := range cases {
+		out := combineErrors(v.err1, v.err2)
+		if out != v.expected {
+			t.Errorf("Case %d: want %v, got %v", i, v.expected, out)
+		}
 	}
 }
