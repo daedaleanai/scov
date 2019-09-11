@@ -26,7 +26,7 @@ golang-tagged:
     - tags
 
 golang-1.13:
-  image: golang:1.13-rc
+  image: golang:1.13
   stage: build
   script:
     - go version
@@ -76,6 +76,9 @@ golang-1.8:
   script:
     - go version
     - go build
+
+include:
+  template: SAST.gitlab-ci.yml
 
 test:
   image: golang:1.11
