@@ -25,13 +25,15 @@ type Report struct {
 	Date      time.Time
 }
 
-func NewReport() *Report {
+// NewReport initializes a new report.
+func NewReport(title string) *Report {
 	return &Report{
-		Title: "SCov",
+		Title: title,
 		Date:  time.Now().UTC(),
 	}
 }
 
+// NewTestReport initializes a new report for use in testing.
 func NewTestReport() *Report {
 	return &Report{
 		Title: "SCov",
@@ -55,6 +57,9 @@ type FuncStatistics struct {
 	HitCount  uint64
 }
 
+// CollectStatistics iterates over the file data, and assembles coverage
+// statistics for the set.  It also assembles coverage statistics for each
+// source file, and each function.
 func (r *Report) CollectStatistics(data map[string]*FileData) {
 	// Preallocate space for our statistics
 	files := make([]FileStatistics, 0, len(data))
@@ -98,6 +103,7 @@ func (r *Report) CollectStatistics(data map[string]*FileData) {
 	r.Funcs = funcs
 }
 
+// UnixDate returns the date of the report formatted to the format time.UnixDate.
 func (r *Report) UnixDate() string {
 	return r.Date.Format(time.UnixDate)
 }

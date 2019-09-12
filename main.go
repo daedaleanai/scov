@@ -59,9 +59,8 @@ func main() {
 	}
 
 	// Calculate statistics
-	report := NewReport()
+	report := NewReport(*title)
 	report.CollectStatistics(fileData)
-	report.Title = *title
 	report.TestID = *testid
 	report.SrcID = *srcid
 	report.SrcDir = *srcdir
