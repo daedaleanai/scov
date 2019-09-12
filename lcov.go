@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 func loadLCovFile(fds FileDataSet, file *os.File) error {
@@ -20,7 +18,6 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			// ignore
 
 		case "SF": // Source file
-			value = normalizeSourceFilename(value)
 			currentData = fds.FileData(value)
 
 		case "FN": // Function
@@ -72,19 +69,6 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 	}
 
 	return nil
-}
-
-func normalizeSourceFilename(filename string) string {
-	base, err := filepath.Abs(*srcdir)
-	if err != nil {
-		fmt.Println("Error:  ", err.Error())
-		panic(err)
-	}
-
-	if strings.HasPrefix(filename, base) {
-		filename, _ = filepath.Rel(base, filename)
-	}
-	return filename
 }
 
 func parseDARecord(value string) (lineNo int, hitCount uint64, err error) {

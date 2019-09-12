@@ -7,8 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
-	"time"
 )
 
 var (
@@ -200,34 +198,18 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 	))
 )
 
-// FileStatistics is used to capture coverage statistics for a file.
-type FileStatistics struct {
-	Name      string
-	LCoverage Coverage
-	FCoverage Coverage
-	BCoverage Coverage
-}
-
-// FuncStatistic is used to capture data for a function.
-type FuncStatistic struct {
-	Name      string
-	Filename  string
-	StartLine int
-	HitCount  uint64
-}
-
-func createHTML(outdir string, data map[string]*FileData, date time.Time) error {
+func createHTML(outdir string, data map[string]*FileData, report *Report) error {
 	err := os.MkdirAll(outdir, 0700)
 	if err != nil {
 		return err
 	}
 
-	err = createHTMLIndex(filepath.Join(outdir, "index.html"), data, date)
+	err = createHTMLIndex(filepath.Join(outdir, "index.html"), report)
 	if err != nil {
 		return err
 	}
 
-	if *htmljs {
+	if report.AllowHTMLScripting {
 		err = createJS(filepath.Join(outdir, "index.js"))
 		if err != nil {
 			return err
@@ -236,7 +218,7 @@ func createHTML(outdir string, data map[string]*FileData, date time.Time) error 
 
 	for name, data := range data {
 		filename := filepath.Join(outdir, name+".html")
-		err = createHTMLForSource(filename, name, data, date)
+		err = createHTMLForSource(filename, name, data, report)
 		if err != nil {
 			return err
 		}
@@ -245,64 +227,31 @@ func createHTML(outdir string, data map[string]*FileData, date time.Time) error 
 	return nil
 }
 
-func createHTMLIndex(filename string, data map[string]*FileData, date time.Time) error {
+func createHTMLIndex(filename string, report *Report) error {
 	w, err := Open(filename)
 	if err != nil {
 		return err
 	}
 	defer w.Close()
 
-	err = writeHTMLIndex(w.File(), data, date)
+	err = writeHTMLIndex(w.File(), report)
 	w.Keep(err)
 	return err
 }
 
-func writeHTMLIndex(out io.Writer, data map[string]*FileData, date time.Time) error {
-	LCov := Coverage{}
-	FCov := Coverage{}
-	BCov := Coverage{}
-	files := []FileStatistics{}
-	funcs := []FuncStatistic{}
-	for filename, data := range data {
-		stats := FileStatistics{Name: filename}
-
-		stats.LCoverage = data.LineCoverage()
-		LCov = LCov.Add(stats.LCoverage)
-		stats.FCoverage = data.FuncCoverage()
-		FCov = FCov.Add(stats.FCoverage)
-		stats.BCoverage = data.BranchCoverage()
-		BCov = BCov.Add(stats.BCoverage)
-
-		files = append(files, stats)
-
-		for name, data := range data.FuncData {
-			funcs = append(funcs, FuncStatistic{
-				Name:      name,
-				Filename:  filename,
-				StartLine: data.StartLine,
-				HitCount:  data.HitCount,
-			})
-		}
-	}
-	sort.Slice(files, func(i, j int) bool {
-		return files[i].Name < files[j].Name
-	})
-	sort.Slice(funcs, func(i, j int) bool {
-		return funcs[i].Name < funcs[j].Name
-	})
-
+func writeHTMLIndex(out io.Writer, report *Report) error {
 	params := map[string]interface{}{
-		"Title":      *title,
-		"SrcID":      *srcid,
-		"TestID":     *testid,
-		"ProjectURL": *projecturl,
-		"LCoverage":  LCov,
-		"FCoverage":  FCov,
-		"BCoverage":  BCov,
-		"Files":      files,
-		"Funcs":      funcs,
-		"Date":       date.Format(time.UnixDate),
-		"Script":     *htmljs,
+		"Title":      report.Title,
+		"SrcID":      report.SrcID,
+		"TestID":     report.TestID,
+		"ProjectURL": report.ProjectURL,
+		"LCoverage":  report.LCoverage,
+		"FCoverage":  report.FCoverage,
+		"BCoverage":  report.BCoverage,
+		"Files":      report.Files,
+		"Funcs":      report.Funcs,
+		"Date":       report.UnixDate(),
+		"Script":     report.AllowHTMLScripting,
 	}
 
 	return tmpl.Execute(out, params)
@@ -392,7 +341,7 @@ window.onload = function() {
 	return err
 }
 
-func createHTMLForSource(filename string, sourcename string, data *FileData, date time.Time) error {
+func createHTMLForSource(filename string, sourcename string, data *FileData, report *Report) error {
 	err := os.MkdirAll(filepath.Dir(filename), 0700)
 	if err != nil {
 		return err
@@ -404,19 +353,19 @@ func createHTMLForSource(filename string, sourcename string, data *FileData, dat
 	}
 	defer w.Close()
 
-	err = writeHTMLForSource(w.File(), sourcename, data, date)
+	err = writeHTMLForSource(w.File(), sourcename, data, report)
 	w.Keep(err)
 	return err
 }
 
-func writeHTMLForSource(out io.Writer, sourcename string, data *FileData, date time.Time) error {
+func writeHTMLForSource(out io.Writer, sourcename string, data *FileData, report *Report) error {
 	bcov := data.BranchCoverage()
 	params := map[string]interface{}{
-		"Title":     *title + " > " + filepath.Base(sourcename),
-		"SrcID":     *srcid,
-		"TestID":    *testid,
+		"Title":     report.Title + " > " + filepath.Base(sourcename),
+		"SrcID":     report.SrcID,
+		"TestID":    report.TestID,
 		"Source":    true,
-		"Date":      date.Format(time.UnixDate),
+		"Date":      report.UnixDate(),
 		"Filename":  sourcename,
 		"LCoverage": data.LineCoverage(),
 		"FCoverage": data.FuncCoverage(),
@@ -427,15 +376,14 @@ func writeHTMLForSource(out io.Writer, sourcename string, data *FileData, date t
 	if err != nil {
 		return err
 	}
-	err = writeSourceListing(out, sourcename, data.LineData, bcov.Valid(), data.BranchData)
+	err = writeSourceListing(out, filepath.Join(report.SrcDir, sourcename), data.LineData, bcov.Valid(), data.BranchData)
 	if err != nil {
 		return err
 	}
 	return tmplSource2.Execute(out, params)
 }
 
-func writeSourceListing(writer io.Writer, sourcename string, lineCountData map[int]uint64, withBranchData bool, branchData map[int][]BranchStatus) error {
-	filename := filepath.Join(*srcdir, sourcename)
+func writeSourceListing(writer io.Writer, filename string, lineCountData map[int]uint64, withBranchData bool, branchData map[int][]BranchStatus) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return err

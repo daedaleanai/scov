@@ -45,25 +45,27 @@ func TestParserLoadFile(t *testing.T) {
 		lcov      Coverage
 		fcov      Coverage
 		bcov      Coverage
+		fileCount int
 		funcStart int
 	}{
 		// gcc 7.4.0
-		{"example-7.4.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}, 28},
-		{"example-7.4.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
-		{"example-7.4.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
+		{"example-7.4.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}, 1, 28},
+		{"example-7.4.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 1, 28},
+		{"example-7.4.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 3, 28},
 		// gcc 8.3.0
-		{"example-8.3.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}, 28},
-		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
-		{"example-8.3.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
+		{"example-8.3.0.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{}, 1, 28},
+		{"example-8.3.0-branches.c.gcov", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 1, 28},
+		{"example-8.3.0-branches", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 3, 28},
 		// gcc 9.1.0
-		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
+		{"example-9.1.0.c.gcov.json.gz", Coverage{9, 10}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 1, 28},
 		// gcc with lcov
-		{"example-lcov-1.13.info", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 28},
+		{"example-lcov-1.13.info", Coverage{18, 22}, Coverage{9, 10}, Coverage{1, 1}, Coverage{2, 4}, 3, 28},
 		// clang 6.0.1
-		{"example-llvm-6.0.1.json", Coverage{37, 47}, Coverage{14, 17}, Coverage{1, 1}, Coverage{0, 0}, 29},
+		{"example-llvm-6.0.1.json", Coverage{37, 47}, Coverage{14, 17}, Coverage{1, 1}, Coverage{0, 0}, 3, 29},
 		// clang 8.0.1
-		{"example-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}, 29},
-		{"example-llvm-8.0.1.json", Coverage{33, 47}, Coverage{10, 17}, Coverage{1, 1}, Coverage{0, 0}, 29},
+		{"example-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}, 3, 29},
+		{"example2-llvm-8.0.1.info", Coverage{57, 67}, Coverage{28, 31}, Coverage{3, 3}, Coverage{0, 0}, 3, 29},
+		{"example-llvm-8.0.1.json", Coverage{33, 47}, Coverage{10, 17}, Coverage{1, 1}, Coverage{0, 0}, 3, 29},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
@@ -75,6 +77,19 @@ func TestParserLoadFile(t *testing.T) {
 			}
 			if lcov := data.LineCoverage(); lcov != v.lcovTotal {
 				t.Errorf("total line coverage: expected %v, got %v", v.lcovTotal, lcov)
+			}
+			if got := len(data); got != v.fileCount {
+				t.Errorf("total file count: expected %v, got %v", v.fileCount, got)
+			}
+			data, err = normalizeSourceFilenames(data, "/example/")
+			if err != nil {
+				t.Fatalf("could not normalize filenames: %s", err)
+			}
+			if lcov := data.LineCoverage(); lcov != v.lcovTotal {
+				t.Errorf("total line coverage: expected %v, got %v", v.lcovTotal, lcov)
+			}
+			if got := len(data); got != v.fileCount {
+				t.Errorf("total file count: expected %v, got %v", v.fileCount, got)
 			}
 
 			fileData, ok := data["example.c"]

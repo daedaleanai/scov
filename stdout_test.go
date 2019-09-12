@@ -31,14 +31,13 @@ func TestCreateTextReport(t *testing.T) {
 				t.Fatalf("could not read file: %s", err)
 			}
 
-			data = map[string]*FileData{
-				"example.c": data["example.c"],
-			}
-
 			filename, cleanup := TempFilename(t)
 			defer cleanup()
 
-			err = createTextReport(filename, data)
+			report := NewTestReport()
+			report.CollectStatistics(data)
+
+			err = createTextReport(filename, report)
 			if err != nil {
 				t.Fatalf("could not write output: %s", err)
 			}
@@ -66,9 +65,10 @@ func TestCreateTextReport(t *testing.T) {
 }
 
 func TestCreateTextReportFail(t *testing.T) {
-	data := map[string]*FileData{}
+	report := NewTestReport()
+	report.CollectStatistics(map[string]*FileData{})
 
-	err := createTextReport(".", data)
+	err := createTextReport(".", report)
 	if err == nil {
 		t.Errorf("unexpected success")
 	}

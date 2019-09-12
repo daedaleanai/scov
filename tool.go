@@ -70,9 +70,8 @@ func (w *Writer) File() *os.File {
 
 // Keep flags the output file as complete if err is nil.  If not called, or if
 // err is not nil, the file will be remove when closed.
-func (w *Writer) Keep(err error) error {
+func (w *Writer) Keep(err error) {
 	if err == nil {
 		w.flags |= flagKeep
 	}
-	return err
 }

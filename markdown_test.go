@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-	"time"
 )
 
 func TestCreateMarkdownReport(t *testing.T) {
@@ -27,14 +26,12 @@ func TestCreateMarkdownReport(t *testing.T) {
 				t.Fatalf("could not read file: %s", err)
 			}
 
-			data = map[string]*FileData{
-				"example.c": data["example.c"],
-			}
-
 			filename, cleanup := TempFilename(t)
 			defer cleanup()
 
-			err = createMarkdownReport(filename, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+			report := NewTestReport()
+			report.CollectStatistics(data)
+			err = createMarkdownReport(filename, report)
 			if err != nil {
 				t.Fatalf("could not write output: %s", err)
 			}
@@ -62,9 +59,10 @@ func TestCreateMarkdownReport(t *testing.T) {
 }
 
 func TestCreateMarkdownReportFail(t *testing.T) {
-	data := map[string]*FileData{}
+	report := NewTestReport()
+	report.CollectStatistics(map[string]*FileData{})
 
-	err := createMarkdownReport(".", data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+	err := createMarkdownReport(".", report)
 	if err == nil {
 		t.Errorf("unexpected success")
 	}

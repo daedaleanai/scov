@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
-	"time"
 )
 
 func TempDirectory(t *testing.T) (filename string, cleanup func()) {
@@ -49,9 +48,12 @@ func TestCreateHTML(t *testing.T) {
 			name, cleanup := TempDirectory(t)
 			defer cleanup()
 
-			*srcdir = "./example"
-			*htmljs = v.js
-			err = createHTML(name, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+			report := NewTestReport()
+			report.CollectStatistics(data)
+			report.AllowHTMLScripting = v.js
+			report.SrcDir = "./example"
+
+			err = createHTML(name, data, report)
 			if err != nil {
 				t.Fatalf("could not write output: %s", err)
 			}
@@ -99,9 +101,11 @@ func TestCreateHTMLIndex(t *testing.T) {
 			filename, cleanup := TempFilename(t)
 			defer cleanup()
 
-			*srcdir = "./example"
-			*htmljs = false
-			err = createHTMLIndex(filename, data, time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+			report := NewTestReport()
+			report.CollectStatistics(data)
+			report.SrcDir = "./example"
+
+			err = createHTMLIndex(filename, report)
 			if err != nil {
 				t.Fatalf("could not write output: %s", err)
 			}
@@ -160,8 +164,11 @@ func TestCreateHTMLForSource(t *testing.T) {
 			filename, cleanup := TempFilename(t)
 			defer cleanup()
 
-			*srcdir = "./example"
-			err = createHTMLForSource(filename, "example.c", data["example.c"], time.Date(2006, 01, 02, 15, 4, 5, 6, time.UTC))
+			report := NewTestReport()
+			report.CollectStatistics(data)
+			report.SrcDir = "./example"
+
+			err = createHTMLForSource(filename, "example.c", data["example.c"], report)
 			if err != nil {
 				t.Fatalf("could not write output: %s", err)
 			}

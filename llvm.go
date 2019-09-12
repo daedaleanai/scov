@@ -120,8 +120,7 @@ func loadLLVMFile(fds FileDataSet, file io.Reader) error {
 
 	for _, v := range data.Data {
 		for _, w := range v.Files {
-			filename := normalizeSourceFilename(w.Filename)
-			currentData := fds.FileData(filename)
+			currentData := fds.FileData(w.Filename)
 
 			for i := range w.Segments[:len(w.Segments)-1] {
 				startLine := w.Segments[i].Line
@@ -138,8 +137,7 @@ func loadLLVMFile(fds FileDataSet, file io.Reader) error {
 			}
 		}
 		for _, w := range v.Functions {
-			filename := normalizeSourceFilename(w.Filenames[0])
-			currentData := fds.FileData(filename)
+			currentData := fds.FileData(w.Filenames[0])
 
 			applyFunctionRecord(currentData, w.Name, w.Regions[0][0], w.Count)
 		}

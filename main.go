@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"time"
+	"strings"
 )
 
 var (
@@ -31,13 +31,13 @@ var (
 )
 
 func main() {
-	// Initialize global maps used to track line and function coverage
-	fileData := make(FileDataSet)
-
 	flag.Parse()
 	if ok := handleRequestFlags(os.Stdout, *help, *version); ok {
 		os.Exit(0)
 	}
+
+	// Initialize global maps used to track line and function coverage
+	fileData := make(FileDataSet)
 
 	for _, name := range flag.Args() {
 		err := loadFile(fileData, name)
@@ -46,6 +46,11 @@ func main() {
 			os.Exit(1)
 		}
 	}
+	fileData, err := normalizeSourceFilenames(fileData, *srcdir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		os.Exit(1)
+	}
 	fileData = filterExternalFileData(fileData, *external)
 	fileData = filterExcludedFileData(os.Stderr, fileData, *exclude)
 	if len(fileData) == 0 {
@@ -53,18 +58,27 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Calculate statistics
+	report := NewReport()
+	report.CollectStatistics(fileData)
+	report.Title = *title
+	report.TestID = *testid
+	report.SrcID = *srcid
+	report.SrcDir = *srcdir
+	report.ProjectURL = *projecturl
+	report.AllowHTMLScripting = *htmljs
+
 	// Write the coverage to stdout, but only if we aren't sending another
 	// report to stdout.
 	// Note we ignore HTML reports, because they never go to stdout because of
 	// their complexity.
 	if *text != "-" && *markdown != "-" {
-		lcov := fileData.LineCoverage()
-		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", lcov.P())
+		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", report.LCoverage.P())
 	}
 
 	// Text report, if requested.
 	if *text != "" {
-		err := createTextReport(*text, fileData)
+		err := createTextReport(*text, report)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: could not create text report: %s\n", err)
 			os.Exit(1)
@@ -73,7 +87,7 @@ func main() {
 
 	// Markdown report, if requested.
 	if *markdown != "" {
-		err := createMarkdownReport(*markdown, fileData, time.Now().UTC())
+		err := createMarkdownReport(*markdown, report)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: could not create text report: %s\n", err)
 			os.Exit(1)
@@ -82,7 +96,7 @@ func main() {
 
 	// HTML report, if requested.
 	if *htmldir != "" {
-		err := createHTML(*htmldir, fileData, time.Now().UTC())
+		err := createHTML(*htmldir, fileData, report)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: could not create HTML report: %s\n", err)
 			os.Exit(1)
@@ -143,6 +157,24 @@ func loadFilesFromDir(data FileDataSet, file *os.File) error {
 		}
 	}
 	return nil
+}
+
+func normalizeSourceFilenames(data FileDataSet, srcdir string) (FileDataSet, error) {
+	srcdir, err := filepath.Abs(srcdir)
+	if err != nil {
+		return data, err
+	}
+
+	for filename := range data {
+		if strings.HasPrefix(filename, srcdir) {
+			tmp := data[filename]
+			delete(data, filename)
+			tmp.Filename, _ = filepath.Rel(srcdir, filename)
+			data[tmp.Filename] = tmp
+		}
+	}
+
+	return data, nil
 }
 
 func filterExcludedFileData(out io.Writer, fileData FileDataSet, filter string) FileDataSet {
