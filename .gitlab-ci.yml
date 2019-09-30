@@ -76,7 +76,7 @@ test:
   after_script:
     - mv $GOPATH/src/github.com .cache/
   script:
-    - go test -coverprofile=cover.out
+    - go test -coverprofile=cover.out -v
     - go tool cover -html=cover.out -o=cover.html
     - bash <(curl -s https://codecov.io/bash)
     - go vet .
@@ -86,10 +86,13 @@ test:
     - go get -u github.com/client9/misspell/cmd/misspell
     - go install github.com/client9/misspell/cmd/misspell
     - $GOPATH/bin/misspell -locale UK *.go *.md behemoth/*.go
+  artifacts:
+    paths:
+      - cover.html
+    expire_in: 1 week
   cache:
     key: test
     paths:
-      - cover.html
       - .cache/github.com/
   except:
     - tags
