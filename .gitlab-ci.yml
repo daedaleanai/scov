@@ -1,53 +1,26 @@
-golang-tagged:
-  image: golang
-  stage: build
-  script:
-    - go version
-    - go test
-    - mkdir dist
-    - GOOS=windows GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv scov.exe ./dist/scov-windows-amd64.exe
-    - GOOS=linux GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv scov ./dist/scov-linux-amd64
-    - GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv scov ./dist/scov-darwin-amd64
-    - GOOS=freebsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv scov ./dist/scov-freebsd-amd64
-    - GOOS=openbsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
-    - mv scov ./dist/scov-openbsd-amd64
-  artifacts:
-    paths:
-      - dist/scov-windows-amd64.exe
-      - dist/scov-linux-amd64
-      - dist/scov-darwin-amd64
-      - dist/scov-freebsd-amd64
-      - dist/scov-openbsd-amd64
-  only: 
-    - tags
-
 golang-1.13:
   image: golang:1.13
   stage: build
   script:
     - go version
-    - go build
-    - go test
+    - go build .
+    - go test .
 
 golang-1.12:
   image: golang:1.12
   stage: build
   script:
     - go version
-    - go build
-    - go test
+    - go build .
+    - go test .
 
 golang-1.11:
   image: golang:1.11
   stage: build
   script:
     - go version
-    - go build
-    - go test
+    - go build .
+    - go test .
     - cd ./behemoth && go build
   artifacts:
     paths:
@@ -58,47 +31,93 @@ golang-1.11:
 golang-1.10:
   image: golang:1.10
   stage: build
+  variables:
+    GOPATH: $CI_BUILDS_DIR
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   script:
     - go version
-    - go build
-    - go test
+    - go build gitlab.com/$CI_PROJECT_PATH
+    - go test gitlab.com/$CI_PROJECT_PATH
 
 golang-1.9:
   image: golang:1.9
   stage: build
+  variables:
+    GOPATH: $CI_BUILDS_DIR
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   script:
-    - go version
-    - go build
+    - go version 
+    - go build gitlab.com/$CI_PROJECT_PATH
+    - go test gitlab.com/$CI_PROJECT_PATH
 
 golang-1.8:
   image: golang:1.8
   stage: build
+  variables:
+    GOPATH: $CI_BUILDS_DIR
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   script:
-    - go version
-    - go build
+    - go version 
+    - go build gitlab.com/$CI_PROJECT_PATH
+    - go test gitlab.com/$CI_PROJECT_PATH
 
 include:
   template: SAST.gitlab-ci.yml
 
 test:
-  image: golang:1.11
+  image: golang:1.12
   stage: test
+  variables:
+    GOPATH: $CI_BUILDS_DIR
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
+  before_script:
+    - mkdir -p .cache/github.com
+    - mv .cache/github.com $GOPATH/src/
+  after_script:
+    - mv $GOPATH/src/github.com .cache/
   script:
     - go test -coverprofile=cover.out
     - go tool cover -html=cover.out -o=cover.html
     - bash <(curl -s https://codecov.io/bash)
-    - go vet
+    - go vet .
     - go get -u github.com/gordonklaus/ineffassign
     - go install github.com/gordonklaus/ineffassign
-    - $GOPATH/bin/ineffassign $GOPATH/src/gitlab.com/$CI_PROJECT_PATH
+    - $GOPATH/bin/ineffassign .
     - go get -u github.com/client9/misspell/cmd/misspell
     - go install github.com/client9/misspell/cmd/misspell
-    - $GOPATH/bin/misspell *.go behemoth/*.go
-  only:
-    - master
-  artifacts:
+    - $GOPATH/bin/misspell -locale UK *.go *.md behemoth/*.go
+  cache:
+    key: test
     paths:
       - cover.html
+      - .cache/github.com/
+  except:
+    - tags
+
+lint:
+  image: golang:1.12
+  stage: test
+  variables:
+    GOPATH: $CI_BUILDS_DIR
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
+  before_script:
+    - mkdir -p .cache/pkg
+    - mv .cache/pkg $GOPATH/pkg
+  after_script:
+    - mv $GOPATH/pkg .cache/
+  script:
+    - cd ..
+    - GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.17.1
+    - GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint
+    - cd $GOPATH/src/gitlab.com/$CI_PROJECT_PATH
+    - $GOPATH/bin/golangci-lint run -v .
+  cache:
+    key: lint
+    paths:
+      - .cache/pkg/
+  except:
+    - tags
+  allow_failure: true
 
 benchmark:
   image: gcc:7
@@ -323,6 +342,32 @@ example-clang-9:
       - example/*.html
       - example/methods/*.html
     expire_in: 1 week
+
+deploy:
+  image: golang
+  stage: deploy
+  variables:
+    NAME: scov
+  script:
+    - go version
+    - go test
+    - mkdir dist
+    - GOOS=windows GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
+    - mv $NAME.exe ./dist/$NAME-windows-amd64.exe
+    - GOOS=linux GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
+    - mv $NAME ./dist/$NAME-linux-amd64
+    - GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
+    - mv $NAME ./dist/$NAME-darwin-amd64
+    - GOOS=freebsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
+    - mv $NAME ./dist/$NAME-freebsd-amd64
+    - GOOS=openbsd GOARCH=amd64 go build -ldflags "-X main.versionInformation=`git describe`"
+    - mv $NAME ./dist/$NAME-openbsd-amd64
+  artifacts:
+    name: "$CI_COMMIT_REF_NAME"
+    paths:
+      - dist/
+  only: 
+    - tags
 
 pages:
   stage: deploy

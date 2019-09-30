@@ -91,7 +91,7 @@ Because `go` reports all file paths based on the GOPATH, the source directory ne
 
 ### From Source
 
-To build a copy of `scov`, you will need a copy of [Go](https://golang.org/).  For instructions on how to install Go, please refer to the language's website.  No dependencies beyond the standard library are required, although `scov` does require version 1.10 or higher to run the  automated testing.
+To build a copy of `scov`, you will need a copy of [Go](https://golang.org/).  For instructions on how to install Go, please refer to the language's website.  No dependencies beyond the standard library are required, and should work with any version of Go, but continuous integratio (CI) is only done on version 1.8 and above.  However, `scov` does require version 1.10 or higher to run the automated testing.
 
 Once Go is installed, you can clone the repository and build the application.
 
