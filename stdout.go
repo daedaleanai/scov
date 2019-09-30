@@ -22,8 +22,7 @@ func writeTextReport(writer io.Writer, report *Report) error {
 	w := bufio.NewWriter(writer)
 
 	// Head
-	w.WriteString(" Lines\t Funcs\n")
-	w.WriteString("------\t------\n")
+	_, _ = w.WriteString(" Lines\t Funcs\n------\t------\n")
 
 	// Body
 	for _, i := range report.Files {
@@ -31,7 +30,6 @@ func writeTextReport(writer io.Writer, report *Report) error {
 	}
 
 	// Foot
-	w.WriteString("------\t------\n")
-	fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\tOverall\n", report.LCoverage.P(), report.FCoverage.P())
+	fmt.Fprintf(w, "------\t------\n%5.1f%%\t%5.1f%%\tOverall\n", report.LCoverage.P(), report.FCoverage.P())
 	return w.Flush()
 }

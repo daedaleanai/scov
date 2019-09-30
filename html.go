@@ -11,7 +11,7 @@ import (
 
 var (
 	tmpl1 = template.New("html").Funcs(template.FuncMap{"htmlSafe": htmlSafe})
-	tmpl2 = template.Must(tmpl1.New("sparkbar").Parse(
+	_     = template.Must(tmpl1.New("sparkbar").Parse(
 		`<div class="sparkbar">{{if gt .P 99.0}}<div class="fill {{.Rating}}" style="width:100%"></div>{{else}}<div class="fill {{.Rating}}" style="width:{{printf "%.1f" .P}}%"></div><div class="empty" style="width:{{printf "%.1f" .Q}}%"></div>{{end}}</div>`,
 	))
 	_ = template.Must(tmpl1.New("head").Parse(
@@ -88,7 +88,7 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 	))
 	_ = template.Must(tmpl1.New("coverage").Parse(
 		`<table class="pure-table pure-table-horizontal coverage">
-<thead><tr><th></th><th>Hits</th><th>Total</th><th>Coverage</th><tr></thead>
+<thead><tr><th></th><th>Hits</th><th>Total</th><th>Coverage</th></tr></thead>
 <tbody>
 <tr><td>Lines:</td>{{template "coverageRow" .LCoverage}}</tr>
 {{ if .FCoverage.Valid -}}<tr><td>Functions:</td>{{template "coverageRow" .FCoverage}}</tr>
@@ -383,6 +383,16 @@ func writeHTMLForSource(out io.Writer, sourcename string, data *FileData, report
 	return tmplSource2.Execute(out, params)
 }
 
+func rowClassAttribute(hitCount uint64, ok bool) string {
+	if !ok {
+		return ""
+	}
+	if hitCount > 0 {
+		return ` class="hit"`
+	}
+	return ` class="miss"`
+}
+
 func writeSourceListing(writer io.Writer, filename string, lineCountData map[int]uint64, withBranchData bool, branchData map[int][]BranchStatus) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -395,24 +405,16 @@ func writeSourceListing(writer io.Writer, filename string, lineCountData map[int
 	lineNo := 1
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		fmt.Fprintf(w, `<tr id="L%d"`, lineNo)
-		w.WriteString("<tr")
-		lc, ok := lineCountData[lineNo]
-		if ok {
-			if lc > 0 {
-				w.WriteString(` class="hit">`)
-			} else {
-				w.WriteString(` class="miss">`)
-			}
-		} else {
-			w.WriteString(">")
-		}
+		hitCount, ok := lineCountData[lineNo]
+		fmt.Fprintf(w, `<tr id="L%d"%s>`, lineNo, rowClassAttribute(hitCount, ok))
 		fmt.Fprintf(w, "<td>%d</td>", lineNo)
 		writeBranchDescription(w, withBranchData, branchData[lineNo])
 		if ok {
-			fmt.Fprintf(w, `<td>%d</td>`, lc)
+			fmt.Fprintf(w, `<td>%d</td>`, hitCount)
 		} else {
-			w.WriteString(`<td></td>`)
+			// Ignore error.  Since we are using a bufio.Writer, it will be
+			// reported when we flush.
+			_, _ = w.WriteString(`<td></td>`)
 		}
 		fmt.Fprintf(w, "<td>%s</td></tr>\n", template.HTMLEscapeString(scanner.Text()))
 		lineNo++
@@ -429,25 +431,29 @@ func htmlSafe(text string) template.HTML {
 }
 
 func writeBranchDescription(w *bufio.Writer, withBranchData bool, data []BranchStatus) {
+	// Ignore write errors.
+	// Since we are using a bufio.Writer, write errors will be reported when
+	// we flush.
+
 	if !withBranchData {
 		return
 	}
 	if len(data) == 0 {
-		w.WriteString(`<td></td>`)
+		_, _ = w.WriteString(`<td></td>`)
 		return
 	}
 	if data[0] == BranchNotExec {
-		w.WriteString(`<td>[ NE ]</td>`)
+		_, _ = w.WriteString(`<td>[ NE ]</td>`)
 		return
 	}
 
-	w.WriteString(`<td>[`)
+	_, _ = w.WriteString(`<td>[`)
 	for _, v := range data {
 		if v == BranchTaken {
-			w.WriteString(" +")
+			_, _ = w.WriteString(" +")
 		} else {
-			w.WriteString(" -")
+			_, _ = w.WriteString(" -")
 		}
 	}
-	w.WriteString(` ]</td>`)
+	_, _ = w.WriteString(` ]</td>`)
 }

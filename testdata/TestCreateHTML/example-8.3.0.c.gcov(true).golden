@@ -50,7 +50,7 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 </div><div class="pure-u-1 pure-u-md-1-2">
 <h2>Coverage Summary</h2>
 <table class="pure-table pure-table-horizontal coverage">
-<thead><tr><th></th><th>Hits</th><th>Total</th><th>Coverage</th><tr></thead>
+<thead><tr><th></th><th>Hits</th><th>Total</th><th>Coverage</th></tr></thead>
 <tbody>
 <tr><td>Lines:</td><td>9</td><td>10</td><td>90.0%</td></tr>
 <tr><td>Functions:</td><td>1</td><td>1</td><td>100.0%</td></tr>
