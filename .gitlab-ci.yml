@@ -1,24 +1,11 @@
-golang-1.13:
-  image: golang:1.13
-  stage: build
-  script:
-    - go version
-    - go build .
-    - go test .
+before_script: &before_script_all
+  - cat /etc/*-release
+  - if [ -x "$(command -v go)" ]; then go version; fi;
 
-golang-1.12:
-  image: golang:1.12
+golang-1.14:
+  image: golang:1.14
   stage: build
   script:
-    - go version
-    - go build .
-    - go test .
-
-golang-1.11:
-  image: golang:1.11
-  stage: build
-  script:
-    - go version
     - go build .
     - go test .
     - cd ./behemoth && go build
@@ -28,6 +15,27 @@ golang-1.11:
       - behemoth/behemoth
     expire_in: 1 week
 
+golang-1.13:
+  image: golang:1.13
+  stage: build
+  script:
+    - go build .
+    - go test .
+
+golang-1.12:
+  image: golang:1.12
+  stage: build
+  script:
+    - go build .
+    - go test .
+
+golang-1.11:
+  image: golang:1.11
+  stage: build
+  script:
+    - go build .
+    - go test .
+
 golang-1.10:
   image: golang:1.10
   stage: build
@@ -35,7 +43,6 @@ golang-1.10:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   script:
-    - go version
     - go build gitlab.com/$CI_PROJECT_PATH
     - go test gitlab.com/$CI_PROJECT_PATH
 
@@ -46,7 +53,6 @@ golang-1.9:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   script:
-    - go version 
     - go build gitlab.com/$CI_PROJECT_PATH
     - go test gitlab.com/$CI_PROJECT_PATH
 
@@ -57,12 +63,12 @@ golang-1.8:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   script:
-    - go version 
     - go build gitlab.com/$CI_PROJECT_PATH
     - go test gitlab.com/$CI_PROJECT_PATH
 
 include:
-  template: SAST.gitlab-ci.yml
+  - template: SAST.gitlab-ci.yml
+  - template: License-Management.gitlab-ci.yml
 
 test:
   image: golang:1.12
@@ -71,6 +77,7 @@ test:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   before_script:
+    - *before_script_all
     - mkdir -p .cache/github.com
     - mv .cache/github.com $GOPATH/src/
   after_script:
@@ -98,26 +105,11 @@ test:
     - tags
 
 lint:
-  image: golang:1.12
+  image: golang:1.14
   stage: test
-  variables:
-    GOPATH: $CI_BUILDS_DIR
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
-  before_script:
-    - mkdir -p .cache/pkg
-    - mv .cache/pkg $GOPATH/pkg
-  after_script:
-    - mv $GOPATH/pkg .cache/
   script:
-    - cd ..
-    - GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.17.1
-    - GO111MODULE=on go install github.com/golangci/golangci-lint/cmd/golangci-lint
-    - cd $GOPATH/src/gitlab.com/$CI_PROJECT_PATH
-    - $GOPATH/bin/golangci-lint run -v .
-  cache:
-    key: lint
-    paths:
-      - .cache/pkg/
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.23.6
+    - ./bin/golangci-lint run -v --enable-all --disable wsl,gomnd .
   except:
     - tags
   allow_failure: true
@@ -141,7 +133,7 @@ example-gcc-7:
   image: gcc:7
   stage: test
   dependencies:
-    - golang-1.11
+    - golang-1.14
   variables:
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
@@ -167,7 +159,7 @@ example-gcc-8:
   image: gcc:8
   stage: test
   dependencies:
-    - golang-1.11
+    - golang-1.14
   variables:
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
@@ -195,7 +187,7 @@ example-gcc-9:
   image: gcc:9
   stage: test
   dependencies:
-    - golang-1.11
+    - golang-1.14
   variables:
     SCOV: $CI_PROJECT_DIR/scov
   script:
@@ -216,7 +208,7 @@ example-clang-6:
   image: debian:stretch
   stage: test
   dependencies:
-    - golang-1.11
+    - golang-1.14
   variables:
     CC: clang-6.0
     LLVM_PROFDATA: llvm-profdata-6.0
@@ -225,7 +217,7 @@ example-clang-6:
   before_script:
     - cat /etc/*-release
     - apt-get update -qq -y
-    - apt-get install -qq -y wget gnupg2
+    - apt-get install -qq -y wget gnupg2 apt-transport-https
     - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
     - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
@@ -249,7 +241,7 @@ example-clang-7:
   image: debian:stretch
   stage: test
   dependencies:
-    - golang-1.11
+    - golang-1.14
   variables:
     CC: clang-7
     LLVM_PROFDATA: llvm-profdata-7
@@ -258,7 +250,7 @@ example-clang-7:
   before_script:
     - cat /etc/*-release
     - apt-get update -qq -y
-    - apt-get install -qq -y wget gnupg2
+    - apt-get install -qq -y wget gnupg2 apt-transport-https
     - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
     - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
@@ -282,7 +274,7 @@ example-clang-8:
   image: debian:buster
   stage: test
   dependencies:
-    - golang-1.11
+    - golang-1.14
   variables:
     CC: clang-8
     LLVM_PROFDATA: llvm-profdata-8
@@ -316,7 +308,7 @@ example-clang-9:
   image: debian:buster
   stage: test
   dependencies:
-    - golang-1.11
+    - golang-1.14
   variables:
     CC: clang-9
     LLVM_PROFDATA: llvm-profdata-9
