@@ -116,7 +116,6 @@ example-gcc:
     - time make text
     - time make markdown
     - time make html
-    - time make lcov
   only:
     - master
   parallel:
