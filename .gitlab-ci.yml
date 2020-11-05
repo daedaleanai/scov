@@ -2,42 +2,25 @@ before_script: &before_script_all
   - cat /etc/*-release
   - if [ -x "$(command -v go)" ]; then go version; fi;
 
-golang-1.14:
-  image: golang:1.14
+golang-modules:
+  image: "golang:${GOVERSION}"
   stage: build
   script:
     - go build .
     - go test .
     - cd ./behemoth && go build
+  parallel:
+    matrix:
+      - GOVERSION: ["1.11", "1.12", "1.13", "1.14", "1.15"]
+        DUMMY: ["dummy"]
   artifacts:
     paths:
       - scov
       - behemoth/behemoth
     expire_in: 1 week
 
-golang-1.13:
-  image: golang:1.13
-  stage: build
-  script:
-    - go build .
-    - go test .
-
-golang-1.12:
-  image: golang:1.12
-  stage: build
-  script:
-    - go build .
-    - go test .
-
-golang-1.11:
-  image: golang:1.11
-  stage: build
-  script:
-    - go build .
-    - go test .
-
-golang-1.10:
-  image: golang:1.10
+build-gopath:
+  image: "golang:${GOVERSION}"
   stage: build
   variables:
     GOPATH: $CI_BUILDS_DIR
@@ -45,34 +28,20 @@ golang-1.10:
   script:
     - go build gitlab.com/$CI_PROJECT_PATH
     - go test gitlab.com/$CI_PROJECT_PATH
-
-golang-1.9:
-  image: golang:1.9
-  stage: build
-  variables:
-    GOPATH: $CI_BUILDS_DIR
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
-  script:
-    - go build gitlab.com/$CI_PROJECT_PATH
-    - go test gitlab.com/$CI_PROJECT_PATH
-
-golang-1.8:
-  image: golang:1.8
-  stage: build
-  variables:
-    GOPATH: $CI_BUILDS_DIR
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
-  script:
-    - go build gitlab.com/$CI_PROJECT_PATH
-    - go test gitlab.com/$CI_PROJECT_PATH
+  parallel:
+    matrix:
+      - GOVERSION: ["1.8", "1.9", "1.10"]
+        DUMMY: ["dummy"]
 
 include:
   - template: SAST.gitlab-ci.yml
-  - template: License-Management.gitlab-ci.yml
+  - template: License-Scanning.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
 
 test:
-  image: golang:1.12
+  image: golang:1.14
   stage: test
+  needs: []
   variables:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
@@ -107,6 +76,7 @@ test:
 lint:
   image: golang:1.14
   stage: test
+  needs: []
   script:
     - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.23.6
     - ./bin/golangci-lint run -v --enable-all --disable wsl,gomnd .
@@ -129,37 +99,11 @@ benchmark:
   only:
     - master
 
-example-gcc-7:
-  image: gcc:7
+example-gcc:
+  image: "gcc:${GCCVERSION}"
   stage: test
   dependencies:
-    - golang-1.14
-  variables:
-    SCOV: $CI_PROJECT_DIR/scov
-  before_script:
-    - wget -q http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
-    - tar xfz lcov-1.14.tar.gz
-    - PATH=$PATH:`pwd`/lcov-1.14/bin/
-  script:
-    - cd ./example
-    - make example
-    - time make text
-    - time make html
-    - time make lcov
-  only:
-    - master
-  artifacts:
-    paths:
-      - example/*.txt
-      - example/*.html
-      - example/methods/*.html
-    expire_in: 1 week
-
-example-gcc-8:
-  image: gcc:8
-  stage: test
-  dependencies:
-    - golang-1.14
+    - "golang-modules: [1.14, dummy]"
   variables:
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
@@ -175,6 +119,10 @@ example-gcc-8:
     - time make lcov
   only:
     - master
+  parallel:
+    matrix:
+      - GCCVERSION: ["7", "8", "9"]
+        DUMMY: ["dummy"]
   artifacts:
     paths:
       - example/*.txt
@@ -183,32 +131,11 @@ example-gcc-8:
       - example/methods/*.html
     expire_in: 1 week
 
-example-gcc-9:
-  image: gcc:9
-  stage: test
-  dependencies:
-    - golang-1.14
-  variables:
-    SCOV: $CI_PROJECT_DIR/scov
-  script:
-    - cd ./example
-    - make example
-    - time make text
-    - time make html
-  only:
-    - master
-  artifacts:
-    paths:
-      - example/*.txt
-      - example/*.html
-      - example/methods/*.html
-    expire_in: 1 week
-
 example-clang-6:
   image: debian:stretch
   stage: test
   dependencies:
-    - golang-1.14
+    - "golang-modules: [1.14, dummy]"
   variables:
     CC: clang-6.0
     LLVM_PROFDATA: llvm-profdata-6.0
@@ -241,7 +168,7 @@ example-clang-7:
   image: debian:stretch
   stage: test
   dependencies:
-    - golang-1.14
+    - "golang-modules: [1.14, dummy]"
   variables:
     CC: clang-7
     LLVM_PROFDATA: llvm-profdata-7
@@ -274,7 +201,7 @@ example-clang-8:
   image: debian:buster
   stage: test
   dependencies:
-    - golang-1.14
+    - "golang-modules: [1.14, dummy]"
   variables:
     CC: clang-8
     LLVM_PROFDATA: llvm-profdata-8
@@ -308,7 +235,7 @@ example-clang-9:
   image: debian:buster
   stage: test
   dependencies:
-    - golang-1.14
+    - "golang-modules: [1.14, dummy]"
   variables:
     CC: clang-9
     LLVM_PROFDATA: llvm-profdata-9
@@ -368,7 +295,7 @@ pages:
   stage: deploy
   dependencies:
     - test
-    - example-gcc-8
+    - "example-gcc: [8, dummy]"
   script:
     - mkdir ./public
     - mv cover.html ./public
