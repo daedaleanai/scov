@@ -1,5 +1,6 @@
 before_script: &before_script_all
   - cat /etc/*-release
+  - if [ -x "$(command -v gcc)" ]; then gcc --version; fi;
   - if [ -x "$(command -v go)" ]; then go version; fi;
 
 golang-modules:
@@ -118,9 +119,10 @@ example-gcc:
     - time make html
   only:
     - master
+    - gitlabci
   parallel:
     matrix:
-      - GCCVERSION: ["7", "8", "9"]
+      - GCCVERSION: ["7", "8", "9", "10"]
         DUMMY: ["dummy"]
   artifacts:
     paths:
