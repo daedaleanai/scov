@@ -1,0 +1,14 @@
+image: nixos/latest
+secrets:
+  - 9853f30c-f288-4c16-bde4-9614105439eb
+tasks:
+  - build: |
+      cd scov
+      export VERSION=`git describe`
+      nix-shell --pure --command 'go build -v -ldflags="-X main.versionInformation=${VERSION}"'
+  - test: |
+      cd scov
+      nix-shell --pure --command "go test -v ."
+  - release: |
+      cd scov
+      nix-build

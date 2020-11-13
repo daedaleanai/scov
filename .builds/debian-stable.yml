@@ -1,0 +1,15 @@
+image: debian/stable
+packages:
+  - golang-go
+secrets:
+  - 9853f30c-f288-4c16-bde4-9614105439eb
+tasks:
+  - build: |
+      cd scov
+      go build -v .
+  - test: |
+      cd scov
+      go test -v .
+  - behemoth: |
+      cd scov/behemoth
+      go build -v .
