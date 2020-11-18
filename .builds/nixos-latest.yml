@@ -12,3 +12,12 @@ tasks:
   - release: |
       cd scov
       nix-build
+      cp result/bin/scov scov
+  - coverprofile: |
+      cd scov
+      nix-env -i go
+      go test -coverprofile=cover.out
+      go tool cover -html=cover.out -o=cover.html
+artifacts:
+  - scov/cover.html
+  - scov/scov

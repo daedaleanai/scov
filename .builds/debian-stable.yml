@@ -6,10 +6,24 @@ secrets:
 tasks:
   - build: |
       cd scov
-      go build -v .
+      export VERSION=`git describe`
+      GOOS=linux GOARCH=amd64 go build -v -o scov-linux-amd64 -ldflags="-X main.versionInformation=${VERSION}" .
+      GOOS=windows GOARCH=amd64 go build -v -o scov-windows-amd64.exe -ldflags="-X main.versionInformation=${VERSION}" .
+      GOOS=darwin GOARCH=amd64 go build -v -o scov-darwin-amd64 -ldflags="-X main.versionInformation=${VERSION}" .
+      GOOS=freebsd GOARCH=amd64 go build -v -o scov-freebsd-amd64 -ldflags="-X main.versionInformation=${VERSION}" .
   - test: |
       cd scov
       go test -v .
   - behemoth: |
       cd scov/behemoth
       go build -v .
+  - coverprofile: |
+      cd scov
+      go test -coverprofile=cover.out
+      go tool cover -html=cover.out -o=cover.html
+artifacts:
+  - scov/cover.html
+  - scov/scov-linux-amd64
+  - scov/scov-windows-amd64.exe
+  - scov/scov-darwin-amd64
+  - scov/scov-freebsd-amd64
