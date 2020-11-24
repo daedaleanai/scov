@@ -20,6 +20,7 @@ type Report struct {
 	LCoverage Coverage
 	FCoverage Coverage
 	BCoverage Coverage
+	RCoverage Coverage
 	Files     []FileStatistics
 	Funcs     []FuncStatistics
 	Date      time.Time
@@ -47,6 +48,7 @@ type FileStatistics struct {
 	LCoverage Coverage
 	FCoverage Coverage
 	BCoverage Coverage
+	RCoverage Coverage
 }
 
 // FuncStatistics is used to capture data for a function.
@@ -68,6 +70,7 @@ func (r *Report) CollectStatistics(data map[string]*FileData) {
 	LCov := Coverage{}
 	FCov := Coverage{}
 	BCov := Coverage{}
+	RCov := Coverage{}
 	for filename, data := range data {
 		stats := FileStatistics{Name: filename}
 
@@ -77,6 +80,8 @@ func (r *Report) CollectStatistics(data map[string]*FileData) {
 		FCov = FCov.Add(stats.FCoverage)
 		stats.BCoverage = data.BranchCoverage()
 		BCov = BCov.Add(stats.BCoverage)
+		stats.RCoverage = data.RegionCoverage()
+		RCov = RCov.Add(stats.RCoverage)
 
 		files = append(files, stats)
 
@@ -99,6 +104,7 @@ func (r *Report) CollectStatistics(data map[string]*FileData) {
 	r.LCoverage = LCov
 	r.FCoverage = FCov
 	r.BCoverage = BCov
+	r.RCoverage = RCov
 	r.Files = files
 	r.Funcs = funcs
 }

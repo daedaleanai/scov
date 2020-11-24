@@ -54,18 +54,18 @@ func loadGCovJSFile(fds FileDataSet, file io.Reader) error {
 		currentData := fds.FileData(filename)
 
 		for _, u := range v.Functions {
-			applyFunctionRecord(currentData, u.Name, u.StartLine, u.ExecutionCount)
+			currentData.AppendFunctionData(u.Name, u.StartLine, u.ExecutionCount)
 		}
 
 		for _, u := range v.Lines {
-			applyLCountRecord(currentData, u.LineNumber, u.Count)
+			currentData.AppendLineCountData(u.LineNumber, u.Count)
 
 			for _, b := range u.Branches {
 				status := BranchNotTaken
 				if b.Count > 0 {
 					status = BranchTaken
 				}
-				applyBranchRecord(currentData, u.LineNumber, status)
+				currentData.AppendBranchData(u.LineNumber, status)
 			}
 		}
 	}

@@ -25,28 +25,28 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			if err != nil {
 				return err
 			}
-			applyFunctionRecord(currentData, funcName, funcStart, 0)
+			currentData.AppendFunctionData(funcName, funcStart, 0)
 
 		case "FNDA": // Function data
 			funcName, hitCount, err := parseFNDARecord(value)
 			if err != nil {
 				return err
 			}
-			applyFunctionRecord(currentData, funcName, 0, hitCount)
+			currentData.AppendFunctionData(funcName, 0, hitCount)
 
 		case "DA": // Line data
 			lineNo, hitCount, err := parseDARecord(value)
 			if err != nil {
 				return err
 			}
-			applyLCountRecord(currentData, lineNo, hitCount)
+			currentData.AppendLineCountData(lineNo, hitCount)
 
 		case "BRDA": // Branch data
 			lineNo, branchStatus, err := parseBRDARecord(value)
 			if err != nil {
 				return err
 			}
-			applyBranchRecord(currentData, lineNo, branchStatus)
+			currentData.AppendBranchData(lineNo, branchStatus)
 
 		default:
 			// Unknown records are ignored.  If future versions of the file
@@ -61,7 +61,7 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			//    BRH branches hit
 			//
 			// The above records provides summaries of the counts in the data
-			// records, but will calculate that ourselves.
+			// records, but we will calculate that ourselves.
 		}
 	}
 	if err := scanner.Err(); err != nil {

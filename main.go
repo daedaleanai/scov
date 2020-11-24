@@ -57,6 +57,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "error: no file data present\n")
 		os.Exit(1)
 	}
+	fileData.ConvertRegionToLineData()
 
 	// Calculate statistics
 	report := NewReport(*title)

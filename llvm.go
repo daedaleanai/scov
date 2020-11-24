@@ -123,23 +123,23 @@ func loadLLVMFile(fds FileDataSet, file io.Reader) error {
 			currentData := fds.FileData(w.Filename)
 
 			for i := range w.Segments[:len(w.Segments)-1] {
-				startLine := w.Segments[i].Line
-				endLine := w.Segments[i+1].Line
-				count := w.Segments[i].Count
 				hasCount := w.Segments[i].HasCount
 				isRegionEntry := w.Segments[i].IsRegionEntry
 
 				if isRegionEntry && hasCount {
-					for i := startLine; i <= endLine; i++ {
-						applyLCountRecord(currentData, i, uint64(count))
-					}
+					currentData.AppendRegionData(
+						w.Segments[i].Line,
+						w.Segments[i].Column,
+						w.Segments[i+1].Line,
+						w.Segments[i+1].Column,
+						uint64(w.Segments[i].Count),
+					)
 				}
 			}
 		}
 		for _, w := range v.Functions {
 			currentData := fds.FileData(w.Filenames[0])
-
-			applyFunctionRecord(currentData, w.Name, w.Regions[0][0], w.Count)
+			currentData.AppendFunctionData(w.Name, w.Regions[0][0], w.Count)
 		}
 	}
 

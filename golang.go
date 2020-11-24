@@ -26,9 +26,7 @@ func loadGoFile(fds FileDataSet, file io.Reader) error {
 			}
 
 			currentData := fds.FileData(filename)
-			for i := start.Line; i <= end.Line; i++ {
-				applyLCountRecord(currentData, i, hitCount)
-			}
+			currentData.AppendRegionData(start.Line, start.Column, end.Line, end.Column, hitCount)
 		}
 	}
 	if err := scanner.Err(); err != nil {

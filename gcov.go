@@ -26,21 +26,21 @@ func loadGCovFile(fds FileDataSet, file *os.File) error {
 			if err != nil {
 				return err
 			}
-			applyFunctionRecord(currentData, funcName, funcStart, hitCount)
+			currentData.AppendFunctionData(funcName, funcStart, hitCount)
 
 		case "lcount":
 			lineNo, hitCount, err := parseLCountRecord(value)
 			if err != nil {
 				return err
 			}
-			applyLCountRecord(currentData, lineNo, hitCount)
+			currentData.AppendLineCountData(lineNo, hitCount)
 
 		case "branch":
 			lineNo, branchStatus, err := parseBranchRecord(value)
 			if err != nil {
 				return err
 			}
-			applyBranchRecord(currentData, lineNo, branchStatus)
+			currentData.AppendBranchData(lineNo, branchStatus)
 
 		default:
 			// Unknown records are ignored.  If future versions of the file
@@ -91,18 +91,6 @@ func parseFunctionRecord(value string) (funcName string, funcStart int, hitCount
 	return "", 0, 0, fmt.Errorf("can't parse function record")
 }
 
-func applyFunctionRecord(data *FileData, funcName string, funcStart int, hitCount uint64) {
-	if v, ok := data.FuncData[funcName]; ok {
-		v.HitCount += hitCount
-		data.FuncData[funcName] = v
-	} else {
-		data.FuncData[funcName] = FuncData{
-			StartLine: funcStart,
-			HitCount:  hitCount,
-		}
-	}
-}
-
 func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
 	buffer := [4]string{}
 	values := splitOnComma(buffer[:], value)
@@ -122,10 +110,6 @@ func parseLCountRecord(value string) (lineNo int, hitCount uint64, err error) {
 	}
 
 	return lineNo, hitCount, nil
-}
-
-func applyLCountRecord(data *FileData, lineNo int, hitCount uint64) {
-	data.LineData[lineNo] += hitCount
 }
 
 func parseBranchRecord(value string) (lineNo int, status BranchStatus, err error) {
@@ -152,12 +136,6 @@ func parseBranchRecord(value string) (lineNo int, status BranchStatus, err error
 	}
 
 	return 0, 0, fmt.Errorf("can't parse branch record: unrecognized branch status")
-}
-
-func applyBranchRecord(data *FileData, lineNo int, status BranchStatus) {
-	tmp := data.BranchData[lineNo]
-	tmp = append(tmp, status)
-	data.BranchData[lineNo] = tmp
 }
 
 func filterExternalFileData(fileData map[string]*FileData, external bool) map[string]*FileData {

@@ -95,6 +95,8 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 {{ end -}}
 {{ if .BCoverage.Valid -}}<tr><td>Branches:</td>{{template "coverageRow" .BCoverage}}</tr>
 {{ end -}}
+{{ if .RCoverage.Valid -}}<tr><td>Regions:</td>{{template "coverageRow" .RCoverage}}</tr>
+{{ end -}}
 </tbody>
 </table>`,
 	))
@@ -144,12 +146,14 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 <table class="pure-table pure-table-bordered table-md" style="width:100%">
 {{ $useFunc := .FCoverage.Valid -}}
 {{ $useBranch := .BCoverage.Valid -}}
-<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Filename</th><th colspan="3"{{if .Script}} data-sort="perc-3"{{end}}>Line Coverage</th>{{if $useFunc}}<th colspan="3"{{if .Script}} data-sort="perc-6"{{end}}>Function Coverage</th>{{end}}{{if $useBranch}}<th colspan="3"{{if .Script}} data-sort="perc-9"{{end}}>Branch Coverage</th>{{end}}</tr></thead>
+{{ $useRegion := .RCoverage.Valid -}}
+<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Filename</th><th colspan="3"{{if .Script}} data-sort="perc-3"{{end}}>Line Coverage</th>{{if $useFunc}}<th colspan="3"{{if .Script}} data-sort="perc-6"{{end}}>Function Coverage</th>{{end}}{{if $useBranch}}<th colspan="3"{{if .Script}} data-sort="perc-9"{{end}}>Branch Coverage</th>{{end}}{{if $useRegion}}<th colspan="3"{{if .Script}} data-sort="perc-12"{{end}}>Region Coverage</th>{{end}}</tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
 <tr><td><a href="{{.Name}}.html">{{.Name}}</a></td>{{template "coverageDetail" .LCoverage}}
 {{- if $useFunc -}}{{ template "coverageDetail" .FCoverage }}{{- end -}}
 {{- if $useBranch -}}{{ template "coverageDetail" .BCoverage }}{{- end -}}
+{{- if $useRegion -}}{{ template "coverageDetail" .RCoverage }}{{- end -}}
 </tr>
 {{end -}}
 </tbody>
@@ -248,6 +252,7 @@ func writeHTMLIndex(out io.Writer, report *Report) error {
 		"LCoverage":  report.LCoverage,
 		"FCoverage":  report.FCoverage,
 		"BCoverage":  report.BCoverage,
+		"RCoverage":  report.RCoverage,
 		"Files":      report.Files,
 		"Funcs":      report.Funcs,
 		"Date":       report.UnixDate(),
@@ -303,6 +308,9 @@ var cmpTable = {
     },
     'perc-9' : function(a) {
         return parseFloat(a.childNodes[9].innerHTML)
+    }
+    'perc-12' : function(a) {
+        return parseFloat(a.childNodes[12].innerHTML)
     }
 }
 
@@ -370,6 +378,7 @@ func writeHTMLForSource(out io.Writer, sourcename string, data *FileData, report
 		"LCoverage": data.LineCoverage(),
 		"FCoverage": data.FuncCoverage(),
 		"BCoverage": bcov,
+		"RCoverage": data.RegionCoverage(),
 	}
 
 	err := tmplSource1.Execute(out, params)

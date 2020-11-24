@@ -46,12 +46,16 @@ Date: {{.UnixDate}}
 {{ end -}}
 {{ if .BCoverage.Valid -}}
 | Branches: | {{template "coverageRow" .BCoverage}} |
+{{ end -}}
+{{ if .RCoverage.Valid -}}
+| Regions: | {{template "coverageRow" .RCoverage}} |
 {{ end }}
 
 ## By File
 
 {{ $useFunc := .FCoverage.Valid -}}
 {{ $useBranch := .BCoverage.Valid -}}
+{{ $useRegion := .RCoverage.Valid -}}
 | Filename | Line Coverage |{{if $useFunc }} Function Coverage |{{end}}{{if $useBranch}} Branch Coverage |{{end}}
 | :------- | :-----------: |{{if $useFunc }} :---------------: |{{end}}{{if $useBranch}} :-------------: |{{end}}
 {{range $ndx, $data := .Files -}}
@@ -61,6 +65,9 @@ Date: {{.UnixDate}}
 {{- end -}}
 {{- if $useBranch -}}
 |{{template "coverageDetail" .BCoverage}} 
+{{- end -}}
+{{- if $useRegion -}}
+|{{template "coverageDetail" .RCoverage}} 
 {{- end -}}
 |
 {{ end }}

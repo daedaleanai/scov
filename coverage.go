@@ -13,7 +13,7 @@ func (c Coverage) P() float32 {
 	return float32(c.Hits) * 100 / float32(c.Total)
 }
 
-// Q returns the percentag eof lines or functions that were not executed.
+// Q returns the percentage of lines or functions that were not executed.
 func (c Coverage) Q() float32 {
 	return 100 - float32(c.Hits)*100/float32(c.Total)
 }
@@ -80,12 +80,21 @@ const (
 	BranchNotExec
 )
 
+// Region defines a region of code in a source file.
+type Region struct {
+	StartLine int
+	StartByte int
+	EndLine   int
+	EndByte   int
+}
+
 // FileData maintains coverage statistics for a single file.
 type FileData struct {
 	Filename   string
 	LineData   map[int]uint64
 	FuncData   map[string]FuncData
 	BranchData map[int][]BranchStatus
+	RegionData map[Region]uint64
 }
 
 // NewFileData initializes a new FileData.
@@ -95,6 +104,7 @@ func NewFileData(filename string) *FileData {
 		LineData:   make(map[int]uint64),
 		FuncData:   make(map[string]FuncData),
 		BranchData: make(map[int][]BranchStatus),
+		RegionData: make(map[Region]uint64),
 	}
 }
 
@@ -139,6 +149,64 @@ func (file *FileData) BranchCoverage() Coverage {
 	return Coverage{a, b}
 }
 
+func (file *FileData) RegionCoverage() Coverage {
+	a, b := 0, 0
+
+	for _, v := range file.RegionData {
+		if v != 0 {
+			a++
+		}
+		b++
+	}
+	return Coverage{a, b}
+}
+
+// ConvertRegionToLineData will use hitcounts from region data to infer hit
+// counts for line data.
+//
+// This method cannot be called if the line data already exists.
+func (file *FileData) ConvertRegionToLineData() {
+	if len(file.LineData) != 0 {
+		panic("can not convert region data to line data if line data already present")
+	}
+
+	for k, hitCount := range file.RegionData {
+		for i := k.StartLine; i <= k.EndLine; i++ {
+			file.AppendLineCountData(i, hitCount)
+		}
+	}
+}
+
+// AppendLineCountData appends hit count data for a line.
+func (file *FileData) AppendLineCountData(lineNo int, hitCount uint64) {
+	file.LineData[lineNo] += hitCount
+}
+
+// AppendFunctionData appends hit count data for a function.
+func (file *FileData) AppendFunctionData(funcName string, funcStart int, hitCount uint64) {
+	if v, ok := file.FuncData[funcName]; ok {
+		v.HitCount += hitCount
+		file.FuncData[funcName] = v
+	} else {
+		file.FuncData[funcName] = FuncData{
+			StartLine: funcStart,
+			HitCount:  hitCount,
+		}
+	}
+}
+
+// AppendFunctionData appends hit count data for a function.
+func (file *FileData) AppendBranchData(lineNo int, status BranchStatus) {
+	tmp := file.BranchData[lineNo]
+	tmp = append(tmp, status)
+	file.BranchData[lineNo] = tmp
+}
+
+func (file *FileData) AppendRegionData(startLine, startByte, endLine, endByte int, hitCount uint64) {
+	region := Region{startLine, startByte, endLine, endByte}
+	file.RegionData[region] += hitCount
+}
+
 // FileDataSet maintains coverage statistics for multiple files.
 type FileDataSet map[string]*FileData
 
@@ -160,4 +228,21 @@ func (fds FileDataSet) LineCoverage() Coverage {
 		lcov = lcov.Add(data.LineCoverage())
 	}
 	return lcov
+}
+
+// RegionCoverage calculates region coverage over all of the files in the set.
+func (fds FileDataSet) RegionCoverage() Coverage {
+	rcov := Coverage{}
+	for _, data := range fds {
+		rcov = rcov.Add(data.RegionCoverage())
+	}
+	return rcov
+}
+
+func (fds FileDataSet) ConvertRegionToLineData() {
+	for _, data := range fds {
+		if len(data.LineData) == 0 {
+			data.ConvertRegionToLineData()
+		}
+	}
 }

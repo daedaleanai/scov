@@ -11,10 +11,12 @@ func TestParserLoadGoFile(t *testing.T) {
 	cases := []struct {
 		filename  string
 		lcovTotal Coverage
+		rcovTotal Coverage
 		lcov      Coverage
+		rcov      Coverage
 	}{
 		// go 1.10.4
-		{"scov-1.10.4.out", Coverage{796, 932}, Coverage{28, 28}},
+		{"scov-1.10.4.out", Coverage{796, 932}, Coverage{297, 363}, Coverage{28, 28}, Coverage{13, 13}},
 	}
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
@@ -24,6 +26,10 @@ func TestParserLoadGoFile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("could not read file: %s", err)
 			}
+			data.ConvertRegionToLineData()
+			if rcov := data.RegionCoverage(); rcov != v.rcovTotal {
+				t.Errorf("total region coverage: expected %v, got %v", v.rcovTotal, rcov)
+			}
 			if lcov := data.LineCoverage(); lcov != v.lcovTotal {
 				t.Errorf("total line coverage: expected %v, got %v", v.lcovTotal, lcov)
 			}
@@ -31,6 +37,9 @@ func TestParserLoadGoFile(t *testing.T) {
 			fileData, ok := data["gitlab.com/stone.code/scov/gcovjs.go"]
 			if !ok {
 				t.Fatalf("missing data for file 'gcovjs.go' after loading")
+			}
+			if rcov := fileData.RegionCoverage(); rcov != v.rcov {
+				LogNE(t, "line coverage", v.rcov, rcov)
 			}
 			if lcov := fileData.LineCoverage(); lcov != v.lcov {
 				LogNE(t, "line coverage", v.lcov, lcov)
