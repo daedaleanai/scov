@@ -21,8 +21,14 @@ tasks:
       cd scov
       go test -coverprofile=cover.out
       go tool cover -html=cover.out -o=cover.html
+      ./scov-linux-amd64 -htmldir="" -text=- cover.out
+      mkdir -p gitlab.com/stone.code
+      ln -s `pwd` gitlab.com/stone.code/scov
+      ./scov-linux-amd64 -htmldir=./cover cover.out
+      tar -czf cover.tar.gz cover/*   
 artifacts:
   - scov/cover.html
+  - scov/cover.tar.gz
   - scov/scov-linux-amd64
   - scov/scov-windows-amd64.exe
   - scov/scov-darwin-amd64
