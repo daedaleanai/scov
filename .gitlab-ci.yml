@@ -12,7 +12,7 @@ golang-modules:
     - cd ./behemoth && go build
   parallel:
     matrix:
-      - GOVERSION: ["1.11", "1.12", "1.13", "1.14", "1.15"]
+      - GOVERSION: ["1.11", "1.12", "1.13", "1.14", "1.15", "1.16"]
         DUMMY: ["dummy"]
   artifacts:
     paths:
@@ -56,13 +56,11 @@ test:
     - go test -coverprofile=cover.out -v
     - go tool cover -html=cover.out -o=cover.html
     - bash <(curl -s https://codecov.io/bash)
-    - go vet .
-    - go get -u github.com/gordonklaus/ineffassign
-    - go install github.com/gordonklaus/ineffassign
-    - $GOPATH/bin/ineffassign .
     - go get -u github.com/client9/misspell/cmd/misspell
     - go install github.com/client9/misspell/cmd/misspell
     - $GOPATH/bin/misspell -locale UK *.go *.md behemoth/*.go
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.40.1
+    - ./bin/golangci-lint run -v --enable govet,ineffassign,misspell . || true
   artifacts:
     paths:
       - cover.html
@@ -79,8 +77,8 @@ lint:
   stage: test
   needs: []
   script:
-    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.23.6
-    - ./bin/golangci-lint run -v --enable-all --disable wsl,gomnd .
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.40.1
+    - ./bin/golangci-lint run -v --enable-all . || true
   except:
     - tags
   allow_failure: true
@@ -132,25 +130,25 @@ example-gcc:
       - example/methods/*.html
     expire_in: 1 week
 
-example-clang-6:
+example-clang-stretch:
   image: debian:stretch
   stage: test
   dependencies:
     - "golang-modules: [1.14, dummy]"
   variables:
-    CC: clang-6.0
-    LLVM_PROFDATA: llvm-profdata-6.0
-    LLVM_COV: llvm-cov-6.0
+    CC: "clang-${CLANGVERSION}"
+    LLVM_PROFDATA: "llvm-profdata-${CLANGVERSION}"
+    LLVM_COV: "llvm-cov-${CLANGVERSION}"
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
     - cat /etc/*-release
     - apt-get update -qq -y
     - apt-get install -qq -y wget gnupg2 apt-transport-https
-    - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
-    - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-6.0 main" >> /etc/apt/sources.list
+    - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-${CLANGVERSION} main" >> /etc/apt/sources.list
+    - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-${CLANGVERSION} main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
     - apt-get update -qq -y
-    - apt-get install -qq -y llvm-6.0 clang-6.0 make git
+    - apt-get install -qq -y llvm-${CLANGVERSION} clang-${CLANGVERSION} make git
   script:
     - cd ./example
     - make example
@@ -158,6 +156,11 @@ example-clang-6:
     - time make html
   only:
     - master
+    - gitlabci
+  parallel:
+    matrix:
+      - CLANGVERSION: ["6.0", "7"]
+        DUMMY: ["dummy"]
   artifacts:
     paths:
       - example/*.txt
@@ -165,106 +168,22 @@ example-clang-6:
       - example/methods/*.html
     expire_in: 1 week
 
-example-clang-7:
-  image: debian:stretch
-  stage: test
-  dependencies:
-    - "golang-modules: [1.14, dummy]"
-  variables:
-    CC: clang-7
-    LLVM_PROFDATA: llvm-profdata-7
-    LLVM_COV: llvm-cov-7
-    SCOV: $CI_PROJECT_DIR/scov
-  before_script:
-    - cat /etc/*-release
-    - apt-get update -qq -y
-    - apt-get install -qq -y wget gnupg2 apt-transport-https
-    - echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
-    - echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" >> /etc/apt/sources.list
-    - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-    - apt-get update -qq -y
-    - apt-get install -qq -y llvm-7 clang-7 make git
-  script:
-    - cd ./example
-    - make example
-    - time make text
-    - time make html
-  only:
-    - master
-  artifacts:
-    paths:
-      - example/*.txt
-      - example/*.html
-      - example/methods/*.html
-    expire_in: 1 week
-
-example-clang-8:
+example-clang-buster:
+  extends: example-clang-stretch
   image: debian:buster
-  stage: test
-  dependencies:
-    - "golang-modules: [1.14, dummy]"
-  variables:
-    CC: clang-8
-    LLVM_PROFDATA: llvm-profdata-8
-    LLVM_COV: llvm-cov-8
-    SCOV: $CI_PROJECT_DIR/scov
   before_script:
     - cat /etc/*-release
     - apt-get update -qq -y
     - apt-get install -qq -y wget gnupg2
-    - echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-8 main" >> /etc/apt/sources.list
-    - echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-8 main" >> /etc/apt/sources.list
+    - echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-${CLANGVERSION} main" >> /etc/apt/sources.list
+    - echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-${CLANGVERSION} main" >> /etc/apt/sources.list
     - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
     - apt-get update -qq -y
-    - apt-get install -qq -y llvm-8 clang-8 make git
-  script:
-    - cd ./example
-    - make example
-    - ./example
-    - time make text
-    - time make html
-  only:
-    - master
-  artifacts:
-    paths:
-      - example/*.txt
-      - example/*.html
-      - example/methods/*.html
-    expire_in: 1 week
-
-example-clang-9:
-  image: debian:buster
-  stage: test
-  dependencies:
-    - "golang-modules: [1.14, dummy]"
-  variables:
-    CC: clang-9
-    LLVM_PROFDATA: llvm-profdata-9
-    LLVM_COV: llvm-cov-9
-    SCOV: $CI_PROJECT_DIR/scov
-  before_script:
-    - cat /etc/*-release
-    - apt-get update -qq -y
-    - apt-get install -qq -y wget gnupg2
-    - echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-9 main" >> /etc/apt/sources.list
-    - echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-9 main" >> /etc/apt/sources.list
-    - wget -O - --quiet https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-    - apt-get update -qq -y
-    - apt-get install -qq -y llvm-9 clang-9 make git
-  script:
-    - cd ./example
-    - make example
-    - ./example
-    - time make text
-    - time make html
-  only:
-    - master
-  artifacts:
-    paths:
-      - example/*.txt
-      - example/*.html
-      - example/methods/*.html
-    expire_in: 1 week
+    - apt-get install -qq -y llvm-${CLANGVERSION} clang-${CLANGVERSION} make git
+  parallel:
+    matrix:
+      - CLANGVERSION: ["8", "9", "10"]
+        DUMMY: ["dummy"]
 
 deploy:
   image: golang
