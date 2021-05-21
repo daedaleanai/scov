@@ -15,17 +15,21 @@ func TestCoverage_Rating(t *testing.T) {
 		{50, 100, LowCoverage, "low"},
 		{74, 100, LowCoverage, "low"},
 		{75, 100, MediumCoverage, "medium"},
+		{89, 100, MediumCoverage, "medium"},
 		{90, 100, HighCoverage, "high"},
+		{45, 50, HighCoverage, "high"},
 	}
 
-	for i, v := range cases {
+	for _, v := range cases {
 		cov := Coverage{v.hits, v.count}
-		if out := cov.Rating(); out != v.expected {
-			t.Errorf("Case %d: mismatch, expected %v, got %v", i, v.expected, out)
-		}
-		if out := cov.Rating().String(); out != v.str {
-			t.Errorf("Case %d: mismatch, expected %v, got %v", i, v.str, out)
-		}
+		t.Run(cov.String(), func(t *testing.T) {
+			if out := cov.Rating(); out != v.expected {
+				t.Errorf("mismatch, expected %v, got %v", v.expected, out)
+			}
+			if out := cov.Rating().String(); out != v.str {
+				t.Errorf("mismatch, expected %v, got %v", v.str, out)
+			}
+		})
 	}
 }
 

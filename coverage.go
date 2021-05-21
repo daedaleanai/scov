@@ -1,5 +1,9 @@
 package main
 
+import (
+	"strconv"
+)
+
 // Coverage holds information about the coverage of some element over some scope.
 // Typically elements are either individual lines, or functions.  Tyipcally, the
 // scope is a source file or executable.
@@ -34,6 +38,12 @@ func (c Coverage) Rating() CoverageRating {
 		return MediumCoverage
 	}
 	return LowCoverage
+}
+
+// String returns a human readable string representing the coverage.
+func (c Coverage) String() string {
+	return strconv.FormatInt(int64(c.Hits), 10) + "/" +
+		strconv.FormatInt(int64(c.Total), 10)
 }
 
 // Valid returns true if data was collected.  In otherwords, unless the
