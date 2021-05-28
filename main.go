@@ -73,7 +73,7 @@ func main() {
 	// Note we ignore HTML reports, because they never go to stdout because of
 	// their complexity.
 	if *text != "-" && *markdown != "-" {
-		fmt.Fprintf(os.Stdout, "Coverage: %.1f%%\n", report.LCoverage.P())
+		writeStdoutReport(os.Stdout, report)
 	}
 
 	// Text report, if requested.

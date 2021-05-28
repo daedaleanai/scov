@@ -1,0 +1,6 @@
+git.sr.ht/~rj/sgr v0.6.0 h1:YpHbXw3VIeS8lPue1iUWdJWOCvrgm97tU/XTxmz19dw=
+git.sr.ht/~rj/sgr v0.6.0/go.mod h1:9M+8eG8XTKGU2qfXU2XI+0Kicee2NDkbnd7bWzLGuxQ=
+github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHXY=
+github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
+golang.org/x/sys v0.0.0-20200116001909-b77594299b42 h1:vEOn+mP2zCOVzKckCZy6YsCtDblrpj/w7B9nxGNELpg=
+golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

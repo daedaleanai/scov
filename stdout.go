@@ -1,35 +1,48 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
+
+	"git.sr.ht/~rj/sgr"
+	"git.sr.ht/~rj/sgr/plot"
 )
 
-func createTextReport(filename string, report *Report) error {
-	w, err := Open(filename)
-	if err != nil {
-		return err
-	}
-	defer w.Close()
+func writeStdoutReport(w io.Writer, report *Report) {
+	f := sgr.NewFormatterForWriter(w)
 
-	err = writeTextReport(w.File(), report)
-	w.Keep(err)
-	return err
+	writeStdoutCoverage(w, f, "Line coverage", report.LCoverage)
+	writeStdoutCoverage(w, f, "Func coverage", report.FCoverage)
+	writeStdoutCoverage(w, f, "Branch coverage", report.BCoverage)
+	writeStdoutCoverage(w, f, "Region coverage", report.RCoverage)
 }
 
-func writeTextReport(writer io.Writer, report *Report) error {
-	w := bufio.NewWriter(writer)
-
-	// Head
-	_, _ = w.WriteString(" Lines\t Funcs\n------\t------\n")
-
-	// Body
-	for _, i := range report.Files {
-		fmt.Fprintf(w, "%5.1f%%\t%5.1f%%\t%s\n", i.LCoverage.P(), i.FCoverage.P(), i.Name)
+func writeStdoutCoverage(w io.Writer, f *sgr.Formatter, name string, cov Coverage) {
+	if !cov.Valid() {
+		fmt.Fprintf(w, "%15s:  No data\n", name)
+		return
 	}
 
-	// Foot
-	fmt.Fprintf(w, "------\t------\n%5.1f%%\t%5.1f%%\tOverall\n", report.LCoverage.P(), report.FCoverage.P())
-	return w.Flush()
+	fmt.Fprintf(w, "%15s: [%20s] %5.1f%%  (%d/%d)\n",
+		name,
+		plot.HorizontalBar(
+			f,
+			float64(cov.P()*0.01),
+			ratingToColor(cov.Rating())),
+		cov.P(),
+		cov.Hits,
+		cov.Total)
+}
+
+func ratingToColor(r CoverageRating) sgr.Color {
+	switch r {
+	case LowCoverage:
+		return sgr.Red
+	case MediumCoverage:
+		return sgr.BrightYellow
+	case HighCoverage:
+		return sgr.BrightGreen
+	default:
+		return sgr.Default
+	}
 }

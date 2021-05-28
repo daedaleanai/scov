@@ -10,7 +10,7 @@ buildGoModule rec {
   # No need to build subpackage behemoth, which is only for testing.
   subPackages = [ "." ];
 
-  vendorSha256 = "0sjjj9z1dhilhpc8pq4154czrb79z9cm044jvn75kxcjv6v5l2m5";
+  vendorSha256 = "18miyyil4jpmf3v1axkn3k1lhza07p9p26agvmqi8mlwkraabhxb";
 
   # Update the version information in the built executable
   buildFlagsArray = ''
