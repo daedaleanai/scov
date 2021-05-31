@@ -27,11 +27,12 @@ build-gopath:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
   script:
+    - go get gitlab.com/$CI_PROJECT_PATH
     - go build gitlab.com/$CI_PROJECT_PATH
     - go test gitlab.com/$CI_PROJECT_PATH
   parallel:
     matrix:
-      - GOVERSION: ["1.8", "1.9", "1.10"]
+      - GOVERSION: ["1.9", "1.10"]
         DUMMY: ["dummy"]
 
 include:
@@ -60,7 +61,7 @@ test:
     - go install github.com/client9/misspell/cmd/misspell
     - $GOPATH/bin/misspell -locale UK *.go *.md behemoth/*.go
     - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.40.1
-    - ./bin/golangci-lint run -v --enable govet,ineffassign,misspell . || true
+    - ./bin/golangci-lint run -v --enable=ineffassign,misspell,govet .
   artifacts:
     paths:
       - cover.html
