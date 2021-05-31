@@ -1,4 +1,7 @@
 image: nixos/latest
+packages:
+  - nixos.go
+  - nixos.golangci-lint
 secrets:
   - 9853f30c-f288-4c16-bde4-9614105439eb
 tasks:
@@ -9,13 +12,13 @@ tasks:
   - test: |
       cd scov
       nix-shell --pure --command "go test -v ."
+      nix-shell --arg enableLint true --pure --command "golangci-lint run -v --enable=ineffassign,govet,misspell ."
   - release: |
       cd scov
       nix-build
       cp result/bin/scov scov
   - coverprofile: |
       cd scov
-      nix-env -i go
       go test -coverprofile=cover.out
       go tool cover -html=cover.out -o=cover.html
 artifacts:
