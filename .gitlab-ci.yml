@@ -121,7 +121,7 @@ example-gcc:
     - gitlabci
   parallel:
     matrix:
-      - GCCVERSION: ["7", "8", "9", "10"]
+      - GCCVERSION: ["7", "8", "9", "10", "11"]
         DUMMY: ["dummy"]
   artifacts:
     paths:
@@ -183,7 +183,7 @@ example-clang-buster:
     - apt-get install -qq -y llvm-${CLANGVERSION} clang-${CLANGVERSION} make git
   parallel:
     matrix:
-      - CLANGVERSION: ["8", "9", "10"]
+      - CLANGVERSION: ["8", "9", "10", "11", "12"]
         DUMMY: ["dummy"]
 
 deploy:
