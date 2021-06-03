@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -44,6 +45,24 @@ func (c Coverage) Rating() CoverageRating {
 func (c Coverage) String() string {
 	return strconv.FormatInt(int64(c.Hits), 10) + "/" +
 		strconv.FormatInt(int64(c.Total), 10)
+}
+
+// Format implements fmt.Formatter.
+func (c Coverage) Format(f fmt.State, v rune) {
+	if v == 'f' {
+		width, _ := f.Width()
+		prec, _ := f.Precision()
+
+		if c.Total == 0 {
+			fmt.Fprintf(f, "%*s", width, "--")
+		} else {
+			fmt.Fprintf(f, "%*.*f", width, prec, c.P())
+		}
+	} else if v == 's' {
+		fmt.Fprintf(f, "%d/%d", c.Hits, c.Total)
+	} else {
+		panic("unsupported verb")
+	}
 }
 
 // Valid returns true if data was collected.  In otherwords, unless the
