@@ -224,13 +224,14 @@ func (file *FileData) AppendFunctionData(funcName string, funcStart int, hitCoun
 	}
 }
 
-// AppendFunctionData appends hit count data for a function.
+// AppendBranchData appends hit count data for a branch.
 func (file *FileData) AppendBranchData(lineNo int, status BranchStatus) {
 	tmp := file.BranchData[lineNo]
 	tmp = append(tmp, status)
 	file.BranchData[lineNo] = tmp
 }
 
+// AppendRegionData appends hit count data for a region.
 func (file *FileData) AppendRegionData(startLine, startByte, endLine, endByte int, hitCount uint64) {
 	region := Region{startLine, startByte, endLine, endByte}
 	file.RegionData[region] += hitCount

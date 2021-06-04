@@ -47,11 +47,8 @@ func loadGCovFile(fds FileDataSet, file *os.File) error {
 			// format introduce new records, we don't want to have an error.
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
 
-	return nil
+	return scanner.Err()
 }
 
 func parseFunctionRecord(value string) (funcName string, funcStart int, hitCount uint64, err error) {

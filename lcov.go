@@ -64,11 +64,8 @@ func loadLCovFile(fds FileDataSet, file *os.File) error {
 			// records, but we will calculate that ourselves.
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
 
-	return nil
+	return scanner.Err()
 }
 
 func parseDARecord(value string) (lineNo int, hitCount uint64, err error) {

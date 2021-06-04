@@ -47,7 +47,7 @@ func writeMain(out io.Writer) {
 		for i := uint(0); i < *files; i++ {
 			fmt.Fprintf(out, "extern int file%d( int p );\n", i+1)
 		}
-		out.Write([]byte{'\n'})
+		_, _ = out.Write([]byte{'\n'})
 	}
 
 	fmt.Fprintf(out, "int main( int argc, char const* argv[] ) {\n")

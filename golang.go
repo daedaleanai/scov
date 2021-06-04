@@ -29,11 +29,8 @@ func loadGoFile(fds FileDataSet, file io.Reader) error {
 			currentData.AppendRegionData(start.Line, start.Column, end.Line, end.Column, hitCount)
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
 
-	return nil
+	return scanner.Err()
 }
 
 // Position is a line/column pair used to specify a location in a source file.
