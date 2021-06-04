@@ -3,7 +3,7 @@ before_script: &before_script_all
   - if [ -x "$(command -v gcc)" ]; then gcc --version; fi;
   - if [ -x "$(command -v go)" ]; then go version; fi;
 
-golang-modules:
+build-modules:
   image: "golang:${GOVERSION}"
   stage: build
   script:
@@ -34,6 +34,15 @@ build-gopath:
     matrix:
       - GOVERSION: ["1.9", "1.10"]
         DUMMY: ["dummy"]
+
+build-nix:
+  image: "nixos/nix:latest"
+  stage: build
+  script:
+    - export VERSION=`git describe`
+    - nix-shell --pure --command 'go build -v -ldflags="-X main.versionInformation=${VERSION}"'
+    - nix-shell --pure --command "go test -v ."
+    - nix-shell --arg enableLint true --pure --command "golangci-lint run -v --enable=ineffassign,govet,misspell ."
 
 include:
   - template: SAST.gitlab-ci.yml
@@ -103,7 +112,7 @@ example-gcc:
   image: "gcc:${GCCVERSION}"
   stage: test
   dependencies:
-    - "golang-modules: [1.14, dummy]"
+    - "build-modules: [1.14, dummy]"
   variables:
     SCOV: $CI_PROJECT_DIR/scov
   before_script:
@@ -135,7 +144,7 @@ example-clang-stretch:
   image: debian:stretch
   stage: test
   dependencies:
-    - "golang-modules: [1.14, dummy]"
+    - "build-modules: [1.14, dummy]"
   variables:
     CC: "clang-${CLANGVERSION}"
     LLVM_PROFDATA: "llvm-profdata-${CLANGVERSION}"
