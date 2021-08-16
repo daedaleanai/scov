@@ -1,6 +1,8 @@
-git.sr.ht/~rj/sgr v0.6.2 h1:Ia5uMz0vT4vs5fX9uGVjpTThRxm6gxNbxZdZQPMrJVg=
-git.sr.ht/~rj/sgr v0.6.2/go.mod h1:Ug25bYlJ4+UtHXnNw5ovXnvUFJ7D3hIMdMMdfLcxy/I=
+git.sr.ht/~rj/sgr v0.12.0 h1:xecua28sAsBtpmkVZctBP4o9IhQHwwO2p+ZuA5aH/RA=
+git.sr.ht/~rj/sgr v0.12.0/go.mod h1:vfUuH9+L06TziTRaCcqugVU+Zf9wpfoihfR1J5r4RnU=
 github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHXY=
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
+gitlab.com/stone.code/catch v1.2.0 h1:SQKK8KEa40QT/E32iqVRmgPrqKd4DzKW9EDfsgLQrlo=
+gitlab.com/stone.code/catch v1.2.0/go.mod h1:jC4y2DSaXzm+94hz01kMDx+NmmYkh6kvnFqqLB3lHz0=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42 h1:vEOn+mP2zCOVzKckCZy6YsCtDblrpj/w7B9nxGNELpg=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

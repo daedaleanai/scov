@@ -2,7 +2,7 @@ image: debian/stable
 packages:
   - golang-go
 secrets:
-  - 9853f30c-f288-4c16-bde4-9614105439eb
+  - 22dee007-9353-4468-89ad-8d1fe5066ca7
 tasks:
   - build: |
       cd scov

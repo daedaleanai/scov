@@ -3,7 +3,9 @@ packages:
   - nixos.go
   - nixos.golangci-lint
 secrets:
-  - 9853f30c-f288-4c16-bde4-9614105439eb
+  - 22dee007-9353-4468-89ad-8d1fe5066ca7
+environment:
+  LINTERS: "ineffassign,godot,govet,misspell,revive"
 tasks:
   - build: |
       cd scov
@@ -12,7 +14,7 @@ tasks:
   - test: |
       cd scov
       nix-shell --pure --command "go test -v ."
-      nix-shell --arg enableLint true --pure --command "golangci-lint run -v --enable=ineffassign,govet,misspell ."
+      nix-shell --arg enableLint true --pure --command "golangci-lint run -v --enable=$LINTERS ."
   - release: |
       cd scov
       nix-build
