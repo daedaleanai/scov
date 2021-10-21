@@ -6,13 +6,16 @@ before_script: &before_script_all
 build-modules:
   image: "golang:${GOVERSION}"
   stage: build
+  variables:
+    GIT_SSL_NO_VERIFY: "true"  # Fix bug where can't fetch dependency from SourceHut
   script:
-    - go build .
-    - go test .
+    - go build -v .
+    - go build -v ./...
+    - go test -v .
     - cd ./behemoth && go build
   parallel:
     matrix:
-      - GOVERSION: ["1.11", "1.12", "1.13", "1.14", "1.15", "1.16"]
+      - GOVERSION: ["1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17"]
         DUMMY: ["dummy"]
   artifacts:
     paths:
@@ -26,6 +29,7 @@ build-gopath:
   variables:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
+    GIT_SSL_NO_VERIFY: "true"  # Fix bug where can't fetch dependency from SourceHut
   script:
     - go get gitlab.com/$CI_PROJECT_PATH
     - go build gitlab.com/$CI_PROJECT_PATH
@@ -38,11 +42,13 @@ build-gopath:
 build-nix:
   image: "nixos/nix:latest"
   stage: build
+  variables:
+    LINTERS: "ineffassign,misspell,godot,govet,revive"
   script:
     - export VERSION=`git describe`
-    - nix-shell --pure --command 'go build -v -ldflags="-X main.versionInformation=${VERSION}"'
+    - nix-shell --pure --command 'go build -v -ldflags="-X main.versionInformation=${VERSION}" ./...'
     - nix-shell --pure --command "go test -v ."
-    - nix-shell --arg enableLint true --pure --command "golangci-lint run -v --enable=ineffassign,govet,misspell ."
+    - nix-shell --arg enableLint true --pure --command "golangci-lint run -v --enable=${LINTERS} ."
 
 include:
   - template: SAST.gitlab-ci.yml
@@ -50,35 +56,26 @@ include:
   - template: Dependency-Scanning.gitlab-ci.yml
 
 test:
-  image: golang:1.14
+  image: golang:latest
   stage: test
   needs: []
   variables:
     GOPATH: $CI_BUILDS_DIR
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
-  before_script:
-    - *before_script_all
-    - mkdir -p .cache/github.com
-    - mv .cache/github.com $GOPATH/src/
-  after_script:
-    - mv $GOPATH/src/github.com .cache/
+    LINTERS: "ineffassign,misspell,godot,govet,revive"
   script:
-    - go test -coverprofile=cover.out -v
+    - go test -v -coverprofile=cover.out
     - go tool cover -html=cover.out -o=cover.html
     - bash <(curl -s https://codecov.io/bash)
     - go get -u github.com/client9/misspell/cmd/misspell
     - go install github.com/client9/misspell/cmd/misspell
     - $GOPATH/bin/misspell -locale UK *.go *.md behemoth/*.go
-    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.40.1
-    - ./bin/golangci-lint run -v --enable=ineffassign,misspell,govet,revive .
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.42.1
+    - ./bin/golangci-lint run -v --enable=$LINTERS .
   artifacts:
     paths:
       - cover.html
     expire_in: 1 week
-  cache:
-    key: test
-    paths:
-      - .cache/github.com/
   except:
     - tags
 
@@ -87,7 +84,7 @@ lint:
   stage: test
   needs: []
   script:
-    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.40.1
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.42.1
     - ./bin/golangci-lint run -v --enable-all . || true
   except:
     - tags
