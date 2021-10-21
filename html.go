@@ -308,7 +308,7 @@ var cmpTable = {
     },
     'perc-9' : function(a) {
         return parseFloat(a.childNodes[9].innerHTML)
-    }
+    },
     'perc-12' : function(a) {
         return parseFloat(a.childNodes[12].innerHTML)
     }
