@@ -59,7 +59,7 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 <div class="pure-g"><div class="pure-u-1">
 <h2>By File</h2>
 <table class="pure-table pure-table-bordered table-md" style="width:100%">
-<thead><tr><th data-sort="text-0">Filename</th><th colspan="3" data-sort="perc-3">Line Coverage</th><th colspan="3" data-sort="perc-6">Function Coverage</th></tr></thead>
+<thead><tr><th data-sort="text">Filename</th><th colspan="3" data-sort="perc">Line Coverage</th><th colspan="3" data-sort="perc">Function Coverage</th></tr></thead>
 <tbody>
 <tr><td><a href="example.c.html">example.c</a></td><td><div class="sparkbar"><div class="fill high" style="width:90.0%"></div><div class="empty" style="width:10.0%"></div></div></td><td>9/10</td><td>90.0%</td><td><div class="sparkbar"><div class="fill high" style="width:100%"></div></div></td><td>1/1</td><td>100.0%</td></tr>
 </tbody>
@@ -68,7 +68,7 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 <div class="pure-g"><div class="pure-u-1">
 <h2>By Function</h2>
 <table class="pure-table pure-table-bordered table-md" style="width:100%">
-<thead><tr><th data-sort="text-0">Function</th><th data-sort="perc-1">Hits</th></tr></thead>
+<thead><tr><th data-sort="text">Function</th><th data-sort="perc">Hits</th></tr></thead>
 <tbody>
 <tr><td><a href="example.c.html#L28">main</a></td><td>1</td></tr></tbody>
 </table>

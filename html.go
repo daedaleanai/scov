@@ -147,7 +147,7 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 {{ $useFunc := .FCoverage.Valid -}}
 {{ $useBranch := .BCoverage.Valid -}}
 {{ $useRegion := .RCoverage.Valid -}}
-<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Filename</th><th colspan="3"{{if .Script}} data-sort="perc-3"{{end}}>Line Coverage</th>{{if $useFunc}}<th colspan="3"{{if .Script}} data-sort="perc-6"{{end}}>Function Coverage</th>{{end}}{{if $useBranch}}<th colspan="3"{{if .Script}} data-sort="perc-9"{{end}}>Branch Coverage</th>{{end}}{{if $useRegion}}<th colspan="3"{{if .Script}} data-sort="perc-12"{{end}}>Region Coverage</th>{{end}}</tr></thead>
+<thead><tr><th{{if .Script}} data-sort="text"{{end}}>Filename</th><th colspan="3"{{if .Script}} data-sort="perc"{{end}}>Line Coverage</th>{{if $useFunc}}<th colspan="3"{{if .Script}} data-sort="perc"{{end}}>Function Coverage</th>{{end}}{{if $useBranch}}<th colspan="3"{{if .Script}} data-sort="perc"{{end}}>Branch Coverage</th>{{end}}{{if $useRegion}}<th colspan="3"{{if .Script}} data-sort="perc"{{end}}>Region Coverage</th>{{end}}</tr></thead>
 <tbody>
 {{range $ndx, $data := .Files -}}
 <tr><td><a href="{{.Name}}.html">{{.Name}}</a></td>{{template "coverageDetail" .LCoverage}}
@@ -159,10 +159,11 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 </tbody>
 </table>
 </div></div>
+{{if $useFunc -}}
 <div class="pure-g"><div class="pure-u-1">
 <h2>By Function</h2>
 <table class="pure-table pure-table-bordered table-md" style="width:100%">
-<thead><tr><th{{if .Script}} data-sort="text-0"{{end}}>Function</th><th{{if .Script}} data-sort="perc-1"{{end}}>Hits</th></tr></thead>
+<thead><tr><th{{if .Script}} data-sort="text"{{end}}>Function</th><th{{if .Script}} data-sort="perc"{{end}}>Hits</th></tr></thead>
 <tbody>
 {{range $ndx, $data := .Funcs -}}
 <tr><td><a href="{{.Filename}}.html#L{{.StartLine}}">{{.Name}}</a></td><td>{{.HitCount}}</td></tr>
@@ -170,6 +171,7 @@ footer { border-top: 1px solid rgb(203, 203, 203); margin-top: 1em; background: 
 </tbody>
 </table>
 </div></div>
+{{- end}}
 {{ template "footer" . }}
 </body>
 </html>`,
@@ -291,26 +293,11 @@ func writeJS(out io.Writer) error {
 }
 
 var cmpTable = {
-    'text-0' : function(a) {
-        return a.childNodes[0].innerHTML
+    'text' : function(a) {
+        return a.textContent
     },
-    'text-1' : function(a) {
-        return a.childNodes[1].innerHtml
-    },
-    'perc-1' : function(a) {
-        return parseFloat(a.childNodes[1].innerHTML)
-    },
-    'perc-3' : function(a) {
-        return parseFloat(a.childNodes[3].innerHTML)
-    },
-    'perc-6' : function(a) {
-        return parseFloat(a.childNodes[6].innerHTML)
-    },
-    'perc-9' : function(a) {
-        return parseFloat(a.childNodes[9].innerHTML)
-    },
-    'perc-12' : function(a) {
-        return parseFloat(a.childNodes[12].innerHTML)
+    'perc' : function(a) {
+        return parseFloat(a.textContent)
     }
 }
 
@@ -321,14 +308,17 @@ window.onload = function() {
         var a = e.getAttribute('data-sort')
         if ( !a ) continue
 
+		// Create a copy of the column for the closures below.
+		var column = i
+
         e.innerHTML = e.innerHTML + ' <span class="reveal"><a class="pure-button" data-sort=' + a + '>▲</a><a class="pure-button" data-sort=' + a + '>▼</a></span>'
         e.getElementsByTagName('a')[0].onclick = function() {
             var ndx = this.getAttribute('data-sort')
             var cmp = cmpTable[ndx]
             var table = this.parentElement.parentElement.parentElement.parentElement.parentElement
             sortTable( table, function(a,b) {
-                var v1 = cmp(a)
-                var v2 = cmp(b)
+                var v1 = cmp(a.childNodes[column])
+                var v2 = cmp(b.childNodes[column])
                 return v1 < v2 ? -1 : v1 > v2 ? +1 : 0
             })
         }
@@ -337,8 +327,8 @@ window.onload = function() {
             var cmp = cmpTable[ndx]
             var table = this.parentElement.parentElement.parentElement.parentElement.parentElement
             sortTable( table, function(a,b) {
-                var v1 = cmp(a)
-                var v2 = cmp(b)
+                var v1 = cmp(a.childNodes[column])
+                var v2 = cmp(b.childNodes[column])
                 return v1 < v2 ? +1 : v1 > v2 ? -1 : 0
             })
         }
