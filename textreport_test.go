@@ -47,7 +47,7 @@ func TestCreateTextReport(t *testing.T) {
 			}
 
 			if *update {
-				err := ioutil.WriteFile(filepath.Join("./testdata", t.Name()+".golden"), out, 0644)
+				err := ioutil.WriteFile(filepath.Join("./testdata", t.Name()+".golden"), out, 0600)
 				if err != nil {
 					t.Fatalf("could not write golden file: %s", err)
 				}
