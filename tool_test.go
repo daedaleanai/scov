@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TempFilename(t *testing.T) (filename string, cleanup func()) {
+func TempFilename(t *testing.T) (filename string, closer func()) {
 	file, err := ioutil.TempFile("", "testing")
 	if err != nil {
 		t.Fatalf("could not create temporary file: %s", err)
@@ -25,8 +25,8 @@ func TempFilename(t *testing.T) (filename string, cleanup func()) {
 }
 
 func TestOpen(t *testing.T) {
-	tmpfile, close := TempFilename(t)
-	defer close()
+	tmpfile, closer := TempFilename(t)
+	defer closer()
 
 	cases := []struct {
 		filename string

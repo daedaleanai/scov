@@ -126,7 +126,6 @@ func TestParseGoRecord(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestParseGoPosition(t *testing.T) {

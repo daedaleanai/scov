@@ -115,5 +115,4 @@ func TestParserLoadFile(t *testing.T) {
 			}
 		})
 	}
-
 }

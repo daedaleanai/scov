@@ -16,7 +16,11 @@ func loadGCovFile(fds FileDataSet, file *os.File) error {
 		t, value := recordType(scanner.Text())
 		switch t {
 		case "version":
-			//fmt.Println("version", value)
+			// Don't need to track the version, as the record variations can be
+			// recognized when the fields are split.  May want to print the
+			// version for debugging, but otherwise we can ignore this record.
+			//
+			// fmt.Println("version", value)
 
 		case "file":
 			currentData = fds.FileData(value)
