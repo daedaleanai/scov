@@ -9,7 +9,7 @@ build-modules:
   variables:
     GIT_SSL_NO_VERIFY: "true"  # Fix bug where can't fetch dependency from SourceHut
   script:
-    - go build -v .
+    - go build -v -ldflags="-X 'main.versionInformation=$(git describe)'" .
     - go build -v ./...
     - go test -v .
     - cd ./behemoth && go build
