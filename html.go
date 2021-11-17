@@ -278,61 +278,67 @@ func createJS(filename string) error {
 
 func writeJS(out io.Writer) error {
 	const js = `function sortTable( table, cmp ) {
-    var tbody = table.getElementsByTagName('tbody')[0]
+	var tbody = table.getElementsByTagName('tbody')[0]
 
-    var list = tbody.childNodes;
-    var arr = [];
-    for ( var i in list ) {
-        if ( list[i].nodeType==1 ) arr.push( list[i].cloneNode(true) )
-    }
-    arr.sort( cmp )
-    while ( tbody.firstChild ) tbody.removeChild(tbody.firstChild )
-    for ( var i in arr ) {
-        tbody.appendChild( arr[i] )
-    }
+	var list = tbody.childNodes;
+	var arr = [];
+	for ( var i in list ) {
+		if ( list[i].nodeType==1 ) arr.push( list[i].cloneNode(true) )
+	}
+	arr.sort( cmp )
+	while ( tbody.firstChild ) tbody.removeChild(tbody.firstChild )
+	for ( var i in arr ) {
+		tbody.appendChild( arr[i] )
+	}
 }
 
 var cmpTable = {
-    'text' : function(a) {
-        return a.textContent
-    },
-    'perc' : function(a) {
-        return parseFloat(a.textContent)
-    }
+	'text' : function(a) {
+		return a.textContent
+	},
+	'perc' : function(a) {
+		return parseFloat(a.textContent)
+	}
+}
+
+function makeOnClickCallback(column,cmp,dir) {
+	return function() {
+		var table = this.parentElement.parentElement.parentElement.parentElement.parentElement
+		sortTable( table, function(a,b) {
+			var v1 = cmp(a.childNodes[column])
+			var v2 = cmp(b.childNodes[column])
+			return v1 < v2 ? -dir : v1 > v2 ? +dir : 0
+		})
+	}
+}
+
+function cellIndex(e) {
+	var thead = e.parentElement
+	var arr = thead.getElementsByTagName('th')
+	var cellindex = 0
+
+	for ( var i of arr ) {
+		if ( i == e ) {
+			return cellindex
+		}
+		cellindex += i.colSpan
+	}
+
+	return -1
 }
 
 window.onload = function() {
-    var es = document.getElementsByTagName('th')
-    for ( var i = 0; i < es.length; i++ ) {
-        var e = es[i]
-        var a = e.getAttribute('data-sort')
-        if ( !a ) continue
+	var elems = document.getElementsByTagName('th')
+	for ( let elem of elems ) {
+		var attr = elem.getAttribute('data-sort')
+		if ( !attr ) continue
 
-		// Create a copy of the column for the closures below.
-		var column = i
-
-        e.innerHTML = e.innerHTML + ' <span class="reveal"><a class="pure-button" data-sort=' + a + '>▲</a><a class="pure-button" data-sort=' + a + '>▼</a></span>'
-        e.getElementsByTagName('a')[0].onclick = function() {
-            var ndx = this.getAttribute('data-sort')
-            var cmp = cmpTable[ndx]
-            var table = this.parentElement.parentElement.parentElement.parentElement.parentElement
-            sortTable( table, function(a,b) {
-                var v1 = cmp(a.childNodes[column])
-                var v2 = cmp(b.childNodes[column])
-                return v1 < v2 ? -1 : v1 > v2 ? +1 : 0
-            })
-        }
-        e.getElementsByTagName('a')[1].onclick = function() {
-            var ndx = this.getAttribute('data-sort')
-            var cmp = cmpTable[ndx]
-            var table = this.parentElement.parentElement.parentElement.parentElement.parentElement
-            sortTable( table, function(a,b) {
-                var v1 = cmp(a.childNodes[column])
-                var v2 = cmp(b.childNodes[column])
-                return v1 < v2 ? +1 : v1 > v2 ? -1 : 0
-            })
-        }
-    }
+		var cellindex = cellIndex(elem)
+		var colspan = elem.colSpan
+		elem.innerHTML = elem.innerHTML + ' <span class="reveal"><a class="pure-button">▲</a><a class="pure-button">▼</a></span>'
+		elem.getElementsByTagName('a')[0].onclick = makeOnClickCallback(cellindex+(colspan-1), cmpTable[attr], +1)
+		elem.getElementsByTagName('a')[1].onclick = makeOnClickCallback(cellindex+(colspan-1), cmpTable[attr], -1)
+	}
 }`
 
 	_, err := out.Write([]byte(js))
