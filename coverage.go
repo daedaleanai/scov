@@ -178,6 +178,7 @@ func (file *FileData) BranchCoverage() Coverage {
 	return Coverage{a, b}
 }
 
+// RegionCoverage calculates region coverage for the file.
 func (file *FileData) RegionCoverage() Coverage {
 	a, b := 0, 0
 
@@ -269,6 +270,10 @@ func (fds FileDataSet) RegionCoverage() Coverage {
 	return rcov
 }
 
+// ConvertRegionToLineData will use hitcounts from region data to infer hit
+// counts for line data for all of the files in the set.
+//
+// This method cannot be called if the line data already exists.
 func (fds FileDataSet) ConvertRegionToLineData() {
 	for _, data := range fds {
 		if len(data.LineData) == 0 {
