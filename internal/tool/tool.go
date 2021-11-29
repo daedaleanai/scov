@@ -1,13 +1,13 @@
-package main
+package tool
 
 import (
 	"os"
 )
 
-// Writer wraps an output, and handles various details with tool output, such
+// File wraps an output, and handles various details with tool output, such
 // as possibly directing output to standard out, and deleting an incomplete
 // output file if there was an error.
-type Writer struct {
+type File struct {
 	file  *os.File
 	flags uint8
 }
@@ -19,9 +19,9 @@ const (
 
 // Open create a new Writer, directing output to standard out if the filename
 // is "-".
-func Open(filename string) (Writer, error) {
+func Open(filename string) (File, error) {
 	if filename == "-" {
-		return Writer{
+		return File{
 			file:  os.Stdout,
 			flags: flagUnowned,
 		}, nil
@@ -29,25 +29,25 @@ func Open(filename string) (Writer, error) {
 
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
-		return Writer{}, err
+		return File{}, err
 	}
 
-	return Writer{
+	return File{
 		file: file,
 	}, nil
 }
 
-// combineErrors reports the first non-nil error in the list.
-func combineErrors(err1, err2 error) error {
+// CombineErrors reports the first non-nil error in the list.
+func CombineErrors(err1, err2 error) error {
 	if err1 == nil {
 		return err2
 	}
 	return err1
 }
 
-// Close the writer, but only if the file is owned by the writer.  Close will
-// possibly remove the output file if there was an error (see Keep).
-func (w *Writer) Close() error {
+// Closes the underlying file, but only if the file is owned by the File.  Close
+// will possibly remove the output file if there was an error (see Keep).
+func (w *File) Close() error {
 	if (w.flags & flagUnowned) != 0 {
 		return nil
 	}
@@ -57,20 +57,20 @@ func (w *Writer) Close() error {
 
 	if (w.flags & flagKeep) == 0 {
 		err2 := os.Remove(filename)
-		return combineErrors(err, err2)
+		return CombineErrors(err, err2)
 	}
 
 	return err
 }
 
 // File returns the underlying file.
-func (w *Writer) File() *os.File {
+func (w *File) File() *os.File {
 	return w.file
 }
 
 // Keep flags the output file as complete if err is nil.  If not called, or if
 // err is not nil, the file will be remove when closed.
-func (w *Writer) Keep(err error) {
+func (w *File) Keep(err error) {
 	if err == nil {
 		w.flags |= flagKeep
 	}

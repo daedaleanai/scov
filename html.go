@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"gitlab.com/stone.code/scov/internal/tool"
 )
 
 var (
@@ -234,7 +236,7 @@ func createHTML(outdir string, data map[string]*FileData, report *Report) error 
 }
 
 func createHTMLIndex(filename string, report *Report) error {
-	w, err := Open(filename)
+	w, err := tool.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -265,7 +267,7 @@ func writeHTMLIndex(out io.Writer, report *Report) error {
 }
 
 func createJS(filename string) error {
-	w, err := Open(filename)
+	w, err := tool.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -351,7 +353,7 @@ func createHTMLForSource(filename string, sourcename string, data *FileData, rep
 		return err
 	}
 
-	w, err := Open(filename)
+	w, err := tool.Open(filename)
 	if err != nil {
 		return err
 	}

@@ -6,10 +6,11 @@ import (
 	"io"
 
 	"git.sr.ht/~rj/sgr"
+	"gitlab.com/stone.code/scov/internal/tool"
 )
 
 func createTextReport(filename string, report *Report) error {
-	w, err := Open(filename)
+	w, err := tool.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -47,5 +48,6 @@ func writeTextReport(writer io.Writer, report *Report) error {
 			report.FCoverage,
 			report.BCoverage,
 			report.RCoverage))
+
 	return w.Flush()
 }

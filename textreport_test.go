@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -11,6 +12,23 @@ import (
 var (
 	update = flag.Bool("update", false, "update .golden files")
 )
+
+func TempFilename(t *testing.T) (filename string, closer func()) {
+	file, err := ioutil.TempFile("", "testing")
+	if err != nil {
+		t.Fatalf("could not create temporary file: %s", err)
+		// unreachable
+	}
+	name := file.Name()
+	file.Close()
+
+	return name, func() {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("could not remove temporary file: %s", err)
+		}
+	}
+}
 
 func TestCreateTextReport(t *testing.T) {
 	cases := []struct {

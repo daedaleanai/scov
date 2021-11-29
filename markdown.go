@@ -2,6 +2,8 @@ package main
 
 import (
 	"text/template"
+
+	"gitlab.com/stone.code/scov/internal/tool"
 )
 
 var (
@@ -86,7 +88,7 @@ Date: {{.UnixDate}}
 )
 
 func createMarkdownReport(filename string, report *Report) error {
-	w, err := Open(filename)
+	w, err := tool.Open(filename)
 	if err != nil {
 		return err
 	}

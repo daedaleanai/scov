@@ -1,10 +1,12 @@
-package main
+package tool_test
 
 import (
 	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"gitlab.com/stone.code/scov/internal/tool"
 )
 
 func TempFilename(t *testing.T) (filename string, closer func()) {
@@ -40,7 +42,7 @@ func TestOpen(t *testing.T) {
 
 	for _, v := range cases {
 		t.Run(v.filename, func(t *testing.T) {
-			w, err := Open(v.filename)
+			w, err := tool.Open(v.filename)
 			if err != nil {
 				t.Fatalf("Could not open file, %s", err)
 			}
@@ -67,7 +69,7 @@ func TestOpen(t *testing.T) {
 }
 
 func TestOpenFail(t *testing.T) {
-	_, err := Open(".")
+	_, err := tool.Open(".")
 	if err == nil {
 		t.Errorf("Unexpected success")
 	}
@@ -85,7 +87,7 @@ func TestCombineErrors(t *testing.T) {
 	}
 
 	for i, v := range cases {
-		out := combineErrors(v.err1, v.err2)
+		out := tool.CombineErrors(v.err1, v.err2)
 		if out != v.expected {
 			t.Errorf("Case %d: want %v, got %v", i, v.expected, out)
 		}

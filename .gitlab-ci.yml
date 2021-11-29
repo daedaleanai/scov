@@ -11,7 +11,7 @@ build-modules:
   script:
     - go build -v -ldflags="-X 'main.versionInformation=$(git describe)'" .
     - go build -v ./...
-    - go test -v .
+    - go test -v ./internal/... .
     - cd ./behemoth && go build
   parallel:
     matrix:
@@ -47,7 +47,7 @@ build-nix:
   script:
     - export VERSION=`git describe`
     - nix-shell --pure --command 'go build -v -ldflags="-X main.versionInformation=${VERSION}" ./...'
-    - nix-shell --pure --command "go test -v ."
+    - nix-shell --pure --command "go test -v ./internal/... ."
     - nix-shell --arg enableLint true --pure --command "golangci-lint run -v --enable=${LINTERS} ."
 
 include:
@@ -64,14 +64,14 @@ test:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/src/gitlab.com/$CI_PROJECT_PATH
     LINTERS: "exportloopref,ineffassign,misspell,godot,govet,revive"
   script:
-    - go test -v -coverprofile=cover.out
+    - go test -v -coverprofile=cover.out ./internal/... .
     - go tool cover -html=cover.out -o=cover.html
     - bash <(curl -s https://codecov.io/bash)
     - go get -u github.com/client9/misspell/cmd/misspell
     - go install github.com/client9/misspell/cmd/misspell
     - $GOPATH/bin/misspell -locale UK *.go *.md behemoth/*.go
     - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.42.1
-    - ./bin/golangci-lint run -v --enable=$LINTERS .
+    - ./bin/golangci-lint run -v --enable=$LINTERS ./internal/... .
   artifacts:
     paths:
       - cover.html
@@ -85,7 +85,7 @@ lint:
   needs: []
   script:
     - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.42.1
-    - ./bin/golangci-lint run -v --enable-all . || true
+    - ./bin/golangci-lint run -v --enable-all --issues-exit-code=0 ./internal/... .
   except:
     - tags
   allow_failure: true
