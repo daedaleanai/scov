@@ -22,6 +22,7 @@ var (
 	htmldir    = flag.String("htmldir", ".", "Path for the HTML output")
 	htmljs     = flag.Bool("htmljs", false, "Use javascript to enhance reports")
 	markdown   = flag.String("markdown", "", "Filename for markdown report, use - to direct report to stdout")
+	cobertura  	 = flag.String("cobertura", "", "Filename for Cobertura xml report")
 	text       = flag.String("text", "", "Filename for text report, use - to direct the report to stdout")
 	projecturl = flag.String("url", "", "URL for the project")
 )
@@ -90,6 +91,15 @@ func main() {
 		err := createMarkdownReport(*markdown, report)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: could not create text report: %s\n", err)
+			os.Exit(1)
+		}
+	}
+
+	// Xml report, if requested.
+	if *cobertura != "" {
+		err := createCoberturaReport(*cobertura, fileData, report)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: could not create xml report: %s\n", err)
 			os.Exit(1)
 		}
 	}

@@ -135,9 +135,13 @@ func parseBRDARecord(value string) (lineNo int, status BranchStatus, err error) 
 	}
 	lineNo = int(lineNoTmp)
 
-	hitCount, err := strconv.ParseInt(values[3], 10, 64)
-	if err != nil {
-		return 0, 0, fmt.Errorf("can't parse branch record: %s", err)
+	var hitCount int64 = 0
+
+	if values[3] != "-" {
+		hitCount, err = strconv.ParseInt(values[3], 10, 64)
+		if err != nil {
+			return 0, 0, fmt.Errorf("can't parse branch record: %s", err)
+		}
 	}
 
 	if hitCount > 0 {
