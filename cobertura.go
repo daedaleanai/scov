@@ -19,10 +19,15 @@ type XmlPackage struct {
 	XMLName xml.Name `xml:"package"`
 	Name    string   `xml:"name,attr"`
 
-	LineRate     float64 `xml:"line-rate,attr"`
-	BranchRate   float64 `xml:"branch-rate,attr"`
+	LineRate   float64 `xml:"line-rate,attr"`
+	BranchRate float64 `xml:"branch-rate,attr"`
 
 	Classes XmlWrapClasses `xml:"classes"`
+
+	lineTotal     int
+	lineCovered   int
+	branchTotal   int
+	branchCovered int
 }
 
 type XmlWrapMethods struct {
@@ -30,12 +35,12 @@ type XmlWrapMethods struct {
 }
 
 type XmlMethod struct {
-	XMLName xml.Name `xml:"method"`
-	Name       string   `xml:"name,attr"`
-	Signature       string   `xml:"signature,attr"`
-	LineRate     float64 `xml:"line-rate,attr"`
-	BranchRate   float64 `xml:"branch-rate,attr"`
-	Lines   XmlWrapLines `xml:"lines"`
+	XMLName    xml.Name     `xml:"method"`
+	Name       string       `xml:"name,attr"`
+	Signature  string       `xml:"signature,attr"`
+	LineRate   float64      `xml:"line-rate,attr"`
+	BranchRate float64      `xml:"branch-rate,attr"`
+	Lines      XmlWrapLines `xml:"lines"`
 }
 
 type XmlWrapClasses struct {
@@ -50,8 +55,8 @@ type XmlClass struct {
 	BranchRate float64  `xml:"branch-rate,attr"`
 	Complexity float64  `xml:"complexity,attr"`
 
-	Methods XmlWrapMethods  `xml:"methods"`
-	Lines   XmlWrapLines `xml:"lines"`
+	Methods XmlWrapMethods `xml:"methods"`
+	Lines   XmlWrapLines   `xml:"lines"`
 
 	lines uint64
 }
@@ -78,7 +83,6 @@ type XmlWrapSources struct {
 type XmlWrapPackages struct {
 	Packages []*XmlPackage `xml:"package"`
 }
-
 
 type XmlCoverage struct {
 	XMLName          xml.Name `xml:"coverage"`
@@ -137,8 +141,8 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 		Complexity:       0,
 		Timestamp:        uint64(report.Date.Unix()),
 		Version:          "2.0.3",
-		Sources: XmlWrapSources{Sources: []string{"."}},
-		Packages: XmlWrapPackages{Packages: []*XmlPackage{}},
+		Sources:          XmlWrapSources{Sources: []string{"."}},
+		Packages:         XmlWrapPackages{Packages: []*XmlPackage{}},
 	}
 
 	packages := map[string]*XmlPackage{}
@@ -151,14 +155,16 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 
 		if !ok {
 			pkg = &XmlPackage{
-				Name:       pkgName,
-				LineRate: float64(data.FileData(file.Name).LineCoverage().P()) / 100.0,
-				BranchRate: float64(data.FileData(file.Name).BranchCoverage().P()) / 100.0,
+				Name: pkgName,
 			}
 			packages[pkgName] = pkg
 			xmlReport.Packages.Packages = append(xmlReport.Packages.Packages, pkg)
 		}
 
+		pkg.lineTotal = pkg.lineTotal + data.FileData(file.Name).LineCoverage().Total
+		pkg.lineCovered = pkg.lineCovered + data.FileData(file.Name).LineCoverage().Hits
+		pkg.branchTotal = pkg.branchTotal + data.FileData(file.Name).BranchCoverage().Total
+		pkg.branchCovered = pkg.branchCovered + data.FileData(file.Name).BranchCoverage().Hits
 
 		cls := XmlClass{
 			Name:       strings.ReplaceAll(file.Name, "/", "."),
@@ -168,7 +174,7 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 			Complexity: 0,
 		}
 
-		for name,finfo := range data.FileData(file.Name).FuncData {
+		for name, finfo := range data.FileData(file.Name).FuncData {
 			rate := 0
 			if finfo.HitCount > 0 {
 				rate = 1
@@ -177,13 +183,13 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 			cls.Methods.Methods = append(cls.Methods.Methods, XmlMethod{
 				Name:       name,
 				BranchRate: float64(rate),
-				LineRate: float64(rate),
-				Signature: "",
+				LineRate:   float64(rate),
+				Signature:  "",
 				Lines: XmlWrapLines{
 					Lines: []XmlLine{
 						{
 							Number: uint64(finfo.StartLine),
-							Hits: finfo.HitCount,
+							Hits:   finfo.HitCount,
 							Branch: false,
 						},
 					},
@@ -191,23 +197,22 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 			})
 		}
 
-
 		for idx, hits := range data.FileData(file.Name).LineData {
 			branch := len(data.FileData(file.Name).BranchData[idx]) > 1
 			branchCoverage := ""
 			if branch {
 				covered := 0
-				for _,b := range data.FileData(file.Name).BranchData[idx] {
+				for _, b := range data.FileData(file.Name).BranchData[idx] {
 					if b == BranchTaken {
 						covered = covered + 1
 					}
 				}
-				branchCoverage = fmt.Sprintf("%d%% (%d/%d)", covered * 100 / len(data.FileData(file.Name).BranchData[idx]), covered, len(data.FileData(file.Name).BranchData[idx]))
+				branchCoverage = fmt.Sprintf("%d%% (%d/%d)", covered*100/len(data.FileData(file.Name).BranchData[idx]), covered, len(data.FileData(file.Name).BranchData[idx]))
 			}
 			cls.Lines.Lines = append(cls.Lines.Lines, XmlLine{
-				Number: uint64(idx),
-				Hits:   hits,
-				Branch: branch,
+				Number:            uint64(idx),
+				Hits:              hits,
+				Branch:            branch,
 				ConditionCoverage: branchCoverage,
 			})
 		}
@@ -217,6 +222,11 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 		cls.lines = uint64(data.FileData(file.Name).LineCoverage().Total)
 
 		pkg.Classes.Classes = append(pkg.Classes.Classes, cls)
+	}
+
+	for _, pkg := range packages {
+		pkg.LineRate = float64(pkg.lineCovered) * 100.0 / float64(pkg.lineTotal)
+		pkg.BranchRate = float64(pkg.branchCovered) * 100.0 / float64(pkg.branchTotal)
 	}
 
 	_, err = w.File().Write([]byte(Header))

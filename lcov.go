@@ -137,6 +137,7 @@ func parseBRDARecord(value string) (lineNo int, status BranchStatus, err error) 
 
 	var hitCount int64 = 0
 
+	/// Lcov report non-covered branches with '-' instead of '0'
 	if values[3] != "-" {
 		hitCount, err = strconv.ParseInt(values[3], 10, 64)
 		if err != nil {
