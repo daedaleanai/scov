@@ -163,16 +163,30 @@ func aggregateCoverageInfoForFunctions(fileData *FileData) map[int]FunctionInfo 
 }
 
 func collectLineCoverageForFunction(functionInfo FunctionInfo, fileData *FileData) []XmlLine {
+	// Indexed by the line number
+	linesMap := map[int]XmlLine{}
+
 	lines := []XmlLine{}
 
 	for line, hits := range fileData.LineData {
 		if line >= functionInfo.StartLine && ((functionInfo.EndLine == -1) || (line <= functionInfo.EndLine)) {
-			lines = append(lines, XmlLine{
-				Number: uint64(line),
-				Hits:   hits,
-				Branch: false,
-			})
+			if xmlLine, ok := linesMap[line]; ok {
+				// Accumulate hits
+				xmlLine.Hits += hits
+				linesMap[line] = xmlLine
+			} else {
+				linesMap[line] = XmlLine{
+					Number: uint64(line),
+					Hits:   hits,
+					Branch: false,
+				}
+
+			}
 		}
+	}
+
+	for _, xmlLine := range linesMap {
+		lines = append(lines, xmlLine)
 	}
 
 	return lines
