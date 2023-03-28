@@ -121,6 +121,77 @@ func (s ByNumber) Less(i, j int) bool {
 	return s[i].Number < s[j].Number
 }
 
+type FunctionInfo struct {
+	StartLine int
+	EndLine   int
+}
+
+func aggregateCoverageInfoForFunctions(fileData *FileData) map[int]FunctionInfo {
+	startLines := []int{}
+	for _, finfo := range fileData.FuncData {
+		saved := false
+		for line := range startLines {
+			if line == finfo.StartLine {
+				saved = true
+			}
+		}
+
+		if !saved {
+			startLines = append(startLines, finfo.StartLine)
+		}
+	}
+	sort.Ints(startLines)
+
+	findNextLine := func(line int) int {
+		for _, currLine := range startLines {
+			if currLine > line {
+				return currLine - 1
+			}
+		}
+		return -1
+	}
+
+	functionInfo := map[int]FunctionInfo{}
+
+	for _, finfo := range fileData.FuncData {
+		functionInfo[finfo.StartLine] = FunctionInfo{
+			StartLine: finfo.StartLine,
+			EndLine:   findNextLine(finfo.StartLine),
+		}
+	}
+	return functionInfo
+}
+
+func collectLineCoverageForFunction(functionInfo FunctionInfo, fileData *FileData) []XmlLine {
+	// Indexed by the line number
+	linesMap := map[int]XmlLine{}
+
+	lines := []XmlLine{}
+
+	for line, hits := range fileData.LineData {
+		if line >= functionInfo.StartLine && ((functionInfo.EndLine == -1) || (line <= functionInfo.EndLine)) {
+			if xmlLine, ok := linesMap[line]; ok {
+				// Accumulate hits
+				xmlLine.Hits += hits
+				linesMap[line] = xmlLine
+			} else {
+				linesMap[line] = XmlLine{
+					Number: uint64(line),
+					Hits:   hits,
+					Branch: false,
+				}
+
+			}
+		}
+	}
+
+	for _, xmlLine := range linesMap {
+		lines = append(lines, xmlLine)
+	}
+
+	return lines
+}
+
 func createCoberturaReport(filename string, data FileDataSet, report *Report) error {
 	w, err := Open(filename)
 	if err != nil {
@@ -174,9 +245,19 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 			Complexity: 0,
 		}
 
+		functionInfo := aggregateCoverageInfoForFunctions(data.FileData(file.Name))
+
+		visited := map[int]interface{}{}
 		for name, finfo := range data.FileData(file.Name).FuncData {
+			if _, ok := visited[finfo.StartLine]; ok {
+				// Do not record duplicated methods, since they cause line coverage to be misleading
+				continue
+			}
+			visited[finfo.StartLine] = struct{}{}
+
+			lines := collectLineCoverageForFunction(functionInfo[finfo.StartLine], data.FileData(file.Name))
 			rate := 0
-			if finfo.HitCount > 0 {
+			if len(lines) > 0 {
 				rate = 1
 			}
 
@@ -186,13 +267,7 @@ func createCoberturaReport(filename string, data FileDataSet, report *Report) er
 				LineRate:   float64(rate),
 				Signature:  "",
 				Lines: XmlWrapLines{
-					Lines: []XmlLine{
-						{
-							Number: uint64(finfo.StartLine),
-							Hits:   finfo.HitCount,
-							Branch: false,
-						},
-					},
+					Lines: lines,
 				},
 			})
 		}
